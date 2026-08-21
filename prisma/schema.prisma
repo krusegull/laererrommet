@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Subject {
+  id          String       @id @default(cuid())
+  name        String       @unique
+  createdAt   DateTime     @default(now())
+  lessonPlans LessonPlan[]
+}
+
+model LessonPlan {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  grade       String?
+  fileName    String
+  filePath    String
+  fileType    String?
+  fileSize    Int?
+  subject     Subject  @relation(fields: [subjectId], references: [id])
+  subjectId   String
+  createdAt   DateTime @default(now())
+}
+
+model Student {
+  id           String        @id @default(cuid())
+  name         String
+  group        String?
+  createdAt    DateTime      @default(now())
+  texts        StudentText[]
+}
+
+model StudentText {
+  id          String       @id @default(cuid())
+  title       String
+  content     String
+  student     Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  studentId   String
+  createdAt   DateTime     @default(now())
+  annotations Annotation[]
+}
+
+enum FeedbackCategory {
+  STYRKE
+  UTVIKLING
+  NOYTRAL
+}
+
+model Annotation {
+  id           String           @id @default(cuid())
+  text         StudentText      @relation(fields: [textId], references: [id], onDelete: Cascade)
+  textId       String
+  startOffset  Int
+  endOffset    Int
+  quote        String
+  comment      String
+  category     FeedbackCategory
+  createdAt    DateTime         @default(now())
+}
