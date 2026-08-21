@@ -23,13 +23,17 @@ og ha undervisningsopplegg samlet på ett sted.
 ## Kom i gang
 
 ```bash
+cp .env.example .env
 npm install
-npx prisma migrate deploy   # oppretter dev.db og kjører migrasjoner
-npm run db:seed             # legger inn fagene Norsk, Samfunnsfag og KRLE
+npm run setup   # genererer Prisma-klient, kjører migrasjoner og legger inn Norsk/Samfunnsfag/KRLE
 npm run dev
 ```
 
 Appen kjører på [http://localhost:3000](http://localhost:3000).
+
+Kjører du dette i Claude Code on the web, gjør `.claude/hooks/session-start.sh`
+`npm install` og `npm run setup` automatisk ved hver ny økt, slik at databasen
+alltid er klar.
 
 ## Produksjon
 
