@@ -45,3 +45,8 @@ npm run start
 Databasen (`dev.db`) og opplastede filer (`data/uploads/`) er ikke sjekket inn
 i git — sørg for at disse blir liggende på et vedvarende volum ved
 selvhosting, slik at data ikke går tapt ved omstart.
+
+## Deploy (hosting)
+
+Se [DEPLOY.md](./DEPLOY.md) for steg-for-steg oppskrift på å deploye appen til
+Fly.io, med vedvarende lagring for database og opplastede filer.

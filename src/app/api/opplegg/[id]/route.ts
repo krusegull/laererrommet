@@ -2,8 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-
-const UPLOAD_DIR = path.join(process.cwd(), "data", "uploads");
+import { UPLOAD_DIR } from "@/lib/uploads";
 
 export async function GET(
   _request: Request,
