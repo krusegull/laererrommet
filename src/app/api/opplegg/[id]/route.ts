@@ -1,8 +1,5 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { UPLOAD_DIR } from "@/lib/uploads";
 
 export async function GET(
   _request: Request,
@@ -15,15 +12,10 @@ export async function GET(
     return NextResponse.json({ error: "Fant ikke opplegget" }, { status: 404 });
   }
 
-  try {
-    const buffer = await readFile(path.join(UPLOAD_DIR, plan.filePath));
-    return new NextResponse(new Uint8Array(buffer), {
-      headers: {
-        "Content-Type": plan.fileType || "application/octet-stream",
-        "Content-Disposition": `attachment; filename="${encodeURIComponent(plan.fileName)}"`,
-      },
-    });
-  } catch {
-    return NextResponse.json({ error: "Filen ble ikke funnet på disk" }, { status: 404 });
-  }
+  return new NextResponse(new Uint8Array(plan.fileData), {
+    headers: {
+      "Content-Type": plan.fileType || "application/octet-stream",
+      "Content-Disposition": `attachment; filename="${encodeURIComponent(plan.fileName)}"`,
+    },
+  });
 }

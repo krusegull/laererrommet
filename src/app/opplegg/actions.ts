@@ -1,12 +1,8 @@
 "use server";
 
-import { randomUUID } from "node:crypto";
-import { mkdir, unlink, writeFile } from "node:fs/promises";
-import path from "node:path";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { UPLOAD_DIR } from "@/lib/uploads";
 
 export async function createSubject(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
@@ -35,12 +31,7 @@ export async function uploadLessonPlan(formData: FormData) {
     throw new Error("Du må velge en fil");
   }
 
-  await mkdir(UPLOAD_DIR, { recursive: true });
-
-  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-  const storedName = `${randomUUID()}-${safeName}`;
   const buffer = Buffer.from(await file.arrayBuffer());
-  await writeFile(path.join(UPLOAD_DIR, storedName), buffer);
 
   await prisma.lessonPlan.create({
     data: {
@@ -49,9 +40,9 @@ export async function uploadLessonPlan(formData: FormData) {
       grade: grade || null,
       subjectId,
       fileName: file.name,
-      filePath: storedName,
       fileType: file.type || null,
       fileSize: file.size,
+      fileData: buffer,
     },
   });
 
@@ -60,15 +51,6 @@ export async function uploadLessonPlan(formData: FormData) {
 }
 
 export async function deleteLessonPlan(id: string) {
-  const plan = await prisma.lessonPlan.findUnique({ where: { id } });
-  if (!plan) return;
-
   await prisma.lessonPlan.delete({ where: { id } });
-  try {
-    await unlink(path.join(UPLOAD_DIR, plan.filePath));
-  } catch {
-    // filen kan allerede være borte fra disk, ignorer
-  }
-
   revalidatePath("/opplegg");
 }
