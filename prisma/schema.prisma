@@ -7,7 +7,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model Subject {
@@ -23,9 +23,9 @@ model LessonPlan {
   description String?
   grade       String?
   fileName    String
-  filePath    String
   fileType    String?
   fileSize    Int?
+  fileData    Bytes
   subject     Subject  @relation(fields: [subjectId], references: [id])
   subjectId   String
   createdAt   DateTime @default(now())
