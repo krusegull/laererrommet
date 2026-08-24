@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { getOwnedStudent } from "@/lib/getOwnedStudent";
 import { formatLogsForAI } from "@/lib/formatLogsForAI";
 import { askClaude, AIUnavailableError } from "@/lib/anthropic";
+import { studentIdSchema } from "@/lib/validations";
 
 const SYSTEM_PROMPT = `Du er en erfaren lærer som lager konkrete øvingsoppdrag tilpasset en
 elevs utviklingsområder. Du får kun læreren sine egne, anonymiserte notater —
@@ -18,12 +19,12 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json().catch(() => null);
-  const studentId = body?.studentId;
-  if (typeof studentId !== "string") {
+  const parsed = studentIdSchema.safeParse(body);
+  if (!parsed.success) {
     return NextResponse.json({ error: "Mangler elev-ID" }, { status: 400 });
   }
 
-  const student = await getOwnedStudent(studentId, session.user.id);
+  const student = await getOwnedStudent(parsed.data.studentId, session.user.id);
   if (!student) {
     return NextResponse.json({ error: "Fant ikke eleven" }, { status: 404 });
   }

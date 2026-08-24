@@ -2,26 +2,34 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { Avatar } from "@/components/ui/Avatar";
 import { cn } from "@/lib/cn";
 import type { NotificationItem } from "@/lib/types";
 
-const NAV_LINKS = [
+const MOBILE_LINKS = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/veileder", label: "KI-veilederen" },
   { href: "/logg", label: "Tilbakemeldingslogg" },
   { href: "/meg", label: "Meg" },
+  { href: "/meldinger", label: "Meldinger" },
+  { href: "/onsker", label: "Ønsker" },
+  { href: "/profil", label: "Min profil" },
+  { href: "/innstillinger", label: "Innstillinger" },
 ];
 
 export function Topbar({
   userName,
   unreadCount,
+  isAdmin,
 }: {
   userName: string;
   unreadCount: number;
+  isAdmin: boolean;
 }) {
+  const router = useRouter();
   const { theme, setTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -42,7 +50,7 @@ export function Topbar({
     setNotifOpen((open) => !open);
     if (!notifications) {
       try {
-        const res = await fetch("/api/notifications");
+        const res = await fetch("/api/varsler");
         if (res.ok) {
           const data = await res.json();
           setNotifications(data.notifications);
@@ -53,10 +61,18 @@ export function Topbar({
     }
   }
 
+  function goToNotification(notification: NotificationItem) {
+    setNotifOpen(false);
+    if (!notification.read) {
+      fetch(`/api/varsler/${notification.id}`, { method: "PATCH" }).catch(() => {});
+    }
+    router.push(notification.link ?? "/varsler");
+  }
+
   function toggleDarkMode() {
     const next = theme === "dark" ? "light" : "dark";
     setTheme(next);
-    fetch("/api/user/theme", {
+    fetch("/api/innstillinger", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ darkMode: next === "dark" }),
@@ -124,20 +140,30 @@ export function Topbar({
                   </p>
                 ) : (
                   <ul className="flex max-h-80 flex-col gap-1 overflow-y-auto">
-                    {notifications.map((n) => (
-                      <li
-                        key={n.id}
-                        className={cn(
-                          "rounded-button px-2 py-2 text-sm",
-                          !n.read && "bg-primary/5"
-                        )}
-                      >
-                        <p className="font-medium text-foreground">{n.title}</p>
-                        <p className="text-foreground/60">{n.message}</p>
+                    {notifications.slice(0, 8).map((n) => (
+                      <li key={n.id}>
+                        <button
+                          type="button"
+                          onClick={() => goToNotification(n)}
+                          className={cn(
+                            "block w-full rounded-button px-2 py-2 text-left text-sm hover:bg-background-subtle",
+                            !n.read && "bg-primary/5"
+                          )}
+                        >
+                          <p className="font-medium text-foreground">{n.title}</p>
+                          <p className="text-foreground/60">{n.message}</p>
+                        </button>
                       </li>
                     ))}
                   </ul>
                 )}
+                <Link
+                  href="/varsler"
+                  onClick={() => setNotifOpen(false)}
+                  className="mt-1 block rounded-button px-2 py-2 text-center text-sm font-medium text-primary hover:bg-background-subtle"
+                >
+                  Se alle varsler
+                </Link>
               </div>
             )}
           </div>
@@ -174,7 +200,7 @@ export function Topbar({
             <span className="text-sm font-medium text-foreground">{userName}</span>
           </div>
           <nav className="flex flex-col gap-1">
-            {NAV_LINKS.map((link) => (
+            {MOBILE_LINKS.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -184,6 +210,15 @@ export function Topbar({
                 {link.label}
               </Link>
             ))}
+            {isAdmin && (
+              <Link
+                href="/admin"
+                onClick={() => setMobileOpen(false)}
+                className="rounded-button px-3 py-2 text-sm font-medium text-foreground/80 hover:bg-background-subtle"
+              >
+                Admin
+              </Link>
+            )}
           </nav>
           <div className="mt-2 flex items-center justify-between border-t border-line pt-2">
             <button

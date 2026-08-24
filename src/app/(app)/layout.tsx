@@ -19,9 +19,13 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-screen flex-col">
-      <Topbar userName={session.user.name ?? "Lærer"} unreadCount={unreadCount} />
+      <Topbar
+        userName={session.user.name ?? "Lærer"}
+        unreadCount={unreadCount}
+        isAdmin={session.user.role === "ADMIN"}
+      />
       <div className="mx-auto flex w-full max-w-6xl flex-1">
-        <Sidebar />
+        <Sidebar isAdmin={session.user.role === "ADMIN"} />
         <main className="flex-1 px-4 pb-20 pt-6 sm:px-6 md:pb-6">{children}</main>
       </div>
       <MobileNav />

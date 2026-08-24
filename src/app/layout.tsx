@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Providers } from "@/components/Providers";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import "./globals.css";
 
 const inter = Inter({
@@ -18,7 +19,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="no" suppressHydrationWarning className={inter.variable}>
       <body className="min-h-full bg-background-subtle text-foreground antialiased">
-        <Providers>{children}</Providers>
+        <Providers>
+          <ErrorBoundary>{children}</ErrorBoundary>
+        </Providers>
       </body>
     </html>
   );

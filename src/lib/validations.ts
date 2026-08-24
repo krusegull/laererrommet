@@ -29,6 +29,72 @@ export const chatMessageSchema = z.object({
   content: z.string().trim().min(1, "Meldingen kan ikke være tom").max(4000),
 });
 
+export const directMessageSchema = z.object({
+  receiverId: z.string().min(1, "Mangler mottaker"),
+  content: z.string().trim().min(1, "Meldingen kan ikke være tom").max(2000),
+});
+
+export const featureRequestSchema = z.object({
+  title: z.string().trim().min(1, "Tittel er påkrevd").max(150),
+  description: z.string().trim().max(2000).optional(),
+  category: z.enum(["ny funksjon", "forbedring", "feil"]).default("ny funksjon"),
+});
+
+export const settingsSchema = z.object({
+  name: z.string().trim().min(2, "Navn må være minst 2 tegn").max(100).optional(),
+  email: z.string().trim().toLowerCase().email("Ugyldig e-postadresse").optional(),
+  school: z.string().trim().max(200).optional().nullable(),
+  subject: z.string().trim().max(100).optional().nullable(),
+  grade: z.string().trim().max(100).optional().nullable(),
+  bio: z.string().trim().max(1000).optional().nullable(),
+  isPublic: z.boolean().optional(),
+  darkMode: z.boolean().optional(),
+  notifyChat: z.boolean().optional(),
+  notifyLikes: z.boolean().optional(),
+  notifyCalendar: z.boolean().optional(),
+  notifyKI: z.boolean().optional(),
+  notifyEmail: z.boolean().optional(),
+});
+
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Nåværende passord er påkrevd"),
+    newPassword: z.string().min(8, "Det nye passordet må være minst 8 tegn").max(100),
+    confirmNewPassword: z.string(),
+  })
+  .refine((data) => data.newPassword === data.confirmNewPassword, {
+    message: "De nye passordene er ikke like",
+    path: ["confirmNewPassword"],
+  });
+
+export const deleteAccountSchema = z.object({
+  password: z.string().min(1, "Passord er påkrevd for å slette kontoen"),
+});
+
+export const IDEA_CATEGORIES = ["KI-verktøy", "Pedagogikk", "Fellesskap", "Teknisk", "Annet"] as const;
+
+export const ideaSchema = z.object({
+  title: z.string().trim().min(1, "Tittel er påkrevd").max(200),
+  description: z.string().trim().max(2000).optional(),
+  category: z.enum(IDEA_CATEGORIES).default("Annet"),
+});
+
+export const updateRoleSchema = z.object({
+  role: z.enum(["USER", "ADMIN"]),
+});
+
+export const featureRequestStatusSchema = z.object({
+  status: z.enum(["innsendt", "under vurdering", "planlagt", "realisert"]),
+});
+
+export const studentIdSchema = z.object({
+  studentId: z.string().min(1, "Mangler elev-ID"),
+});
+
+export const toggleRealizedSchema = z.object({
+  realized: z.boolean().optional(),
+});
+
 export const studentSchema = z.object({
   label: z.string().trim().min(1, "Navn på elevmerkelapp er påkrevd").max(100),
 });

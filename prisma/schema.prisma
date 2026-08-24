@@ -30,6 +30,7 @@ model User {
   notifyEmail      Boolean          @default(false)
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
+  lastLoginAt      DateTime?
   students         Student[]
   chatMessages     ChatMessage[]
   posts            Post[]
@@ -97,9 +98,9 @@ model ChatMessage {
 model DirectMessage {
   id         String   @id @default(cuid())
   senderId   String
-  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
   receiverId String
-  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
   content    String
   read       Boolean  @default(false)
   createdAt  DateTime @default(now())
@@ -113,7 +114,7 @@ model LessonPlan {
   description String
   content     String
   userId      String
-  user        User     @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   ratings     Rating[]
   likes       Int      @default(0)
   createdAt   DateTime @default(now())
@@ -126,7 +127,7 @@ model Rating {
   whatWorked    String?
   whatDidntWork String?
   userId        String
-  user          User       @relation(fields: [userId], references: [id])
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   lessonPlanId  String
   lessonPlan    LessonPlan @relation(fields: [lessonPlanId], references: [id], onDelete: Cascade)
   createdAt     DateTime   @default(now())
@@ -136,7 +137,7 @@ model Post {
   id        String   @id @default(cuid())
   content   String
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   likes     Int      @default(0)
   createdAt DateTime @default(now())
 }
@@ -159,7 +160,7 @@ model CalendarEvent {
   date        DateTime
   location    String?
   userId      String
-  user        User     @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   isPublic    Boolean  @default(false)
   createdAt   DateTime @default(now())
 }
@@ -171,7 +172,7 @@ model FeatureRequest {
   category    String   @default("ny funksjon")
   status      String   @default("innsendt")
   userId      String
-  user        User     @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   votes       Vote[]
   createdAt   DateTime @default(now())
 }
@@ -179,7 +180,7 @@ model FeatureRequest {
 model Vote {
   id               String         @id @default(cuid())
   userId           String
-  user             User           @relation(fields: [userId], references: [id])
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   featureRequestId String
   featureRequest   FeatureRequest @relation(fields: [featureRequestId], references: [id], onDelete: Cascade)
   createdAt        DateTime       @default(now())
@@ -190,7 +191,7 @@ model Vote {
 model ErrorReport {
   id          String   @id @default(cuid())
   userId      String
-  user        User     @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   page        String
   description String
   error       String?
@@ -223,7 +224,7 @@ model Idea {
 model ActivityLog {
   id          String   @id @default(cuid())
   userId      String
-  user        User     @relation(fields: [userId], references: [id])
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   type        String
   description String
   createdAt   DateTime @default(now())

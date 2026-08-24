@@ -20,7 +20,7 @@ export function ReportErrorButton({
   async function handleClick() {
     setStatus("sending");
     try {
-      await fetch("/api/error-reports", {
+      await fetch("/api/feil", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ page, description, error }),

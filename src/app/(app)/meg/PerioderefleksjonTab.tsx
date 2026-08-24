@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Sparkles } from "lucide-react";
+import { Sparkles, CalendarRange } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
@@ -171,7 +171,7 @@ export function PerioderefleksjonTab({
       <div>
         <h3 className="mb-3 font-semibold text-foreground">Tidligere refleksjoner</h3>
         {notes.length === 0 ? (
-          <EmptyState title="Ingen refleksjoner lagret ennå" />
+          <EmptyState icon={<CalendarRange size={32} />} title="Ingen refleksjoner lagret ennå" />
         ) : (
           <ul className="flex flex-col gap-3">
             {notes.map((note) => (
