@@ -10,59 +10,226 @@ datasource db {
   provider = "postgresql"
 }
 
-model Subject {
-  id          String       @id @default(cuid())
-  name        String       @unique
-  createdAt   DateTime     @default(now())
-  lessonPlans LessonPlan[]
+model User {
+  id               String           @id @default(cuid())
+  name             String
+  email            String           @unique
+  password         String
+  role             Role             @default(USER)
+  school           String?
+  subject          String?
+  grade            String?
+  bio              String?
+  isPublic         Boolean          @default(false)
+  darkMode         Boolean          @default(false)
+  onboarded        Boolean          @default(false)
+  notifyChat       Boolean          @default(true)
+  notifyLikes      Boolean          @default(true)
+  notifyCalendar   Boolean          @default(true)
+  notifyKI         Boolean          @default(true)
+  notifyEmail      Boolean          @default(false)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  students         Student[]
+  chatMessages     ChatMessage[]
+  posts            Post[]
+  privateNotes     PrivateNote[]
+  sentMessages     DirectMessage[]  @relation("SentMessages")
+  receivedMessages DirectMessage[]  @relation("ReceivedMessages")
+  lessonPlans      LessonPlan[]
+  ratings          Rating[]
+  featureRequests  FeatureRequest[]
+  votes            Vote[]
+  errorReports     ErrorReport[]
+  notifications    Notification[]
+  calendarEvents   CalendarEvent[]
+  activityLogs     ActivityLog[]
+  classProfiles    ClassProfile[]
+}
+
+model Student {
+  id        String        @id @default(cuid())
+  label     String
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logs      FeedbackLog[]
+  createdAt DateTime      @default(now())
+}
+
+model FeedbackLog {
+  id          String   @id @default(cuid())
+  studentId   String
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  task        String
+  positive    String
+  improve     String
+  hasProgress Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model ClassProfile {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logs        ClassLog[]
+  createdAt   DateTime   @default(now())
+}
+
+model ClassLog {
+  id             String       @id @default(cuid())
+  classProfileId String
+  classProfile   ClassProfile @relation(fields: [classProfileId], references: [id], onDelete: Cascade)
+  content        String
+  createdAt      DateTime     @default(now())
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      String
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model DirectMessage {
+  id         String   @id @default(cuid())
+  senderId   String
+  sender     User     @relation("SentMessages", fields: [senderId], references: [id])
+  receiverId String
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  content    String
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
 }
 
 model LessonPlan {
   id          String   @id @default(cuid())
   title       String
-  description String?
-  grade       String?
-  fileName    String
-  fileType    String?
-  fileSize    Int?
-  fileData    Bytes
-  subject     Subject  @relation(fields: [subjectId], references: [id])
-  subjectId   String
+  subject     String
+  grade       String
+  description String
+  content     String
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  ratings     Rating[]
+  likes       Int      @default(0)
   createdAt   DateTime @default(now())
 }
 
-model Student {
-  id           String        @id @default(cuid())
-  name         String
-  group        String?
-  createdAt    DateTime      @default(now())
-  texts        StudentText[]
+model Rating {
+  id            String     @id @default(cuid())
+  score         Int
+  comment       String?
+  whatWorked    String?
+  whatDidntWork String?
+  userId        String
+  user          User       @relation(fields: [userId], references: [id])
+  lessonPlanId  String
+  lessonPlan    LessonPlan @relation(fields: [lessonPlanId], references: [id], onDelete: Cascade)
+  createdAt     DateTime   @default(now())
 }
 
-model StudentText {
-  id          String       @id @default(cuid())
+model Post {
+  id        String   @id @default(cuid())
+  content   String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  likes     Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model PrivateNote {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  content   String
+  period    String?
+  source    String?
+  createdAt DateTime @default(now())
+}
+
+model CalendarEvent {
+  id          String   @id @default(cuid())
   title       String
-  content     String
-  student     Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  studentId   String
-  createdAt   DateTime     @default(now())
-  annotations Annotation[]
+  description String?
+  date        DateTime
+  location    String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
 }
 
-enum FeedbackCategory {
-  STYRKE
-  UTVIKLING
-  NOYTRAL
+model FeatureRequest {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  category    String   @default("ny funksjon")
+  status      String   @default("innsendt")
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  votes       Vote[]
+  createdAt   DateTime @default(now())
 }
 
-model Annotation {
-  id           String           @id @default(cuid())
-  text         StudentText      @relation(fields: [textId], references: [id], onDelete: Cascade)
-  textId       String
-  startOffset  Int
-  endOffset    Int
-  quote        String
-  comment      String
-  category     FeedbackCategory
-  createdAt    DateTime         @default(now())
+model Vote {
+  id               String         @id @default(cuid())
+  userId           String
+  user             User           @relation(fields: [userId], references: [id])
+  featureRequestId String
+  featureRequest   FeatureRequest @relation(fields: [featureRequestId], references: [id], onDelete: Cascade)
+  createdAt        DateTime       @default(now())
+
+  @@unique([userId, featureRequestId])
+}
+
+model ErrorReport {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  page        String
+  description String
+  error       String?
+  status      String   @default("innsendt")
+  createdAt   DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+}
+
+model Idea {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  category    String   @default("Annet")
+  realized    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  type        String
+  description String
+  createdAt   DateTime @default(now())
+}
+
+enum Role {
+  USER
+  ADMIN
 }

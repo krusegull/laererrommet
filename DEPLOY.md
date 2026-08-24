@@ -15,9 +15,13 @@ for dette bruksomfanget.
    - Gå til [vercel.com](https://vercel.com) → Add New → Project
    - Velg `krusegull/laererrommet` fra GitHub
 
-3. **Sett miljøvariabel:**
-   - Under prosjektets Settings → Environment Variables, legg til:
-     - `DATABASE_URL` = connection-stringen fra Neon
+3. **Sett miljøvariabler** under prosjektets Settings → Environment Variables:
+   - `DATABASE_URL` = connection-stringen fra Neon
+   - `NEXTAUTH_SECRET` = en tilfeldig streng, f.eks. generert med `openssl rand -base64 32`
+   - `NEXTAUTH_URL` = URL-en Vercel gir deg for appen (kan settes/oppdateres etter første deploy)
+   - `ANTHROPIC_API_KEY` = API-nøkkel fra [console.anthropic.com](https://console.anthropic.com) —
+     kreves for KI-veilederen og de andre KI-funksjonene. Uten denne fungerer
+     resten av appen normalt, men KI-funksjonene viser en vennlig feilmelding.
 
 4. **Overstyr build-kommandoen:**
    - Under Settings → Build & Development Settings → Build Command, skru på
@@ -25,8 +29,8 @@ for dette bruksomfanget.
      ```
      npm run vercel-build
      ```
-   - Dette kjører databasemigrasjoner og legger inn fagene Norsk, Samfunnsfag
-     og KRLE automatisk før appen bygges — trygt å kjøre på hvert deploy.
+   - Dette kjører databasemigrasjoner automatisk før appen bygges — trygt å
+     kjøre på hvert deploy.
 
 5. **Deploy.** Vercel bygger og publiserer appen automatisk. Du får en URL
    på formen `https://laererrommet.vercel.app`.

@@ -6,14 +6,10 @@ const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  const subjects = ["Norsk", "Samfunnsfag", "KRLE"];
-  for (const name of subjects) {
-    await prisma.subject.upsert({
-      where: { name },
-      update: {},
-      create: { name },
-    });
-  }
+  // Ingen fast oppstartsdata er nødvendig for dette schemaet ennå.
+  // Denne filen kjøres automatisk av `npm run setup` / `npm run vercel-build`
+  // og holdes idempotent i tilfelle vi legger til seed-data senere.
+  await prisma.$queryRaw`SELECT 1`;
 }
 
 main()
