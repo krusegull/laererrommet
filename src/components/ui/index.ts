@@ -8,3 +8,4 @@ export { ErrorMessage } from "./ErrorMessage";
 export { EmptyState } from "./EmptyState";
 export { Badge } from "./Badge";
 export { Avatar } from "./Avatar";
+export { Toggle } from "./Toggle";

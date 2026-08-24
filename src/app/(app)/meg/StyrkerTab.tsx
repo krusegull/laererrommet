@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Lock } from "lucide-react";
+import { Lock, Gauge } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -105,7 +105,7 @@ export function StyrkerTab({
       <div>
         <h3 className="mb-3 font-semibold text-foreground">Tidligere vurderinger</h3>
         {notes.length === 0 ? (
-          <EmptyState title="Ingen vurderinger lagret ennå" />
+          <EmptyState icon={<Gauge size={32} />} title="Ingen vurderinger lagret ennå" />
         ) : (
           <ul className="flex flex-col gap-3">
             {notes.map((note) => {

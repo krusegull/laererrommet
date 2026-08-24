@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Trash2 } from "lucide-react";
+import { Trash2, MessageCircleHeart } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
@@ -88,7 +88,11 @@ export function KollegatipsTab({
       </Card>
 
       {notes.length === 0 ? (
-        <EmptyState title="Ingen kollegatips lagret ennå" description="Legg til det første rådet over." />
+        <EmptyState
+          icon={<MessageCircleHeart size={32} />}
+          title="Ingen kollegatips lagret ennå"
+          description="Legg til det første rådet over."
+        />
       ) : (
         <ul className="flex flex-col gap-3">
           {notes.map((note) => (
