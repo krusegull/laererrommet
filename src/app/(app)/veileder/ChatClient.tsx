@@ -7,6 +7,7 @@ import { LoadingDots } from "@/components/ui/LoadingDots";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { ReportErrorButton } from "@/components/ReportErrorButton";
 import { Avatar } from "@/components/ui/Avatar";
+import { MarkdownContent } from "@/components/MarkdownContent";
 
 interface Message {
   id: string;
@@ -129,13 +130,17 @@ export function ChatClient({ initialMessages }: { initialMessages: Message[] }) 
                   <Avatar name="Du" size="sm" />
                 )}
                 <div
-                  className={`max-w-[80%] whitespace-pre-wrap rounded-card px-4 py-2.5 text-sm ${
+                  className={`max-w-[80%] rounded-card px-4 py-2.5 text-sm ${
                     message.role === "user"
-                      ? "bg-primary text-white"
+                      ? "whitespace-pre-wrap bg-primary text-white"
                       : "bg-background-subtle text-foreground"
                   }`}
                 >
-                  {message.content}
+                  {message.role === "assistant" ? (
+                    <MarkdownContent content={message.content} />
+                  ) : (
+                    message.content
+                  )}
                 </div>
               </div>
             ))}

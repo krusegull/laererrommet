@@ -8,6 +8,7 @@ import { LoadingDots } from "@/components/ui/LoadingDots";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { ReportErrorButton } from "@/components/ReportErrorButton";
 import { Card } from "@/components/ui/Card";
+import { MarkdownContent } from "@/components/MarkdownContent";
 
 export function AIActionCard({
   endpoint,
@@ -107,9 +108,9 @@ export function AIActionCard({
 
           {state === "done" && result && (
             <div className="mt-3 flex flex-col gap-2">
-              <p className="whitespace-pre-wrap rounded-button bg-background-subtle p-3 text-sm text-foreground">
-                {result}
-              </p>
+              <div className="rounded-button bg-background-subtle p-3 text-foreground">
+                <MarkdownContent content={result} />
+              </div>
               <button
                 type="button"
                 onClick={copyResult}

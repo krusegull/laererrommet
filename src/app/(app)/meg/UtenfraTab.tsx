@@ -7,6 +7,7 @@ import { Card } from "@/components/ui/Card";
 import { LoadingDots } from "@/components/ui/LoadingDots";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { ReportErrorButton } from "@/components/ReportErrorButton";
+import { MarkdownContent } from "@/components/MarkdownContent";
 
 export function UtenfraTab() {
   const [state, setState] = useState<"idle" | "loading" | "error" | "done">("idle");
@@ -67,8 +68,8 @@ export function UtenfraTab() {
         )}
 
         {state === "done" && result && (
-          <div className="w-full rounded-button bg-primary/5 p-4 text-left text-sm text-foreground">
-            <p className="whitespace-pre-wrap">{result}</p>
+          <div className="w-full rounded-button bg-primary/5 p-4 text-left text-foreground">
+            <MarkdownContent content={result} />
             <Button variant="ghost" size="sm" onClick={run} className="mt-3">
               Se på nytt
             </Button>

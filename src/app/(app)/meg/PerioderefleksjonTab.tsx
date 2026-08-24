@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/Card";
 import { LoadingDots } from "@/components/ui/LoadingDots";
 import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { MarkdownContent } from "@/components/MarkdownContent";
 import type { PrivateNoteItem } from "./types";
 
 const GRANULARITY = ["Uke", "Måned", "Termin"] as const;
@@ -128,9 +129,9 @@ export function PerioderefleksjonTab({
           </Button>
 
           {questions && (
-            <p className="whitespace-pre-wrap rounded-button bg-background-subtle p-3 text-sm text-foreground">
-              {questions}
-            </p>
+            <div className="rounded-button bg-background-subtle p-3 text-foreground">
+              <MarkdownContent content={questions} />
+            </div>
           )}
 
           <label className="flex flex-col gap-1.5 text-sm">
@@ -158,11 +159,11 @@ export function PerioderefleksjonTab({
           )}
 
           {summary && (
-            <div className="rounded-button bg-primary/5 p-3 text-sm text-foreground">
+            <div className="rounded-button bg-primary/5 p-3 text-foreground">
               <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-primary">
                 KI-oppsummering og forslag til fokus
               </p>
-              {summary}
+              <MarkdownContent content={summary} />
             </div>
           )}
         </div>
