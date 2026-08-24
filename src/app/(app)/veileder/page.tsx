@@ -15,8 +15,28 @@ export default async function VeilederPage() {
       <div className="mb-4">
         <h1 className="text-2xl font-bold text-foreground">KI-veilederen</h1>
         <p className="mt-1 text-sm text-foreground/60">
-          Praktisk veiledning om KI-bruk i skolen, basert på Oslo kommunes retningslinjer.
+          Praktisk veiledning om KI-bruk i skolen, basert på Oslo kommunes retningslinjer,
+          Udirs rammeverk for lærerens profesjonsfaglige digitale kompetanse og Udirs
+          veiledning om kunstig intelligens i skolen.
         </p>
+        <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-foreground/50">
+          <a
+            href="https://www.udir.no/kvalitet-og-kompetanse/digitalisering-skole/rammeverk-larerens-profesjonsfaglige-digitale-komp/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline decoration-dotted underline-offset-2 hover:text-primary"
+          >
+            Udirs PfDK-rammeverk ↗
+          </a>
+          <a
+            href="https://www.udir.no/kvalitet-og-kompetanse/digitalisering-skole/kunstig-intelligens-i-skolen/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline decoration-dotted underline-offset-2 hover:text-primary"
+          >
+            Udir: KI i skolen ↗
+          </a>
+        </div>
       </div>
       <ChatClient
         initialMessages={messages.map((m) => ({
