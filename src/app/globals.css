@@ -1,17 +1,49 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-primary: #534ab7;
+  --color-primary-hover: #4338a3;
+  --color-secondary: #1d9e75;
+  --color-background: #ffffff;
+  --color-background-subtle: #f8f8fb;
+  --color-foreground: #1a1a2e;
+  --color-line: #e5e4f0;
+  --color-error: #dc2626;
+  --color-success: #16a34a;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+:root.dark {
+  --color-primary: #7b71e0;
+  --color-primary-hover: #8f86e8;
+  --color-secondary: #34c496;
+  --color-background: #14131f;
+  --color-background-subtle: #1b1a29;
+  --color-foreground: #ececf5;
+  --color-line: #2c2b3d;
+  --color-error: #f87171;
+  --color-success: #4ade80;
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --color-primary: var(--color-primary);
+  --color-primary-hover: var(--color-primary-hover);
+  --color-secondary: var(--color-secondary);
+  --color-background: var(--color-background);
+  --color-background-subtle: var(--color-background-subtle);
+  --color-foreground: var(--color-foreground);
+  --color-line: var(--color-line);
+  --color-error: var(--color-error);
+  --color-success: var(--color-success);
+  --shadow-card: var(--shadow-card);
+  --radius-button: 6px;
+  --radius-card: 12px;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 }
 
 body {
+  background: var(--color-background-subtle);
+  color: var(--color-foreground);
   font-family: var(--font-sans);
 }
