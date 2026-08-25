@@ -145,3 +145,50 @@ export const errorReportSchema = z.object({
   description: z.string().trim().min(1, "Beskriv hva som gikk galt").max(2000),
   error: z.string().trim().max(4000).optional(),
 });
+
+export const LESSON_PLAN_SUBJECTS = [
+  "Norsk",
+  "Matematikk",
+  "Engelsk",
+  "Naturfag",
+  "Samfunnsfag",
+  "KRLE",
+  "Kunst og håndverk",
+  "Musikk",
+  "Kroppsøving",
+  "Mat og helse",
+  "Fremmedspråk",
+  "Tverrfaglig",
+  "Annet",
+] as const;
+
+export const LESSON_PLAN_GRADE_BANDS = ["Barnetrinn", "Ungdomstrinn", "Videregående", "Alle trinn"] as const;
+
+export const LESSON_PLAN_MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+export const LESSON_PLAN_ALLOWED_FILE_TYPES = [
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-powerpoint",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "image/png",
+  "image/jpeg",
+] as const;
+
+export const lessonPlanSchema = z.object({
+  title: z.string().trim().min(1, "Tittel er påkrevd").max(200),
+  subject: z.enum(LESSON_PLAN_SUBJECTS),
+  grade: z.enum(LESSON_PLAN_GRADE_BANDS),
+  description: z.string().trim().min(1, "Kort beskrivelse er påkrevd").max(500),
+  content: z.string().trim().max(20000).optional(),
+  rightsConfirmed: z.literal(true, {
+    message: "Du må bekrefte at du har rett til å dele dette innholdet",
+  }),
+});
+
+export const lessonPlanRatingSchema = z.object({
+  score: z.number().int().min(1).max(5),
+  comment: z.string().trim().max(1000).optional(),
+  whatWorked: z.string().trim().max(1000).optional(),
+  whatDidntWork: z.string().trim().max(1000).optional(),
+});
