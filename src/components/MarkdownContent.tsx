@@ -1,12 +1,13 @@
 import ReactMarkdown from "react-markdown";
 import remarkBreaks from "remark-breaks";
+import remarkGfm from "remark-gfm";
 import { cn } from "@/lib/cn";
 
 export function MarkdownContent({ content, className }: { content: string; className?: string }) {
   return (
     <div className={cn("flex flex-col gap-2 text-sm leading-relaxed", className)}>
       <ReactMarkdown
-        remarkPlugins={[remarkBreaks]}
+        remarkPlugins={[remarkGfm, remarkBreaks]}
         components={{
           p: ({ children }) => <p>{children}</p>,
           strong: ({ children }) => <strong className="font-semibold">{children}</strong>,

@@ -8,6 +8,7 @@ import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { ReportErrorButton } from "@/components/ReportErrorButton";
 import { Avatar } from "@/components/ui/Avatar";
 import { MarkdownContent } from "@/components/MarkdownContent";
+import { linkifyCitations } from "@/lib/citations";
 
 interface Message {
   id: string;
@@ -137,7 +138,7 @@ export function ChatClient({ initialMessages }: { initialMessages: Message[] }) 
                   }`}
                 >
                   {message.role === "assistant" ? (
-                    <MarkdownContent content={message.content} />
+                    <MarkdownContent content={linkifyCitations(message.content)} />
                   ) : (
                     message.content
                   )}
