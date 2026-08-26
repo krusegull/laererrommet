@@ -59,6 +59,14 @@ teksten ved klikk — ikke noe KI-en gjenskaper der og da. Venter på
 avklaring om denne skal bygges før eller etter Undervisningsbanken er
 ferdigstilt.
 
+## Eksterne læringsressurser, f.eks. NDLA (nevnt 2026-08-25)
+
+Mulighet for å legge inn lenker til eksterne læringsressurser (NDLA
+nevnt som eksempel) — trolig som en egen kategori/ressurstype, adskilt
+fra opplastede filer/tekst. Uavklart om dette bør være en egen seksjon,
+eller en tredje ressurstype inni Undervisningsbanken (tekst / fil /
+ekstern lenke) i tillegg til de to som allerede er bygget.
+
 ## Allerede plassholdere på dashbordet ("Kommer snart"), ikke fra denne samtalen
 
 Del av opprinnelig spesifikasjon, aldri bygget ut:
