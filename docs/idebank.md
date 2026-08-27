@@ -22,14 +22,21 @@ Uavklart: nøyaktig hvordan dette skal manifestere seg i appen (egen
 seksjon under Tilbakemeldingslogg? En helt egen "Vurdering"-fane? Kobling
 til KI-veilederens eksisterende kunnskap om Osloskolens retningslinjer?).
 
-## Vikarplanleggeren (nevnt 2026-08-25)
+## Kategori: Struktur i hverdagen (nevnt 2026-08-25)
+
+Samlekategori for lærerens daglige/ukentlige struktur. Avklart med
+produkteier: **Vikarplanleggeren og Timeplan er to separate idéer**, ikke
+én — men hører sammen under denne kategorien. Tenkt å vises på forsiden
+under en egen fane/seksjon kalt "Struktur i hverdagen".
+
+### Vikarplanleggeren
 
 Kun nevnt som overskrift, ingen detaljer avklart ennå. Mulig sammenheng
 med "Abonnement" — uklart om det betyr en betalt tilleggsfunksjon for
 Vikarplanleggeren spesifikt, eller en egen idé om betalingsmodell for
 appen generelt.
 
-## Timeplan (nevnt 2026-08-25)
+### Timeplan
 
 "Vi trenger en egen timeplan." Ingen detaljer avklart. Kan overlappe med
 den allerede eksisterende "Kalender"-plassholderen på dashbordet
