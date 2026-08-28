@@ -28,6 +28,7 @@ model User {
   notifyCalendar   Boolean          @default(true)
   notifyKI         Boolean          @default(true)
   notifyEmail      Boolean          @default(false)
+  notifyFridayDigest Boolean        @default(false)
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
   lastLoginAt      DateTime?
@@ -45,6 +46,7 @@ model User {
   errorReports     ErrorReport[]
   notifications    Notification[]
   calendarEvents   CalendarEvent[]
+  terminlisteEvents TerminlisteEvent[]
   activityLogs     ActivityLog[]
   classProfiles    ClassProfile[]
 }
@@ -173,15 +175,28 @@ model PrivateNote {
 }
 
 model CalendarEvent {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  date        DateTime
-  location    String?
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  isPublic    Boolean  @default(false)
-  createdAt   DateTime @default(now())
+  id           String   @id @default(cuid())
+  title        String
+  description  String?
+  date         DateTime
+  location     String?
+  category     String   @default("undervisning")
+  reminderSent Boolean  @default(false)
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+}
+
+model TerminlisteEvent {
+  id           String   @id @default(cuid())
+  title        String
+  description  String?
+  date         DateTime
+  grade        String
+  reminderSent Boolean  @default(false)
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
 }
 
 model FeatureRequest {

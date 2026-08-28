@@ -50,6 +50,7 @@ export async function PATCH(request: Request) {
       notifyCalendar: user.notifyCalendar,
       notifyKI: user.notifyKI,
       notifyEmail: user.notifyEmail,
+      notifyFridayDigest: user.notifyFridayDigest,
     },
   });
 }

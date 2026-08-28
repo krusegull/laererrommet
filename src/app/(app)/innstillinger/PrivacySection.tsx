@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { signOut } from "next-auth/react";
 import { AlertTriangle } from "lucide-react";
@@ -15,6 +15,12 @@ export function PrivacySection({ user }: { user: SettingsUser }) {
   const { theme, setTheme } = useTheme();
   const [isPublic, setIsPublic] = useState(user.isPublic);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- tilsiktet: unngår hydration-mismatch for tema, jf. https://github.com/pacocoursey/next-themes#avoid-hydration-mismatch
+    setMounted(true);
+  }, []);
 
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [password, setPassword] = useState("");
@@ -80,7 +86,7 @@ export function PrivacySection({ user }: { user: SettingsUser }) {
           />
           <Toggle
             label="Mørk modus"
-            checked={theme === "dark"}
+            checked={mounted && theme === "dark"}
             onChange={toggleDarkMode}
           />
         </div>
