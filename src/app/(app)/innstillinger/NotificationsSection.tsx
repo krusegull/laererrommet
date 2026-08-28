@@ -8,7 +8,16 @@ import type { SettingsUser } from "./types";
 const OPTIONS: { key: keyof SettingsUser; label: string; description: string }[] = [
   { key: "notifyChat", label: "Meldinger", description: "Varsel når du får en direktemelding." },
   { key: "notifyLikes", label: "Reaksjoner", description: "Varsel når noen liker noe du har delt." },
-  { key: "notifyCalendar", label: "Kalender", description: "Påminnelser om kommende hendelser." },
+  {
+    key: "notifyCalendar",
+    label: "Kalender",
+    description: "Påminnelser om kommende hendelser (sendes automatisk kl. 07 dagen før).",
+  },
+  {
+    key: "notifyFridayDigest",
+    label: "Ukesoversikt på fredager",
+    description: "Få en oversikt over neste ukes hendelser hver fredag.",
+  },
   { key: "notifyKI", label: "KI-forslag", description: "Varsel når KI har nye forslag klare." },
 ];
 

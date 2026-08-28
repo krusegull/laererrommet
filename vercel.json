@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/kalender-paminnelser",
+      "schedule": "0 6 * * *"
+    }
+  ]
+}

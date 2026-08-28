@@ -30,6 +30,7 @@ export default async function InnstillingerPage() {
           notifyCalendar: user.notifyCalendar,
           notifyKI: user.notifyKI,
           notifyEmail: user.notifyEmail,
+          notifyFridayDigest: user.notifyFridayDigest,
         }}
       />
     </div>

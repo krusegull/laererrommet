@@ -12,4 +12,5 @@ export interface SettingsUser {
   notifyCalendar: boolean;
   notifyKI: boolean;
   notifyEmail: boolean;
+  notifyFridayDigest: boolean;
 }
