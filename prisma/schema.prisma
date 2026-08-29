@@ -39,6 +39,7 @@ model User {
   receivedMessages DirectMessage[]  @relation("ReceivedMessages")
   lessonPlans      LessonPlan[]
   ratings          Rating[]
+  lessonPlanLikes  LessonPlanLike[]
   featureRequests  FeatureRequest[]
   votes            Vote[]
   errorReports     ErrorReport[]
@@ -107,17 +108,22 @@ model DirectMessage {
 }
 
 model LessonPlan {
-  id          String   @id @default(cuid())
-  title       String
-  subject     String
-  grade       String
-  description String
-  content     String
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  ratings     Rating[]
-  likes       Int      @default(0)
-  createdAt   DateTime @default(now())
+  id              String           @id @default(cuid())
+  title           String
+  subject         String
+  grade           String
+  description     String
+  content         String?
+  fileData        Bytes?
+  fileName        String?
+  fileType        String?
+  fileSize        Int?
+  rightsConfirmed Boolean          @default(false)
+  userId          String
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ratings         Rating[]
+  likes           LessonPlanLike[]
+  createdAt       DateTime         @default(now())
 }
 
 model Rating {
@@ -131,6 +137,19 @@ model Rating {
   lessonPlanId  String
   lessonPlan    LessonPlan @relation(fields: [lessonPlanId], references: [id], onDelete: Cascade)
   createdAt     DateTime   @default(now())
+
+  @@unique([userId, lessonPlanId])
+}
+
+model LessonPlanLike {
+  id           String     @id @default(cuid())
+  userId       String
+  user         User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonPlanId String
+  lessonPlan   LessonPlan @relation(fields: [lessonPlanId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+
+  @@unique([userId, lessonPlanId])
 }
 
 model Post {

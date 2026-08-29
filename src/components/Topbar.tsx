@@ -13,6 +13,7 @@ const MOBILE_LINKS = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/veileder", label: "KI-veilederen" },
   { href: "/logg", label: "Tilbakemeldingslogg" },
+  { href: "/undervisningsbanken", label: "Undervisningsbanken" },
   { href: "/meg", label: "Meg" },
   { href: "/meldinger", label: "Meldinger" },
   { href: "/onsker", label: "Ønsker" },

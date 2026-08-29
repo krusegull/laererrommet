@@ -18,7 +18,6 @@ import { Button } from "@/components/ui/Button";
 
 const COMING_SOON = [
   { title: "Klasseprofil", description: "Samlet oversikt og notater for klassene dine.", icon: Users },
-  { title: "Undervisningsbanken", description: "Del og finn undervisningsopplegg med andre lærere.", icon: BookOpen },
   { title: "Kalender", description: "Planlegg undervisning og hold styr på viktige datoer.", icon: CalendarDays },
   { title: "Faglig feed", description: "Nyheter og innsikt relevant for din undervisning.", icon: Rss },
   { title: "Forskning", description: "Forskningsbasert kunnskap oversatt til klasserommet.", icon: FlaskConical },
@@ -69,7 +68,7 @@ export default async function DashboardPage() {
 
       <section>
         <h2 className="mb-3 text-lg font-semibold text-foreground">Klar til bruk</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <Link href="/veileder">
             <Card className="h-full transition-shadow hover:shadow-md">
               <div className="flex items-start gap-4">
@@ -97,6 +96,22 @@ export default async function DashboardPage() {
                   <p className="font-semibold text-foreground">Tilbakemeldingslogg</p>
                   <p className="mt-1 text-sm text-foreground/60">
                     Hold styr på styrker og utviklingsområder for elevene dine over tid.
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </Link>
+
+          <Link href="/undervisningsbanken">
+            <Card className="h-full transition-shadow hover:shadow-md">
+              <div className="flex items-start gap-4">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-button bg-primary/10 text-primary">
+                  <BookOpen size={20} />
+                </span>
+                <div>
+                  <p className="font-semibold text-foreground">Undervisningsbanken</p>
+                  <p className="mt-1 text-sm text-foreground/60">
+                    Del og finn undervisningsopplegg med andre lærere.
                   </p>
                 </div>
               </div>
