@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { weekDays, weekdayLabel, isSameDay } from "./dateUtils";
-import { CALENDAR_CATEGORY_STYLES } from "@/lib/calendarColors";
+import { CALENDAR_CATEGORY_STYLES, subjectBorderClass, subjectDotClass } from "@/lib/calendarColors";
 import { cn } from "@/lib/cn";
 import type { CalendarEventItem } from "./EventModal";
 
@@ -11,13 +11,19 @@ const END_HOUR = 19;
 const HOUR_HEIGHT = 48;
 
 /**
- * Hendelser har ikke en varighet i skjemaet, bare et klokkeslett — så
- * hver hendelse regnes visuelt som å vare i denne perioden når vi
+ * Hendelser uten sluttid har ikke en varighet i skjemaet, bare et
+ * klokkeslett — de regnes visuelt som å vare i denne perioden når vi
  * avgjør om to hendelser overlapper og må vises side ved side.
  */
 const OVERLAP_WINDOW_MS = 60 * 60 * 1000;
+const MIN_BLOCK_HEIGHT = 20;
 
-function layoutOverlaps<T extends { date: string }>(
+function eventDurationMs(event: { date: string; endDate?: string | null }) {
+  if (!event.endDate) return OVERLAP_WINDOW_MS;
+  return new Date(event.endDate).getTime() - new Date(event.date).getTime();
+}
+
+function layoutOverlaps<T extends { date: string; endDate?: string | null }>(
   dayEvents: T[]
 ): { event: T; column: number; columnCount: number }[] {
   const sorted = [...dayEvents].sort(
@@ -32,7 +38,7 @@ function layoutOverlaps<T extends { date: string }>(
     } else {
       clusters.push([event]);
     }
-    clusterEnd = Math.max(clusterEnd, time + OVERLAP_WINDOW_MS);
+    clusterEnd = Math.max(clusterEnd, time + eventDurationMs(event));
   }
   return clusters.flatMap((cluster) =>
     cluster.map((event, index) => ({ event, column: index, columnCount: cluster.length }))
@@ -128,8 +134,18 @@ export function WeekView({
                   const d = new Date(event.date);
                   const hours24 = d.getHours() + d.getMinutes() / 60;
                   const top = Math.max(0, (hours24 - START_HOUR) * HOUR_HEIGHT);
+                  const height = Math.max(MIN_BLOCK_HEIGHT, (eventDurationMs(event) / (60 * 60 * 1000)) * HOUR_HEIGHT - 4);
                   const style = CALENDAR_CATEGORY_STYLES[event.category];
+                  const useSubjectColor = event.category === "undervisning" && event.subject;
+                  const borderClass = useSubjectColor ? subjectBorderClass(event.subject!.colorIndex) : style.border;
                   const widthPct = 100 / columnCount;
+                  const startLabel = `${d.getHours().toString().padStart(2, "0")}:${d.getMinutes().toString().padStart(2, "0")}`;
+                  const endLabel = event.endDate
+                    ? (() => {
+                        const ed = new Date(event.endDate);
+                        return `${ed.getHours().toString().padStart(2, "0")}:${ed.getMinutes().toString().padStart(2, "0")}`;
+                      })()
+                    : null;
                   return (
                     <button
                       key={event.id}
@@ -137,17 +153,23 @@ export function WeekView({
                       onClick={() => onEventClick(event)}
                       style={{
                         top,
-                        height: HOUR_HEIGHT - 4,
+                        height,
                         left: `${column * widthPct}%`,
                         width: `calc(${widthPct}% - 2px)`,
                       }}
                       className={cn(
-                        "absolute z-20 truncate rounded-button border-l-2 px-1.5 py-0.5 text-left text-xs font-medium shadow-sm",
+                        "absolute z-20 flex items-center gap-1 truncate rounded-button border-l-2 px-1.5 py-0.5 text-left text-xs font-medium shadow-sm",
                         style.chip,
-                        style.border
+                        borderClass
                       )}
                     >
-                      {d.getHours().toString().padStart(2, "0")}:{d.getMinutes().toString().padStart(2, "0")} {event.title}
+                      {useSubjectColor && (
+                        <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", subjectDotClass(event.subject!.colorIndex))} />
+                      )}
+                      <span className="truncate">
+                        {startLabel}
+                        {endLabel ? `–${endLabel}` : ""} {event.title}
+                      </span>
                     </button>
                   );
                 })}

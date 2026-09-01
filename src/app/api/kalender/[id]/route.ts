@@ -29,9 +29,25 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     );
   }
 
+  if (parsed.data.subjectId) {
+    const subject = await prisma.calendarSubject.findUnique({
+      where: { id: parsed.data.subjectId },
+      select: { userId: true },
+    });
+    if (!subject || subject.userId !== session.user.id) {
+      return NextResponse.json({ error: "Fant ikke faget" }, { status: 400 });
+    }
+  }
+
   const event = await prisma.calendarEvent.update({
     where: { id },
-    data: { ...parsed.data, reminderSent: false },
+    data: {
+      ...parsed.data,
+      subjectId: parsed.data.subjectId ?? null,
+      endDate: parsed.data.endDate ?? null,
+      reminderSent: false,
+    },
+    include: { subject: { select: { id: true, name: true, colorIndex: true } } },
   });
 
   return NextResponse.json({
@@ -40,8 +56,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       title: event.title,
       description: event.description,
       date: event.date.toISOString(),
+      endDate: event.endDate ? event.endDate.toISOString() : null,
       location: event.location,
       category: event.category,
+      subject: event.subject,
     },
   });
 }

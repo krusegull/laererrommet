@@ -204,12 +204,23 @@ export const CALENDAR_CATEGORY_LABELS: Record<(typeof CALENDAR_CATEGORIES)[numbe
   personlig: "Personlig",
 };
 
-export const calendarEventSchema = z.object({
-  title: z.string().trim().min(1, "Tittel er påkrevd").max(200),
-  description: z.string().trim().max(1000).optional(),
-  date: z.coerce.date(),
-  location: z.string().trim().max(200).optional(),
-  category: z.enum(CALENDAR_CATEGORIES).default("undervisning"),
+export const calendarEventSchema = z
+  .object({
+    title: z.string().trim().min(1, "Tittel er påkrevd").max(200),
+    description: z.string().trim().max(1000).optional(),
+    date: z.coerce.date(),
+    endDate: z.coerce.date().optional().nullable(),
+    location: z.string().trim().max(200).optional(),
+    category: z.enum(CALENDAR_CATEGORIES).default("undervisning"),
+    subjectId: z.string().trim().min(1).max(100).optional().nullable(),
+  })
+  .refine((data) => !data.endDate || data.endDate > data.date, {
+    message: "Sluttid må være etter starttidspunktet",
+    path: ["endDate"],
+  });
+
+export const calendarSubjectSchema = z.object({
+  name: z.string().trim().min(1, "Navn på fag er påkrevd").max(60),
 });
 
 export const TERMINLISTE_GRADES = ["8. trinn", "9. trinn", "10. trinn"] as const;

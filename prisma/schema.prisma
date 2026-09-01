@@ -46,6 +46,7 @@ model User {
   errorReports     ErrorReport[]
   notifications    Notification[]
   calendarEvents   CalendarEvent[]
+  calendarSubjects CalendarSubject[]
   terminlisteEvents TerminlisteEvent[]
   activityLogs     ActivityLog[]
   classProfiles    ClassProfile[]
@@ -175,16 +176,31 @@ model PrivateNote {
 }
 
 model CalendarEvent {
-  id           String   @id @default(cuid())
+  id           String           @id @default(cuid())
   title        String
   description  String?
   date         DateTime
+  endDate      DateTime?
   location     String?
-  category     String   @default("undervisning")
-  reminderSent Boolean  @default(false)
+  category     String           @default("undervisning")
+  reminderSent Boolean          @default(false)
   userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt    DateTime @default(now())
+  user         User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjectId    String?
+  subject      CalendarSubject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  createdAt    DateTime         @default(now())
+}
+
+model CalendarSubject {
+  id         String          @id @default(cuid())
+  name       String
+  colorIndex Int
+  userId     String
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  events     CalendarEvent[]
+  createdAt  DateTime        @default(now())
+
+  @@unique([userId, name])
 }
 
 model TerminlisteEvent {

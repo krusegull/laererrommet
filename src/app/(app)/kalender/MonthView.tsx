@@ -1,7 +1,7 @@
 "use client";
 
 import { monthGridDays, isSameDay, weekdayLabel } from "./dateUtils";
-import { CALENDAR_CATEGORY_STYLES } from "@/lib/calendarColors";
+import { CALENDAR_CATEGORY_STYLES, subjectDotClass } from "@/lib/calendarColors";
 import { cn } from "@/lib/cn";
 import type { CalendarEventItem } from "./EventModal";
 
@@ -64,6 +64,7 @@ export function MonthView({
               <div className="flex flex-col gap-0.5">
                 {visible.map((event) => {
                   const style = CALENDAR_CATEGORY_STYLES[event.category];
+                  const useSubjectColor = event.category === "undervisning" && event.subject;
                   return (
                     <span
                       key={event.id}
@@ -79,9 +80,15 @@ export function MonthView({
                           onEventClick(event);
                         }
                       }}
-                      className={cn("truncate rounded px-1 py-0.5 text-[11px] font-medium", style.chip)}
+                      className={cn(
+                        "flex items-center gap-1 truncate rounded px-1 py-0.5 text-[11px] font-medium",
+                        style.chip
+                      )}
                     >
-                      {event.title}
+                      {useSubjectColor && (
+                        <span className={cn("h-1.5 w-1.5 shrink-0 rounded-full", subjectDotClass(event.subject!.colorIndex))} />
+                      )}
+                      <span className="truncate">{event.title}</span>
                     </span>
                   );
                 })}
