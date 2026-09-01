@@ -5,9 +5,18 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
+import { Bell } from "lucide-react";
 import { Avatar } from "@/components/ui/Avatar";
 import { cn } from "@/lib/cn";
+import { CALENDAR_CATEGORY_STYLES } from "@/lib/calendarColors";
 import type { NotificationItem } from "@/lib/types";
+import type { CALENDAR_CATEGORIES } from "@/lib/validations";
+
+function calendarDotClass(type: string): string | null {
+  if (!type.startsWith("kalender:")) return null;
+  const category = type.slice("kalender:".length) as (typeof CALENDAR_CATEGORIES)[number];
+  return CALENDAR_CATEGORY_STYLES[category]?.dot ?? "bg-fuchsia-500";
+}
 
 const MOBILE_LINKS = [
   { href: "/dashboard", label: "Dashboard" },
@@ -15,6 +24,7 @@ const MOBILE_LINKS = [
   { href: "/logg", label: "Tilbakemeldingslogg" },
   { href: "/undervisningsbanken", label: "Undervisningsbanken" },
   { href: "/meg", label: "Meg" },
+  { href: "/kalender", label: "Kalender" },
   { href: "/meldinger", label: "Meldinger" },
   { href: "/onsker", label: "Ønsker" },
   { href: "/profil", label: "Min profil" },
@@ -36,6 +46,13 @@ export function Topbar({
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[] | null>(null);
   const notifRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
+  const isDark = mounted && theme === "dark";
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- tilsiktet: unngår hydration-mismatch for tema, jf. https://github.com/pacocoursey/next-themes#avoid-hydration-mismatch
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -97,7 +114,7 @@ export function Topbar({
             aria-label="Bytt mørk/lys modus"
             className="hidden rounded-button p-2 text-foreground/60 hover:bg-background-subtle hover:text-foreground sm:inline-flex"
           >
-            {theme === "dark" ? (
+            {isDark ? (
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="4" />
                 <path
@@ -151,7 +168,18 @@ export function Topbar({
                             !n.read && "bg-primary/5"
                           )}
                         >
-                          <p className="font-medium text-foreground">{n.title}</p>
+                          <p className="flex items-center gap-1.5 font-medium text-foreground">
+                            {calendarDotClass(n.type) && (
+                              <Bell
+                                size={12}
+                                className={cn(
+                                  "shrink-0 rounded-full p-0.5 text-white",
+                                  calendarDotClass(n.type)
+                                )}
+                              />
+                            )}
+                            {n.title}
+                          </p>
                           <p className="text-foreground/60">{n.message}</p>
                         </button>
                       </li>
@@ -227,7 +255,7 @@ export function Topbar({
               onClick={toggleDarkMode}
               className="rounded-button px-3 py-2 text-sm text-foreground/70 hover:bg-background-subtle"
             >
-              {theme === "dark" ? "Lys modus" : "Mørk modus"}
+              {isDark ? "Lys modus" : "Mørk modus"}
             </button>
             <button
               type="button"

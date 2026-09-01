@@ -9,6 +9,10 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env["DATABASE_URL"],
+    // Migrasjoner bruker DIRECT_URL (ikke-poolet Neon-tilkobling) fordi
+    // `prisma migrate deploy` tar en Postgres advisory lock som kan tidsavbrytes
+    // (P1002) gjennom Neons connection pooler. Faller tilbake til DATABASE_URL
+    // lokalt der man typisk ikke har en egen direkte URL.
+    url: process.env["DIRECT_URL"] ?? process.env["DATABASE_URL"],
   },
 });

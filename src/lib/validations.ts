@@ -54,6 +54,7 @@ export const settingsSchema = z.object({
   notifyCalendar: z.boolean().optional(),
   notifyKI: z.boolean().optional(),
   notifyEmail: z.boolean().optional(),
+  notifyFridayDigest: z.boolean().optional(),
 });
 
 export const changePasswordSchema = z
@@ -191,4 +192,31 @@ export const lessonPlanRatingSchema = z.object({
   comment: z.string().trim().max(1000).optional(),
   whatWorked: z.string().trim().max(1000).optional(),
   whatDidntWork: z.string().trim().max(1000).optional(),
+});
+
+export const CALENDAR_CATEGORIES = ["undervisning", "vurdering", "leksefrist", "moter", "personlig"] as const;
+
+export const CALENDAR_CATEGORY_LABELS: Record<(typeof CALENDAR_CATEGORIES)[number], string> = {
+  undervisning: "Undervisning",
+  vurdering: "Vurdering",
+  leksefrist: "Leksefrist",
+  moter: "Møter",
+  personlig: "Personlig",
+};
+
+export const calendarEventSchema = z.object({
+  title: z.string().trim().min(1, "Tittel er påkrevd").max(200),
+  description: z.string().trim().max(1000).optional(),
+  date: z.coerce.date(),
+  location: z.string().trim().max(200).optional(),
+  category: z.enum(CALENDAR_CATEGORIES).default("undervisning"),
+});
+
+export const TERMINLISTE_GRADES = ["8. trinn", "9. trinn", "10. trinn"] as const;
+
+export const terminlisteEventSchema = z.object({
+  title: z.string().trim().min(1, "Tittel er påkrevd").max(200),
+  description: z.string().trim().max(1000).optional(),
+  date: z.coerce.date(),
+  grade: z.enum(TERMINLISTE_GRADES),
 });
