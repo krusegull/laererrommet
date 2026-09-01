@@ -74,6 +74,38 @@ fra opplastede filer/tekst. Uavklart om dette bør være en egen seksjon,
 eller en tredje ressurstype inni Undervisningsbanken (tekst / fil /
 ekstern lenke) i tillegg til de to som allerede er bygget.
 
+## Neste-generasjons samskriving i Lærerrommet (nevnt 2026-09-01)
+
+Problem med dagens løsninger (Google Docs m.fl.): frittflytende dokumenter
+uten struktur, svak håndtering av eierskap/roller, kommentarer som blir
+borte i støyen, og ingen kontekstbevisst AI-støtte i selve skriveflyten.
+
+Konsept — særlig relevant for Undervisningsbanken og Felleskalender:
+
+1. **Blokk-basert struktur i stedet for flatt dokument** — undervisningsopplegg
+   bygges av gjenbrukbare blokker (mål, aktivitet, vurderingskriterier,
+   ressurser) i stedet for løs tekst. Gjør det lettere å remixe andre
+   læreres opplegg uten å starte fra scratch.
+2. **Lokal-first / CRDT-basert redigering** — lærere kan redigere offline
+   (f.eks. på skolen med dårlig nett) og synke sømløst senere, uten
+   "noen andre redigerer akkurat nå, vent litt"-friksjon.
+3. **Rolle- og eierskapsbevisst samarbeid** — tydelig hvem som er
+   opphavsperson til et opplegg, hvem som har bidratt med endringer, og
+   hvem som må godkjenne før det publiseres i banken — mer strukturert
+   enn anonyme forslag.
+4. **Strukturerte kommentarer/tilbakemeldinger** — kommentarer knyttes til
+   spesifikke blokker og kan filtreres/spores over tid, f.eks. "alle
+   kommentarer om vurderingskriterier på tvers av mine opplegg."
+5. **KI-veilederen inn i selve skriveflyten** — ikke bare en chatbot ved
+   siden av, men KI som foreslår forbedringer direkte i opplegget mens man
+   skriver, basert på PfDK-rammeverket og Oslo kommunes KI-retningslinjer
+   som allerede er kunnskapsbasen.
+
+Foreslått plassering i roadmapen: naturlig utvidelse av Undervisningsbanken.
+Kan starte enkelt med blokkstruktur + strukturerte kommentarer, og bygge på
+CRDT/offline-støtte og dypere KI-integrasjon som en senere iterasjon når
+kjernen er validert.
+
 ## Allerede plassholdere på dashbordet ("Kommer snart"), ikke fra denne samtalen
 
 Del av opprinnelig spesifikasjon, aldri bygget ut:
