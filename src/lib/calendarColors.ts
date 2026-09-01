@@ -41,3 +41,46 @@ export const TERMINLISTE_STYLE: CategoryStyle = {
   chip: "bg-fuchsia-500/15 text-fuchsia-700 dark:text-fuchsia-400",
   border: "border-fuchsia-500",
 };
+
+/**
+ * Fag i kalenderen far en fast farge hver, som nyanser av undervisnings-
+ * fargen (primary) — mork/full farge for det forste faget, lysere for hvert
+ * fag deretter. Etter 5 fag faller vi tilbake til nyanser av sekundarfargen
+ * i stedet for a fortsette a lysne (blir uleselig etter for mange nyanser).
+ */
+const SUBJECT_DOT_TIERS = ["bg-primary", "bg-primary/78", "bg-primary/58", "bg-primary/42", "bg-primary/30"] as const;
+const SUBJECT_DOT_FALLBACK_TIERS = [
+  "bg-secondary",
+  "bg-secondary/78",
+  "bg-secondary/58",
+  "bg-secondary/42",
+  "bg-secondary/30",
+] as const;
+const SUBJECT_BORDER_TIERS = [
+  "border-primary",
+  "border-primary/78",
+  "border-primary/58",
+  "border-primary/42",
+  "border-primary/30",
+] as const;
+const SUBJECT_BORDER_FALLBACK_TIERS = [
+  "border-secondary",
+  "border-secondary/78",
+  "border-secondary/58",
+  "border-secondary/42",
+  "border-secondary/30",
+] as const;
+
+export const SUBJECT_COLOR_TIER_COUNT = SUBJECT_DOT_TIERS.length;
+
+export function subjectDotClass(colorIndex: number): string {
+  const tier = colorIndex % SUBJECT_COLOR_TIER_COUNT;
+  const useFallback = Math.floor(colorIndex / SUBJECT_COLOR_TIER_COUNT) % 2 === 1;
+  return (useFallback ? SUBJECT_DOT_FALLBACK_TIERS : SUBJECT_DOT_TIERS)[tier];
+}
+
+export function subjectBorderClass(colorIndex: number): string {
+  const tier = colorIndex % SUBJECT_COLOR_TIER_COUNT;
+  const useFallback = Math.floor(colorIndex / SUBJECT_COLOR_TIER_COUNT) % 2 === 1;
+  return (useFallback ? SUBJECT_BORDER_FALLBACK_TIERS : SUBJECT_BORDER_TIERS)[tier];
+}

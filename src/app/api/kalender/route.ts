@@ -19,6 +19,7 @@ export async function GET(request: Request) {
       userId: session.user.id,
       ...(start && end ? { date: { gte: new Date(start), lt: new Date(end) } } : {}),
     },
+    include: { subject: { select: { id: true, name: true, colorIndex: true } } },
     orderBy: { date: "asc" },
   });
 
@@ -28,8 +29,10 @@ export async function GET(request: Request) {
       title: e.title,
       description: e.description,
       date: e.date.toISOString(),
+      endDate: e.endDate ? e.endDate.toISOString() : null,
       location: e.location,
       category: e.category,
+      subject: e.subject,
     })),
   });
 }
@@ -49,8 +52,19 @@ export async function POST(request: Request) {
     );
   }
 
+  if (parsed.data.subjectId) {
+    const subject = await prisma.calendarSubject.findUnique({
+      where: { id: parsed.data.subjectId },
+      select: { userId: true },
+    });
+    if (!subject || subject.userId !== session.user.id) {
+      return NextResponse.json({ error: "Fant ikke faget" }, { status: 400 });
+    }
+  }
+
   const event = await prisma.calendarEvent.create({
     data: { ...parsed.data, userId: session.user.id },
+    include: { subject: { select: { id: true, name: true, colorIndex: true } } },
   });
 
   return NextResponse.json({
@@ -59,8 +73,10 @@ export async function POST(request: Request) {
       title: event.title,
       description: event.description,
       date: event.date.toISOString(),
+      endDate: event.endDate ? event.endDate.toISOString() : null,
       location: event.location,
       category: event.category,
+      subject: event.subject,
     },
   });
 }

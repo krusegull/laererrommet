@@ -1,16 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { LoadingDots } from "@/components/ui/LoadingDots";
 import { WeekView } from "./WeekView";
 import { MonthView } from "./MonthView";
 import { YearView } from "./YearView";
-import { EventModal, type CalendarEventItem } from "./EventModal";
+import { EventModal, type CalendarEventItem, type CalendarSubjectItem } from "./EventModal";
 import { startOfWeek, addDays, monthGridDays, monthLabel, weekDays } from "./dateUtils";
 import { CALENDAR_CATEGORIES, CALENDAR_CATEGORY_LABELS } from "@/lib/validations";
-import { CALENDAR_CATEGORY_STYLES } from "@/lib/calendarColors";
+import { CALENDAR_CATEGORY_STYLES, subjectDotClass } from "@/lib/calendarColors";
 import { cn } from "@/lib/cn";
 
 type ViewMode = "uke" | "maned" | "ar";
@@ -25,6 +25,66 @@ export function KalenderClient() {
     date: new Date(),
     existing: null,
   });
+  const [subjects, setSubjects] = useState<CalendarSubjectItem[]>([]);
+  const [hiddenSubjectIds, setHiddenSubjectIds] = useState<Set<string>>(new Set());
+  const [addingSubject, setAddingSubject] = useState(false);
+  const [newSubjectName, setNewSubjectName] = useState("");
+  const [subjectError, setSubjectError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/kalender/fag")
+      .then((res) => res.json())
+      .then((data) => setSubjects(data.subjects ?? []))
+      .catch(() => {});
+  }, []);
+
+  const visibleEvents = useMemo(
+    () => events.filter((e) => !e.subject || !hiddenSubjectIds.has(e.subject.id)),
+    [events, hiddenSubjectIds]
+  );
+
+  function toggleSubjectVisibility(id: string) {
+    setHiddenSubjectIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  async function handleAddSubject() {
+    const name = newSubjectName.trim();
+    if (!name) return;
+    setSubjectError(null);
+    try {
+      const res = await fetch("/api/kalender/fag", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setSubjectError(data.error ?? "Klarte ikke å legge til faget.");
+        return;
+      }
+      setSubjects((prev) => [...prev, data.subject]);
+      setNewSubjectName("");
+      setAddingSubject(false);
+    } catch {
+      setSubjectError("Nettverksfeil. Prøv igjen.");
+    }
+  }
+
+  async function handleDeleteSubject(id: string) {
+    if (!confirm("Slette dette faget? Hendelser som bruker faget mister fag-merkingen, men beholdes.")) return;
+    await fetch(`/api/kalender/fag/${id}`, { method: "DELETE" });
+    setSubjects((prev) => prev.filter((s) => s.id !== id));
+    setHiddenSubjectIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+  }
 
   const range = useMemo(() => {
     if (view === "uke") {
@@ -161,18 +221,82 @@ export function KalenderClient() {
         ))}
       </div>
 
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 rounded-button border border-line bg-background-subtle/50 px-3 py-2 text-xs">
+          <span className="font-medium text-foreground/70">Fag:</span>
+          {subjects.map((s) => {
+            const hidden = hiddenSubjectIds.has(s.id);
+            return (
+              <span
+                key={s.id}
+                className={cn(
+                  "group inline-flex items-center gap-1.5 rounded-full px-2 py-0.5",
+                  hidden ? "opacity-40" : ""
+                )}
+              >
+                <button
+                  type="button"
+                  onClick={() => toggleSubjectVisibility(s.id)}
+                  className="inline-flex items-center gap-1.5"
+                  title={hidden ? `Vis ${s.name} i kalenderen` : `Skjul ${s.name} i kalenderen`}
+                >
+                  <span className={cn("h-2 w-2 rounded-full", subjectDotClass(s.colorIndex))} />
+                  <span className="text-foreground/70">{s.name}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDeleteSubject(s.id)}
+                  aria-label={`Slett ${s.name}`}
+                  className="text-foreground/40 hover:text-error"
+                >
+                  <X size={12} />
+                </button>
+              </span>
+            );
+          })}
+          {addingSubject ? (
+            <span className="inline-flex items-center gap-1">
+              <input
+                autoFocus
+                value={newSubjectName}
+                onChange={(e) => setNewSubjectName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleAddSubject();
+                  if (e.key === "Escape") {
+                    setAddingSubject(false);
+                    setNewSubjectName("");
+                  }
+                }}
+                placeholder="Fagnavn"
+                className="w-28 rounded border border-line bg-background px-1.5 py-0.5 text-xs text-foreground focus:border-primary focus:outline-none"
+              />
+              <button type="button" onClick={handleAddSubject} className="text-primary hover:underline">
+                Legg til
+              </button>
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setAddingSubject(true)}
+              className="inline-flex items-center gap-1 text-primary hover:underline"
+            >
+              <Plus size={12} /> Nytt fag
+            </button>
+          )}
+          {subjectError && <span className="text-error">{subjectError}</span>}
+      </div>
+
       {loading ? (
         <div className="flex items-center justify-center gap-2 py-16 text-primary">
           <LoadingDots />
         </div>
       ) : view === "uke" ? (
-        <WeekView referenceDate={refDate} events={events} onSlotClick={openCreate} onEventClick={openEdit} />
+        <WeekView referenceDate={refDate} events={visibleEvents} onSlotClick={openCreate} onEventClick={openEdit} />
       ) : view === "maned" ? (
-        <MonthView referenceDate={refDate} events={events} onDayClick={openCreate} onEventClick={openEdit} />
+        <MonthView referenceDate={refDate} events={visibleEvents} onDayClick={openCreate} onEventClick={openEdit} />
       ) : (
         <YearView
           year={refDate.getFullYear()}
-          events={events}
+          events={visibleEvents}
           onMonthClick={(monthIndex) => {
             setRefDate(new Date(refDate.getFullYear(), monthIndex, 1));
             setView("maned");
@@ -186,6 +310,7 @@ export function KalenderClient() {
           onClose={() => setModalState((s) => ({ ...s, open: false }))}
           defaultDate={modalState.date}
           existing={modalState.existing}
+          subjects={subjects}
           onSaved={handleSaved}
           onDeleted={handleDeleted}
         />

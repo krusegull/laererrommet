@@ -7,13 +7,21 @@ import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
 import { CALENDAR_CATEGORIES, CALENDAR_CATEGORY_LABELS } from "@/lib/validations";
 
+export interface CalendarSubjectItem {
+  id: string;
+  name: string;
+  colorIndex: number;
+}
+
 export interface CalendarEventItem {
   id: string;
   title: string;
   description: string | null;
   date: string;
+  endDate: string | null;
   location: string | null;
   category: (typeof CALENDAR_CATEGORIES)[number];
+  subject: CalendarSubjectItem | null;
 }
 
 function toDatetimeLocal(date: Date) {
@@ -21,11 +29,25 @@ function toDatetimeLocal(date: Date) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
+function toTimeLocal(date: Date) {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
+/** Setter klokkeslettet fra `timeValue` (HH:mm) pa samme kalenderdag som `baseDate`. */
+function combineDateAndTime(baseDate: Date, timeValue: string) {
+  const [hours, minutes] = timeValue.split(":").map(Number);
+  const combined = new Date(baseDate);
+  combined.setHours(hours, minutes, 0, 0);
+  return combined;
+}
+
 export function EventModal({
   open,
   onClose,
   defaultDate,
   existing,
+  subjects,
   onSaved,
   onDeleted,
 }: {
@@ -33,6 +55,7 @@ export function EventModal({
   onClose: () => void;
   defaultDate: Date;
   existing: CalendarEventItem | null;
+  subjects: CalendarSubjectItem[];
   onSaved: (event: CalendarEventItem) => void;
   onDeleted: (id: string) => void;
 }) {
@@ -40,10 +63,12 @@ export function EventModal({
   const [dateValue, setDateValue] = useState(
     toDatetimeLocal(existing ? new Date(existing.date) : defaultDate)
   );
+  const [endTimeValue, setEndTimeValue] = useState(existing?.endDate ? toTimeLocal(new Date(existing.endDate)) : "");
   const [location, setLocation] = useState(existing?.location ?? "");
   const [category, setCategory] = useState<(typeof CALENDAR_CATEGORIES)[number]>(
     existing?.category ?? "undervisning"
   );
+  const [subjectId, setSubjectId] = useState(existing?.subject?.id ?? "");
   const [description, setDescription] = useState(existing?.description ?? "");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -54,6 +79,12 @@ export function EventModal({
       setError("Tittel er påkrevd.");
       return;
     }
+    const startDate = new Date(dateValue);
+    const endDate = endTimeValue ? combineDateAndTime(startDate, endTimeValue) : null;
+    if (endDate && endDate <= startDate) {
+      setError("Sluttid må være etter starttidspunktet.");
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
@@ -62,9 +93,11 @@ export function EventModal({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title,
-          date: new Date(dateValue).toISOString(),
+          date: startDate.toISOString(),
+          endDate: endDate ? endDate.toISOString() : null,
           location: location || undefined,
           category,
+          subjectId: subjectId || null,
           description: description || undefined,
         }),
       });
@@ -104,6 +137,12 @@ export function EventModal({
           onChange={(e) => setDateValue(e.target.value)}
         />
         <Input
+          label="Sluttid (valgfritt)"
+          type="time"
+          value={endTimeValue}
+          onChange={(e) => setEndTimeValue(e.target.value)}
+        />
+        <Input
           label="Sted (valgfritt)"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
@@ -122,6 +161,24 @@ export function EventModal({
             ))}
           </select>
         </div>
+        {subjects.length > 0 && (
+          <div className="flex flex-col gap-1.5 text-sm">
+            <span className="font-medium text-foreground">Fag (valgfritt)</span>
+            <select
+              value={subjectId}
+              onChange={(e) => setSubjectId(e.target.value)}
+              aria-label="Fag"
+              className="rounded-button border border-line bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              <option value="">Ingen fag</option>
+              {subjects.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
         <label className="flex flex-col gap-1.5 text-sm">
           <span className="font-medium text-foreground">Beskrivelse (valgfritt)</span>
           <textarea
