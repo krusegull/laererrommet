@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "db:seed": "tsx prisma/seed.ts",
-    "setup": "prisma generate && prisma migrate deploy && npm run db:seed",
+    "setup": "prisma generate && (prisma migrate deploy || (echo 'migrate deploy feilet (trolig Neon cold start), venter 5s og prover igjen...' && sleep 5 && prisma migrate deploy) || (echo 'migrate deploy feilet igjen, venter 15s og prover en siste gang...' && sleep 15 && prisma migrate deploy)) && npm run db:seed",
     "vercel-build": "npm run setup && next build"
   },
   "prisma": {
