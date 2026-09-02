@@ -249,6 +249,14 @@ Idé om en ny kategori "Maler" i appen — maler til foreldremøter, prøver,
 rapporter osv., som kan gjenbrukes og evt. deles (samme mønster som
 fil-/tekstdeling i Undervisningsbanken).
 
+**Vikaropplegg-mal** (lagt til 2026-09-01): en egen malkategori for
+opplegg beregnet på vikartimer — ferdig strukturert slik en vikar uten
+forkunnskap om klassen kan følge det direkte. Henger naturlig sammen med
+"Vikarplanleggeren" (se "Struktur i hverdagen"-kategorien over) — uavklart
+om vikaropplegg-malen er en del av Maler-kategorien, en del av
+Vikarplanleggeren, eller begge (f.eks. at Vikarplanleggeren bruker
+vikaropplegg-maler som byggekloss).
+
 I tillegg, koblet til dette: KI-generert statistikk/grafer basert på data
 som allerede finnes i Tilbakemeldingslogg — vise hva den enkelte elev (eller
 klassen samlet) må jobbe videre med, og hva de allerede mestrer.
