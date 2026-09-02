@@ -22,6 +22,16 @@ Uavklart: nøyaktig hvordan dette skal manifestere seg i appen (egen
 seksjon under Tilbakemeldingslogg? En helt egen "Vurdering"-fane? Kobling
 til KI-veilederens eksisterende kunnskap om Osloskolens retningslinjer?).
 
+**Oppdatering 2026-09-01**: produkteier er med i et vurderingsnettverk og
+understreker at skillet mellom **underveisvurdering** og **sluttvurdering**
+er sentralt og må forstås riktig når dette bygges — dette er ikke bare en
+fargekategori i kalenderen (se "Fag i kalenderen med fargenyanser" som
+allerede er bygget for `undervisning`-kategorien; `vurdering` har fortsatt
+ingen egen struktur utover fargen). Produkteier signaliserer at dette er
+et område de har reell fagkompetanse på og ønsker involvering i når det
+spesifiseres — bør trolig avklares i egen samtale før bygging, ikke bare
+implementeres ut fra denne notatteksten alene.
+
 ## Kategori: Struktur i hverdagen (nevnt 2026-08-25)
 
 Samlekategori for lærerens daglige/ukentlige struktur. Avklart med
@@ -192,6 +202,64 @@ håndskriftgjenkjenning), og at dette kan være nyttig i andre fag enn norsk
 knyttes til eksisterende elevtekst-innsending, og hvordan det ev. skal
 håndtere fagspesifikk notasjon (f.eks. matematiske uttrykk, ikke bare
 løpende tekst). Ikke bygg før det bes om.
+
+## KI-basert avviksdeteksjon i elevtekster (nevnt 2026-09-01)
+
+Produkteiers spørsmål: er det mulig å bygge en KI som måler sannsynligheten
+for at en elevtekst er KI-skrevet, ved å bli kjent med den enkelte elevens
+egne tekster over tid?
+
+Viktig presisering fra vurderingen som ble gitt: dette bør **ikke** bygges
+som en generisk "KI-detektor" (à la Turnitin/GPTZero) — de er kjent
+upålitelige, med høy andel falske positiver, og rammer systematisk skjevt
+(spesielt elever med norsk som andrespråk og nevrodivergente elever).
+
+Riktig tilnærming er i stedet **avviksdeteksjon mot elevens egen
+skrivehistorikk**: sammenlign en ny tekst mot samme elevs tidligere tekster
+(ordforråd, setningskompleksitet, feilmønstre, stil) og flagg *avvik* — ikke
+påstå at teksten er KI-generert. Løser det løsbare problemet ("skriver
+denne eleven annerledes enn vanlig") i stedet for det bevist uløselige
+("er denne teksten KI-generert").
+
+Begrensninger som må med i spesifiseringen:
+- **Krever nok data per elev** — få innleverte tekster gir for spinkelt
+  grunnlag.
+- **Avvik har mange uskyldige forklaringer** (økt skriveferdighet over et
+  skoleår, ny sjangertype, hjelp fra foreldre/leksehjelp, Grammarly, en
+  dårlig dag) — må presenteres som et signal til læreren, aldri et
+  ja/nei-svar eller en anklage.
+- **Etisk/GDPR-tyngde**: algoritmisk vurdering av barn med potensielt
+  alvorlige konsekvenser (fusk-mistanke) krever en enda strengere linje enn
+  det som allerede er lagt inn i appens GDPR-sikre KI-prompting
+  (`formatLogsForAI`). Elever/foresatte bør trolig informeres om at
+  funksjonen finnes, og læreren må alltid ha siste ord.
+
+Ikke bygg før det bes om.
+
+## Prøve-/vurderingsbank (nevnt 2026-09-01)
+
+Samme konsept som Undervisningsbanken, men for prøver/vurderingsoppgaver,
+tagget på fag/trinn/kompetansemål. Naturlig par med "Vurdering"-idéen over
+(se oppdateringen om underveis- vs. sluttvurdering). Ikke bygg før det bes
+om.
+
+## Maler-kategori, inkl. KI-generert statistikk fra tilbakemeldinger (nevnt 2026-09-01)
+
+Idé om en ny kategori "Maler" i appen — maler til foreldremøter, prøver,
+rapporter osv., som kan gjenbrukes og evt. deles (samme mønster som
+fil-/tekstdeling i Undervisningsbanken).
+
+I tillegg, koblet til dette: KI-generert statistikk/grafer basert på data
+som allerede finnes i Tilbakemeldingslogg — vise hva den enkelte elev (eller
+klassen samlet) må jobbe videre med, og hva de allerede mestrer.
+**Produkteier fremhevet spesielt dette med statistikk/forskning på egen
+klasse som spesielt interessant** — dette overlapper med og utvider
+"Personlig praksis-statistikk"-forslaget nevnt tidligere i samtalen (ikke
+tidligere lagret i idébanken), og bør ses i sammenheng med det når det
+spesifiseres nærmere. Ingen detaljer avklart om skalering
+(individnivå/klassenivå/trinnivå), visualisering, eller om dette hører
+hjemme i Maler-kategorien eller et eget analytics-område. Ikke bygg før det
+bes om.
 
 ## Allerede plassholdere på dashbordet ("Kommer snart"), ikke fra denne samtalen
 
