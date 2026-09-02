@@ -386,3 +386,53 @@ elevtekst-opplastingen).
   personvernblikk enn det som allerede er lagt inn for KI-veilederen.
 
 Ikke bygg før det bes om.
+
+## Hvem selger vi til? (nevnt 2026-09-01)
+
+Kandidater produkteier vil holde oversikt over, med fordeler/ulemper for
+hver. Legg til flere kandidater her etter hvert som de dukker opp — be meg
+utvide listen når det trengs.
+
+### Oslo kommune
+- **Pro**: sterk product-market-fit allerede — KI-veilederens kunnskapsbase
+  er bygget rundt Oslo kommunes egne KI-retningslinjer. Én stor avtale kan
+  gi mye volum/inntekt på én gang. Høy troverdighet hvis landet.
+- **Con**: tregest og vanskeligst prosess (formell anskaffelse,
+  personvernombud-vurdering, sikkerhetsgjennomgang — ofte måneder til år).
+  Mange beslutningstakere. Risikabelt å bygge hele forretningen rundt én
+  potensiell kunde med lang og usikker prosess.
+
+### Lærere (enkeltpersoner, privat kjøp)
+- **Pro**: ingen anskaffelsesprosess — kan begynne å selge umiddelbart. Rask
+  tilbakemelding fra ekte brukere.
+- **Con**: lav betalingsvilje for arbeidsverktøy blant norske lærere
+  generelt. **Personvernrisiko**: elevdata (Tilbakemeldingslogg m.m.) lagt
+  inn uten databehandleravtale mellom skole/kommune og oss — læreren tar da
+  personlig risiko overfor egen arbeidsgiver. Vanskelig å skalere inntekt
+  (typisk lav pris × høy churn i B2C EdTech).
+
+### Privatskoler / friskoler
+- **Pro**: færre beslutningstakere enn en hel kommune, raskere prosess enn
+  Oslo kommune. Skolen (ikke enkeltläreren) blir avtalepart, som løser
+  personvern-/DPA-problemet nevnt over. Kan fungere som referansekunde for
+  et senere kommune-salg.
+- **Con**: Norge har relativt få friskoler sammenlignet med offentlig
+  skole — begrenset totalmarked på egen hånd. Krever fortsatt egen
+  personvernvurdering per skole.
+
+### Andre skoler/kommuner i Norge (utenfor Oslo)
+- **Pro**: stort totalmarked (mange kommuner utenfor Oslo). Samme
+  salgsmodell/prosess som for Oslo kommune kan gjenbrukes når den først er
+  bygget.
+- **Con**: KI-veilederens innhold er spesifikt bygget på Oslo kommunes
+  retningslinjer — må generaliseres eller tilpasses per kommune (en reell
+  produktkostnad, ikke bare salgsarbeid). Hver kommune har sin egen
+  anskaffelsesprosess, så det skalerer ikke automatisk selv om Oslo landes.
+
+### Utlandet
+- **Pro**: mye større totalmarked i teorien.
+- **Con**: hele kunnskapsgrunnlaget (LK20, Osloskolen-retningslinjer, norsk
+  personvernkontekst/GDPR-tolkning) er Norge-spesifikt — i praksis en ny
+  produktbygging for et annet land (nytt læreplanverk, nytt språk, ny
+  personvernkontekst). Urealistisk som noe annet enn en svært langsiktig
+  mulighet.
