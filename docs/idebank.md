@@ -106,6 +106,56 @@ Kan starte enkelt med blokkstruktur + strukturerte kommentarer, og bygge på
 CRDT/offline-støtte og dypere KI-integrasjon som en senere iterasjon når
 kjernen er validert.
 
+## Konkurrentlandskap: laererro.no (notert 2026-09-01)
+
+Produkteier viste til https://laererro.no/ som en "konkurrent" på
+undervisningsopplegg. Kunne ikke selv besøke siden (udir.no/laererro.no
+er blokkert av nettverksfilteret i Claude Code-miljøet, bekreftet flere
+ganger). Ifølge produkteiers egen beskrivelse: KI-generert
+undervisningsopplegg med kun LK20 lagt inn, ellers ingenting utover det.
+
+Vurdering gitt: lav trussel isolert sett — en ren "generer fra LK20"-wrapper
+har lite beskyttelse siden hvem som helst kan spørre en KI-assistent om det
+samme. Undervisningsbanken vår er en annen kategori (deling/vurdering av
+faktisk brukte opplegg blant kolleger, ikke en generator), så ikke direkte
+overlapp per nå. Relevant fremover: når "KI-samskriving av
+undervisningsopplegg" (se eget punkt over) eventuelt bygges, bør den
+differensiere seg fra en LK20-only-wrapper via (a) Oslo kommune/PfDK-
+forankringen med kildehenvisninger KI-veilederen allerede har (sterkere enn
+generisk LK20), og (b) tilgang til data fra resten av appen (elevhistorikk,
+tilbakemeldingslogg) som en frittstående konkurrent ikke har.
+
+## "LK20-GPT" — full RAG-løsning på hele Læreplanverket (nevnt 2026-09-01)
+
+Produkteier spurte om jeg kunne "lære meg" alt på
+https://www.udir.no/laring-og-trivsel/lareplanverket/ (blokkert for meg å
+besøke direkte). Foreslo en RAG-arkitektur (delt av produkteier, hentet fra
+en annen KI-samtale) fremfor å fine-tune en modell, siden læreplaner endres
+over tid og RAG holder kunnskapen fersk uten omtrening. **Eksplisitt
+instruks: ikke bygg dette før det bes om.**
+
+Teknisk vurdering tilpasset vår stack (ikke bare det generiske forslaget):
+- **Vektordatabase**: bruk `pgvector` på Neon Postgres (allerede i bruk,
+  ingen ny tjeneste/kostnad) i stedet for Pinecone/Qdrant/Chroma.
+- **Embeddings**: Voyage AI (Anthropics anbefalte partner) i stedet for
+  OpenAI sin embeddings-API, siden KI-veilederen allerede bruker Anthropic.
+- **Crawler**: kan ikke kjøres fra Claude Code-sandboxen (ingen
+  nettverkstilgang til udir.no herfra). Må kjøres enten som et
+  engangs-script produkteier kjører selv, eller som en Vercel-funksjon/
+  cron-jobb (produksjonsmiljøet har vanlig internettilgang).
+- **Oppfriskning**: periodisk re-crawl (f.eks. ukentlig) med innholds-hash
+  for å bare re-embedde endret innhold — samme mønster som det
+  eksisterende kalender-påminnelse-cron-jobbet.
+- **Robots.txt / rate-limiting**: bør sjekkes og respekteres før bygging,
+  ikke antas.
+- **Omfang**: dette er vesentlig større enn funksjonene bygget i denne
+  økten — et eget delsystem (crawler + chunking + vektorsøk +
+  retrieval-logikk). Bør planlegges som et eget, avgrenset prosjekt, ikke
+  en rask utvidelse av eksisterende KI-veilederen.
+- Ville i praksis erstatte/utvide dagens håndkuraterte kildeliste i
+  KI-veilederens systemprompt med en fullautomatisk, komplett og
+  selvoppdaterende kunnskapsbase for hele Læreplanverket.
+
 ## Allerede plassholdere på dashbordet ("Kommer snart"), ikke fra denne samtalen
 
 Del av opprinnelig spesifikasjon, aldri bygget ut:
