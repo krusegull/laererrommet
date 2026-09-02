@@ -348,3 +348,41 @@ nettverkstilgang til å research konkurrenter/priser i denne økten.
   Undervisningsbank, Tilbakemeldingslogg, Kalender, Oslo-forankrede
   kildehenvisninger) — ikke i "KI-prat" alene, som er gratis tilgjengelig
   andre steder.
+
+## Personvern ved opplasting av elevtekster (nevnt 2026-09-01)
+
+Produkteier reiste et krav: det må finnes en personvern-sperre når lærere
+laster opp elevtekster — bør læreren måtte aktivt trykke "aksepter" på et
+personvernvilkår per opplasting? Foreslo også at KI-en kunne analysere
+teksten på forhånd og varsle læreren dersom innholdet virker identifiserbart
+(f.eks. fullt navn, adresse, andre direkte personopplysninger i selve
+teksten).
+
+**Status i dag**: ingen samtykke-steg finnes ved elevtekst-innsending.
+Personvern er kun håndtert andre steder i appen (GDPR-sikker
+prompting i KI-veilederen via `formatLogsForAI`, og en generell
+personverninnstilling i Innstillinger — ingen av delene dekker selve
+elevtekst-opplastingen).
+
+**Vurdering**:
+- **Samtykke-steg** er relativt greit å bygge (en obligatorisk avkrysning
+  før opplasting fullføres), men reiser spørsmål om *hvem* som egentlig kan
+  samtykke på vegne av eleven — det er trolig skolen/kommunen (via
+  databehandleravtale) som må ha gitt det formelle grunnlaget, ikke den
+  enkelte lærer i appens grensesnitt. En avkrysning i appen bør derfor
+  formuleres som en bekreftelse på at læreren *har* et gyldig grunnlag
+  (f.eks. gjennom skolens rutiner), ikke som selve det juridiske
+  samtykket.
+- **KI-basert identifiserbarhets-varsling** er en god idé og teknisk
+  realistisk (én ekstra KI-kall før lagring, se etter navn/adresse/andre
+  direkte identifikatorer i teksten), men bør ses i sammenheng med at
+  elever i denne appen allerede identifiseres via anonyme "merkelapper"
+  (`Student.label`), ikke fullt navn — risikoen er dermed mest knyttet til
+  identifiserbare opplysninger *inni* selve teksten eleven har skrevet
+  (f.eks. hvis eleven skriver om egen adresse, familiesituasjon e.l.), ikke
+  metadata om hvem eleven er.
+- Henger sammen med "KI-basert avviksdeteksjon i elevtekster"-idéen over —
+  begge krever at appen behandler elevtekster med et enda strengere
+  personvernblikk enn det som allerede er lagt inn for KI-veilederen.
+
+Ikke bygg før det bes om.
