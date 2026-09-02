@@ -276,3 +276,75 @@ Del av opprinnelig spesifikasjon, aldri bygget ut:
 - **Kalender** — planlegge undervisning, holde styr på datoer (se ev. overlapp med Timeplan over)
 - **Faglig feed** — nyheter/innsikt relevant for undervisningen
 - **Forskning** — forskningsbasert kunnskap oversatt til klasserommet
+
+# Utfordringer og hensyn (administrativt/strategisk, ikke funksjonsidéer)
+
+Denne kategorien er for ting produkteier og administratorer må ta stilling
+til — ikke funksjoner å bygge, men beslutninger, risikoer eller eksterne
+avhengigheter som påvirker produktet.
+
+## Feide-innlogging (nevnt 2026-09-01)
+
+Produkteier spurte om Feide (som lærere allerede bruker til å logge inn i
+Osloskolen) kan brukes som innloggingsmetode i appen.
+
+**Status i dag**: kun e-post + passord (`CredentialsProvider` i NextAuth,
+bcrypt-hashet passord i egen database). Ingen ekstern innlogging.
+
+**Vurdering**:
+- **Teknisk** uproblematisk — Feide støtter standard OIDC, og NextAuth kan
+  få Feide som en ekstra leverandør ved siden av dagens e-post/passord (ikke
+  nødvendigvis erstatte den).
+- **Registrering** hos Feide/Sikt (reg.feide.no) kreves, med klient-ID og
+  spesifiserte scopes (navn, e-post, evt. skoletilhørighet).
+- **Den reelle hindringen er administrativ, ikke teknisk**: Oslo
+  kommune/Osloskolen styrer selv hvilke tjenester som er godkjent for deres
+  Feide-brukere. Selv med ferdig integrasjon må Osloskolen aktivt godkjenne/
+  hviteliste appen — egen prosess, trolig med krav til
+  personvernerklæring/databehandleravtale siden dette er en ekstern,
+  ikke-kommunal tjeneste.
+- **Feide-tilgang er IKKE det samme som et salg til Oslo kommune** — se eget
+  punkt under om salgsstrategi.
+
+## Forretningsmodell / hvem betaler? (nevnt 2026-09-01)
+
+Produkteier spurte: er det realistisk å selge til Oslo kommune? Selger vi
+automatisk til Oslo kommune ved å bruke Feide? Eller er privat salg til
+skoler/enkeltlærere rundt om i Norge bedre? Er det etterspørsel?
+
+**Viktig forbehold**: dette er min vurdering basert på generell kunnskap om
+det norske skole-IT-landskapet, ikke ferske markedsdata — jeg har ikke
+nettverkstilgang til å research konkurrenter/priser i denne økten.
+
+- **Feide ≠ salg**: Feide-godkjenning fra Sikt er separat fra Oslo kommunes
+  egen anskaffelsesprosess (personvernombud-vurdering, sikkerhetsgjennomgang,
+  formell anskaffelse/anbud for noe i denne skalaen) — ofte en prosess på
+  mange måneder til år for en kommune. Feide er en nødvendig, men langt fra
+  tilstrekkelig, forutsetning for et reelt kommune-salg.
+- **Salg til enkeltlærere (B2C) er den svakeste veien**, av to grunner:
+  (1) norske lærere er ikke vant til å betale privat for arbeidsverktøy —
+  skolen/kommunen leverer normalt det de trenger; (2) **Tilbakemeldingslogg
+  inneholder opplysninger om enkeltelever**. En lærer som betaler privat og
+  legger inn elevopplysninger uten at kommunen har en databehandleravtale
+  med oss, tar en reell personlig risiko overfor arbeidsgiver — dette er
+  ikke bare et salgsproblem, men et compliance-hensyn som bør veie tungt.
+- **Oslo kommune spesifikt**: KI-veilederens kunnskapsbase er allerede bygget
+  rundt Oslo kommunes egne retningslinjer — sterk product-market-fit for
+  akkurat Oslo, men samme grunn til at det ikke uten videre generaliserer
+  til andre kommuner (som har egne KI-retningslinjer). Nasjonalt salg vil
+  kreve enten en generisk/Udir-basert kunnskapsbase eller kommune-spesifikke
+  innholdspakker — en reell produktkostnad, ikke bare en salgsoppgave.
+- **Anbefaling**: friskoler/private skoler er trolig det mest realistiske
+  nærtidsmålet — færre beslutningstakere og raskere prosess enn en hel
+  kommune, samtidig som det unngår B2C-personvernrisikoen siden skolen (ikke
+  enkeltläreren) blir avtalepart og kan inngå databehandleravtale. Fullt
+  kommune-salg (Oslo eller andre) er det største, men tregeste og
+  vanskeligste, sporet.
+- **Etterspørsel**: finnes trolig i bred forstand (Oslo kommune publiserer
+  selv aktiv KI-veiledning for skolen, og konkurrenten laererro.no
+  eksisterer), men det meste av dagens bruk er trolig via gratis
+  forbruker-chatboter direkte, ikke betalte spesialiserte verktøy. Den
+  betalbare verdien må derfor ligge i arbeidsflyt-integrasjonen (delt
+  Undervisningsbank, Tilbakemeldingslogg, Kalender, Oslo-forankrede
+  kildehenvisninger) — ikke i "KI-prat" alene, som er gratis tilgjengelig
+  andre steder.
