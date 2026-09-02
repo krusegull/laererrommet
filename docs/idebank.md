@@ -156,6 +156,24 @@ Teknisk vurdering tilpasset vår stack (ikke bare det generiske forslaget):
   KI-veilederens systemprompt med en fullautomatisk, komplett og
   selvoppdaterende kunnskapsbase for hele Læreplanverket.
 
+**Kostnad (produkteier spurte om gratis er mulig):** stort sett ja.
+`pgvector` på Neon og crawleren er gratis (bare kompute). Selve
+KI-svaret bruker samme Anthropic API-kall appen allerede har for
+KI-veilederen — ingen ny kostnadstype, bare noe høyere input-tokens per
+spørring pga. injisert kontekst. Eneste reelle valg er embeddings: en
+betalt modell (Voyage/OpenAI) gir bedre søketreffkvalitet, men en gratis
+åpen flerspråklig embeddings-modell kjørt lokalt (f.eks. en e5-variant)
+gjør hele løsningen $0 mot noe svakere presisjon — trolig godt nok for
+relativt strukturert læreplantekst.
+
+## KI-generert podkast om valgfritt emne (nevnt 2026-09-01)
+
+Idé: la KI-en generere en podkast (lyd) om et emne brukeren velger — f.eks.
+til bruk i undervisning eller som egen faglig oppdatering. Ingen detaljer
+avklart ennå (varighet, stemme(r)/TTS-leverandør, om det skal være
+knyttet til Læreplanverket/fag, om lærer eller elev er tiltenkt lytter,
+lagring/deling av genererte episoder). Ikke bygg før det bes om.
+
 ## Allerede plassholdere på dashbordet ("Kommer snart"), ikke fra denne samtalen
 
 Del av opprinnelig spesifikasjon, aldri bygget ut:
