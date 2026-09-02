@@ -174,6 +174,25 @@ avklart ennå (varighet, stemme(r)/TTS-leverandør, om det skal være
 knyttet til Læreplanverket/fag, om lærer eller elev er tiltenkt lytter,
 lagring/deling av genererte episoder). Ikke bygg før det bes om.
 
+## Klassekart-maler (nevnt 2026-09-01)
+
+Idé: maler til klassekart som læreren selv kan skreddersy ut fra hvordan
+elevene faktisk sitter i klasserommet. Produkteier foreslo at et bilde av
+klasserommet kanskje kan brukes som utgangspunkt (f.eks. som bakgrunn å
+plassere elever oppå, eller at KI tolker bildet til å foreslå et oppsett).
+Ingen detaljer avklart (kobling til elevlisten? redigerbart etterpå? kun
+visuelt eller også knyttet til funksjonalitet som sitteplass-basert
+gruppering). Ikke bygg før det bes om.
+
+## Digitalisering av håndskrevne elevtekster, også utenfor norsk (nevnt 2026-09-01)
+
+Idé: håndskrevne elevtekster kan gjøres om til digital tekst (OCR/
+håndskriftgjenkjenning), og at dette kan være nyttig i andre fag enn norsk
+— produkteier nevnte matematikk som eksempel. Uavklart hvordan dette
+knyttes til eksisterende elevtekst-innsending, og hvordan det ev. skal
+håndtere fagspesifikk notasjon (f.eks. matematiske uttrykk, ikke bare
+løpende tekst). Ikke bygg før det bes om.
+
 ## Allerede plassholdere på dashbordet ("Kommer snart"), ikke fra denne samtalen
 
 Del av opprinnelig spesifikasjon, aldri bygget ut:
