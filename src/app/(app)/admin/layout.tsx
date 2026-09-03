@@ -1,11 +1,12 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { LayoutDashboard, Lightbulb, AlertTriangle, ThumbsUp, Users } from "lucide-react";
+import { LayoutDashboard, Lightbulb, AlertTriangle, ThumbsUp, Users, ScrollText } from "lucide-react";
 import { requireAdminPage } from "@/lib/requireAdmin";
 
 const ADMIN_LINKS = [
   { href: "/admin", label: "Oversikt", icon: LayoutDashboard },
   { href: "/admin/ideer", label: "Ideer", icon: Lightbulb },
+  { href: "/admin/idebank", label: "Idébank", icon: ScrollText },
   { href: "/admin/feil", label: "Feilrapporter", icon: AlertTriangle },
   { href: "/admin/onsker", label: "Ønsker", icon: ThumbsUp },
   { href: "/admin/brukere", label: "Brukere", icon: Users },
