@@ -466,3 +466,26 @@ utvide listen når det trengs.
   produktbygging for et annet land (nytt læreplanverk, nytt språk, ny
   personvernkontekst). Urealistisk som noe annet enn en svært langsiktig
   mulighet.
+
+## Timeplan/periodeplan med tilbakeblikk (nevnt 2026-09-03)
+
+Idé: læreren legger inn en plan for timen/uka/måneden på forhånd, slik at
+man senere kan se tilbake på hva som faktisk ble gjort i en gitt time, uke
+eller måned — en slags loggført undervisningsplan, ikke bare en fremover-
+skuende kalenderhendelse.
+
+Overlapper med flere eksisterende punkter og bør ses i sammenheng med dem
+når den spesifiseres:
+- **Kalender** (allerede bygget) har allerede `undervisning`-kategorien
+  med tittel/beskrivelse/fag på hver hendelse — kan periodeplanen bygges
+  som en utvidelse av dette (mer strukturert planinnhold per hendelse), i
+  stedet for en helt ny funksjon?
+- **"Timeplan"**-idéen under "Struktur i hverdagen" (nevnt 2026-08-25) —
+  uavklart den gang om det var samme idé som Kalender-plassholderen; dette
+  nye punktet konkretiserer trolig nettopp den uklarheten, med
+  tilbakeblikk-vinkelen som ny detalj.
+- **"Personlig praksis-statistikk"**-forslaget (foreslått av meg
+  2026-09-01, ikke tidligere lagret separat) — en oversikt over egen
+  aktivitet over tid ligger nær opp til "se tilbake på hva som ble gjort".
+
+Ikke bygg før det bes om.
