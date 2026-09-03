@@ -234,6 +234,36 @@ Begrensninger som må med i spesifiseringen:
   (`formatLogsForAI`). Elever/foresatte bør trolig informeres om at
   funksjonen finnes, og læreren må alltid ha siste ord.
 
+**Oppdatering 2026-09-03 — konkretisert teknisk løsning (produkteier)**:
+"Lokal KI-deteksjon via stilometri." Kjerneprinsipp: **ingen elevtekst skal
+sendes til noen ekstern tjeneste/selskap** — samme personvernprinsipp som
+resten av Lærerrommet. To mulige nivåer:
+
+1. **Ren stilometri (ingen KI/LLM i det hele tatt)**: statistiske mål —
+   setningslengde, ordvariasjon, tegnsetting, "burstiness" (variasjon i
+   setningsrytme) — regnet ut lokalt med Python (spaCy/nltk). Ingen data
+   forlater serveren, og ingen ekstern API-kostnad. Dette er trolig
+   riktig startpunkt.
+2. **Lokal LLM**: en åpen modell kjørt via Ollama på egen
+   infrastruktur, for en mer helhetlig sammenligning av gammel vs. ny
+   tekst. Fortsatt 100 % lokalt, men krever egen modell-drift/kompute —
+   en vesentlig større driftskostnad og -kompleksitet enn nivå 1, og
+   sannsynligvis unødvendig for en første versjon.
+
+Merk: nivå 2 (lokal LLM via Ollama) er en annen kjøremodell enn resten av
+appen, som ellers utelukkende bruker Anthropics API uten egen
+modell-hosting — verdt å vurdere om driftskostnaden/kompleksiteten er
+verdt det før nivå 1 er prøvd og funnet utilstrekkelig.
+
+**Vurdering av forslaget**: retningen (avvik mot egen historikk, ikke en
+generisk detektor) og "ingen data ut av huset"-prinsippet er solide og
+henger godt sammen med appens øvrige personvernlinje. Én svakhet som ikke
+er nevnt i forbeholdene: pålitelighet ved lite datagrunnlag — en elev har
+kanskje bare 5–20 innleverte tekster i løpet av et halvår, og stilometri
+fungerer normalt best med et betydelig større tekstgrunnlag per forfatter.
+Feilmarginen som allerede er nevnt som "betydelig" er trolig enda større
+i praksis med så lite data — bør holdes i bakhodet ved spesifisering.
+
 Ikke bygg før det bes om.
 
 ## Prøve-/vurderingsbank (nevnt 2026-09-01)
