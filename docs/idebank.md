@@ -513,3 +513,13 @@ personvern-risikoklasse (samtykke, lagring, sletting) utover det appen
 allerede håndterer for tekst.
 
 Ikke bygg før det bes om.
+
+## Undervisningsopplegg (norsk): leseliste i klasserommet (nevnt 2026-09-03)
+
+Idé til et konkret undervisningsopplegg for Undervisningsbanken, i
+norskfaget: henge opp en leseliste i klasserommet som viser hvilke bøker
+elevene har lest. Ingen detaljer avklart (fysisk plakat/mal å skrive ut,
+eller en digital visning i appen? synlig for hele klassen eller kun
+individuelt? knyttet til vurdering/leseoppfølging, eller bare motivasjon).
+
+Ikke bygg før det bes om.
