@@ -287,6 +287,15 @@ om vikaropplegg-malen er en del av Maler-kategorien, en del av
 Vikarplanleggeren, eller begge (f.eks. at Vikarplanleggeren bruker
 vikaropplegg-maler som byggekloss).
 
+**Skrivemaler for elever** (lagt til 2026-09-03): maler til noveller, taler,
+CV-er osv. — tenkt som tips/hjelp til elevene, med CV nevnt spesifikt i
+forbindelse med sommerjobb-søking før sommeren. Litt annen målgruppe enn
+resten av Maler-kategorien (elev-rettet, ikke lærer-administrativt som
+foreldremøter/prøver/rapporter/vikaropplegg) — bør avklares om dette hører
+hjemme i samme kategori, eller om det er en egen ressurstype (evt. knyttet
+til Undervisningsbanken siden det er undervisningsrelevant innhold delt
+mellom lærere, ikke direkte til elever).
+
 I tillegg, koblet til dette: KI-generert statistikk/grafer basert på data
 som allerede finnes i Tilbakemeldingslogg — vise hva den enkelte elev (eller
 klassen samlet) må jobbe videre med, og hva de allerede mestrer.
