@@ -489,3 +489,18 @@ når den spesifiseres:
   aktivitet over tid ligger nær opp til "se tilbake på hva som ble gjort".
 
 Ikke bygg før det bes om.
+
+## Undervisningsopplegg: lag en sang med klassen (nevnt 2026-09-03)
+
+Idé til et konkret undervisningsopplegg for Undervisningsbanken — bygger
+klassemiljø, men er også faglig: klassen lager en sang sammen, der alle
+elevene leser inn noen fraser hver i en mikrofon (som så settes sammen,
+trolig med KI-verktøy for lyd/musikk).
+
+Henger sammen med "Lydopptak + transkribering"-idéen over — dette er et
+konkret bruksområde for lydopptak av/med elever, og det samme
+GDPR-forbeholdet gjelder her: opptak av elevstemmer er en egen
+personvern-risikoklasse (samtykke, lagring, sletting) utover det appen
+allerede håndterer for tekst.
+
+Ikke bygg før det bes om.
