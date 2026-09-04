@@ -231,3 +231,32 @@ export const terminlisteEventSchema = z.object({
   date: z.coerce.date(),
   grade: z.enum(TERMINLISTE_GRADES),
 });
+
+export const TIMETABLE_DAY_LABELS = ["Mandag", "Tirsdag", "Onsdag", "Torsdag", "Fredag"] as const;
+
+const TIME_REGEX = /^([01]\d|2[0-3]):([0-5]\d)$/;
+
+export const timetableEntrySchema = z
+  .object({
+    dayOfWeek: z.number().int().min(0).max(4),
+    startTime: z.string().regex(TIME_REGEX, "Ugyldig klokkeslett"),
+    endTime: z.string().regex(TIME_REGEX, "Ugyldig klokkeslett"),
+    title: z.string().trim().min(1, "Tittel er påkrevd").max(200),
+    notes: z.string().trim().max(2000).optional(),
+    subjectId: z.string().trim().min(1).max(100).optional().nullable(),
+  })
+  .refine((data) => data.endTime > data.startTime, {
+    message: "Sluttid må være etter starttid",
+    path: ["endTime"],
+  });
+
+export const schoolBreakSchema = z
+  .object({
+    name: z.string().trim().min(1, "Navn er påkrevd").max(100),
+    startDate: z.coerce.date(),
+    endDate: z.coerce.date(),
+  })
+  .refine((data) => data.endDate >= data.startDate, {
+    message: "Sluttdato må være etter eller lik startdato",
+    path: ["endDate"],
+  });

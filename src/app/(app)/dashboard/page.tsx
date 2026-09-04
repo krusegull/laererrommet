@@ -6,6 +6,7 @@ import {
   Users,
   BookOpen,
   CalendarDays,
+  CalendarClock,
   Rss,
   FlaskConical,
   ArrowRight,
@@ -127,6 +128,22 @@ export default async function DashboardPage() {
                   <p className="font-semibold text-foreground">Kalender</p>
                   <p className="mt-1 text-sm text-foreground/60">
                     Planlegg undervisning og hold styr på viktige datoer.
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </Link>
+
+          <Link href="/timeplan">
+            <Card className="h-full transition-shadow hover:shadow-md">
+              <div className="flex items-start gap-4">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-button bg-primary/10 text-primary">
+                  <CalendarClock size={20} />
+                </span>
+                <div>
+                  <p className="font-semibold text-foreground">Timeplan</p>
+                  <p className="mt-1 text-sm text-foreground/60">
+                    Din faste ukeplan, med fag og notater — gjentas hver uke, følger feriene dine.
                   </p>
                 </div>
               </div>
