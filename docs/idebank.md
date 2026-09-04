@@ -523,3 +523,24 @@ eller en digital visning i appen? synlig for hele klassen eller kun
 individuelt? knyttet til vurdering/leseoppfølging, eller bare motivasjon).
 
 Ikke bygg før det bes om.
+
+## Notere elevkompetanse underveis i timen, med hurtigtagger (nevnt 2026-09-04)
+
+Idé: mulighet for å notere elevers kompetanse fortløpende i timen — hva ble
+gjort bra, hva var mindre bra. Uavklart om det skal være pluss/minus-basert.
+
+Konkret forslag til en øverste rad med hurtigtagger per elev, à la:
+- "Deltar aktivt"
+- "Reflekterer"
+- "Gjentar"
+- "Bygger videre på"
+- "Gir motstand/inviterer til debatt"
+
+Henger tett sammen med den eksisterende **Tilbakemeldingslogg**
+(`FeedbackLog`: oppgave, positivt, kan bli bedre) — uavklart om dette er en
+utvidelse av den (raskere/mer strukturert registrering i selve timen, i
+stedet for i etterkant), eller en egen, lettvekts logg ved siden av. Verdt
+å avklare om hurtigtaggene skal være faste (som over) eller
+lærer-/skole-definerte.
+
+Ikke bygg før det bes om.
