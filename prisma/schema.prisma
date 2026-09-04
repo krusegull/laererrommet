@@ -50,6 +50,8 @@ model User {
   terminlisteEvents TerminlisteEvent[]
   activityLogs     ActivityLog[]
   classProfiles    ClassProfile[]
+  timetableEntries TimetableEntry[]
+  schoolBreaks     SchoolBreak[]
 }
 
 model Student {
@@ -192,15 +194,40 @@ model CalendarEvent {
 }
 
 model CalendarSubject {
-  id         String          @id @default(cuid())
-  name       String
-  colorIndex Int
-  userId     String
-  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  events     CalendarEvent[]
-  createdAt  DateTime        @default(now())
+  id              String            @id @default(cuid())
+  name            String
+  colorIndex      Int
+  userId          String
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  events          CalendarEvent[]
+  timetableEntries TimetableEntry[]
+  createdAt       DateTime          @default(now())
 
   @@unique([userId, name])
+}
+
+model TimetableEntry {
+  id        String           @id @default(cuid())
+  dayOfWeek Int
+  startTime String
+  endTime   String
+  title     String
+  notes     String?
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjectId String?
+  subject   CalendarSubject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  createdAt DateTime         @default(now())
+}
+
+model SchoolBreak {
+  id        String   @id @default(cuid())
+  name      String
+  startDate DateTime
+  endDate   DateTime
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }
 
 model TerminlisteEvent {
