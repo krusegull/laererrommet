@@ -14,6 +14,7 @@ import {
   BookOpen,
   CalendarDays,
   CalendarClock,
+  ListChecks,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 
@@ -28,6 +29,7 @@ const PRIMARY_LINKS = [
 const SECONDARY_LINKS = [
   { href: "/kalender", label: "Kalender", icon: CalendarDays },
   { href: "/timeplan", label: "Timeplan", icon: CalendarClock },
+  { href: "/notater", label: "Egne notater", icon: ListChecks },
   { href: "/meldinger", label: "Meldinger", icon: MessageCircle },
   { href: "/onsker", label: "Ønsker", icon: ThumbsUp },
   { href: "/profil", label: "Min profil", icon: UserRound },

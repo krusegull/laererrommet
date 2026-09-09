@@ -268,3 +268,10 @@ export const schoolBreakSchema = z
     message: "Sluttdato må være etter eller lik startdato",
     path: ["endDate"],
   });
+
+export const weeklyNoteSchema = z.object({
+  weekStart: z.coerce.date(),
+  dayOfWeek: z.number().int().min(0).max(4),
+  content: z.string().trim().max(4000),
+  priority: z.number().int().min(1).max(3).optional().nullable(),
+});
