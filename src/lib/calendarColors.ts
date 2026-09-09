@@ -34,6 +34,11 @@ export const CALENDAR_CATEGORY_STYLES: Record<Category, CategoryStyle> = {
     chip: "bg-background-subtle text-foreground/70",
     border: "border-foreground/30",
   },
+  annerledesdag: {
+    dot: "bg-rose-500",
+    chip: "bg-rose-500/15 text-rose-700 dark:text-rose-400",
+    border: "border-rose-500",
+  },
 };
 
 export const TERMINLISTE_STYLE: CategoryStyle = {

@@ -194,7 +194,14 @@ export const lessonPlanRatingSchema = z.object({
   whatDidntWork: z.string().trim().max(1000).optional(),
 });
 
-export const CALENDAR_CATEGORIES = ["undervisning", "vurdering", "leksefrist", "moter", "personlig"] as const;
+export const CALENDAR_CATEGORIES = [
+  "undervisning",
+  "vurdering",
+  "leksefrist",
+  "moter",
+  "personlig",
+  "annerledesdag",
+] as const;
 
 export const CALENDAR_CATEGORY_LABELS: Record<(typeof CALENDAR_CATEGORIES)[number], string> = {
   undervisning: "Undervisning",
@@ -202,6 +209,7 @@ export const CALENDAR_CATEGORY_LABELS: Record<(typeof CALENDAR_CATEGORIES)[numbe
   leksefrist: "Leksefrist",
   moter: "Møter",
   personlig: "Personlig",
+  annerledesdag: "Annerledes dag",
 };
 
 export const calendarEventSchema = z
