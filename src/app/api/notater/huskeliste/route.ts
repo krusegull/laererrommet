@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { weeklyNoteSchema } from "@/lib/validations";
+import { weeklyNoteCreateSchema } from "@/lib/validations";
 
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions);
@@ -22,7 +22,7 @@ export async function GET(request: Request) {
 
   const notes = await prisma.weeklyNote.findMany({
     where: { userId: session.user.id, weekStart },
-    orderBy: { dayOfWeek: "asc" },
+    orderBy: { createdAt: "asc" },
   });
 
   return NextResponse.json({
@@ -31,18 +31,19 @@ export async function GET(request: Request) {
       dayOfWeek: n.dayOfWeek,
       content: n.content,
       priority: n.priority,
+      completed: n.completed,
     })),
   });
 }
 
-export async function PUT(request: Request) {
+export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return NextResponse.json({ error: "Ikke innlogget" }, { status: 401 });
   }
 
   const body = await request.json().catch(() => null);
-  const parsed = weeklyNoteSchema.safeParse(body);
+  const parsed = weeklyNoteCreateSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
       { error: parsed.error.issues[0]?.message ?? "Ugyldige opplysninger" },
@@ -52,20 +53,17 @@ export async function PUT(request: Request) {
 
   const { weekStart, dayOfWeek, content, priority } = parsed.data;
 
-  if (!content) {
-    await prisma.weeklyNote.deleteMany({
-      where: { userId: session.user.id, weekStart, dayOfWeek },
-    });
-    return NextResponse.json({ note: null });
-  }
-
-  const note = await prisma.weeklyNote.upsert({
-    where: { userId_weekStart_dayOfWeek: { userId: session.user.id, weekStart, dayOfWeek } },
-    create: { userId: session.user.id, weekStart, dayOfWeek, content, priority: priority ?? null },
-    update: { content, priority: priority ?? null },
+  const note = await prisma.weeklyNote.create({
+    data: { userId: session.user.id, weekStart, dayOfWeek, content, priority: priority ?? null },
   });
 
   return NextResponse.json({
-    note: { id: note.id, dayOfWeek: note.dayOfWeek, content: note.content, priority: note.priority },
+    note: {
+      id: note.id,
+      dayOfWeek: note.dayOfWeek,
+      content: note.content,
+      priority: note.priority,
+      completed: note.completed,
+    },
   });
 }
