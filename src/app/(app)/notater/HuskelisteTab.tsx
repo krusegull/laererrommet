@@ -17,7 +17,7 @@ interface NoteItem {
 
 const PRIORITY_STYLES: Record<number, { dot: string; border: string; label: string }> = {
   1: { dot: "bg-error", border: "border-l-error", label: "Prioritet 1 – haster mest" },
-  2: { dot: "bg-amber-500", border: "border-l-amber-500", label: "Prioritet 2 – viktig, haster ikke" },
+  2: { dot: "bg-pink-500", border: "border-l-pink-500", label: "Prioritet 2 – viktig, haster ikke" },
   3: { dot: "bg-sky-500", border: "border-l-sky-500", label: "Prioritet 3 – minst viktig" },
 };
 
@@ -273,7 +273,7 @@ export function HuskelisteTab() {
           <span className="h-2 w-2 rounded-full bg-error" /> 1 = haster mest
         </p>
         <p className="inline-flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full bg-amber-500" /> 2 = viktig, ikke akutt
+          <span className="h-2 w-2 rounded-full bg-pink-500" /> 2 = viktig, ikke akutt
         </p>
         <p className="inline-flex items-center gap-1.5">
           <span className="h-2 w-2 rounded-full bg-sky-500" /> 3 = minst viktig
