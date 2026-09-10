@@ -269,9 +269,15 @@ export const schoolBreakSchema = z
     path: ["endDate"],
   });
 
-export const weeklyNoteSchema = z.object({
+export const weeklyNoteCreateSchema = z.object({
   weekStart: z.coerce.date(),
   dayOfWeek: z.number().int().min(0).max(4),
-  content: z.string().trim().max(4000),
+  content: z.string().trim().min(1, "Notatet kan ikke være tomt").max(500),
   priority: z.number().int().min(1).max(3).optional().nullable(),
+});
+
+export const weeklyNoteUpdateSchema = z.object({
+  content: z.string().trim().min(1, "Notatet kan ikke være tomt").max(500).optional(),
+  priority: z.number().int().min(1).max(3).optional().nullable(),
+  completed: z.boolean().optional(),
 });

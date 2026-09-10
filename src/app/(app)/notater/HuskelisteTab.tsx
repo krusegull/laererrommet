@@ -1,22 +1,24 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, X, Check } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Plus, Trash2 } from "lucide-react";
 import { TIMETABLE_DAY_LABELS } from "@/lib/validations";
 import { startOfWeek, addWeeks, getISOWeekNumber, formatShortDate, isSameWeek } from "./weekUtils";
 import { cn } from "@/lib/cn";
 
-interface DayNote {
+interface NoteItem {
+  id: string;
+  dayOfWeek: number;
   content: string;
   priority: number | null;
+  completed: boolean;
   dismissed: boolean;
-  saved: boolean;
 }
 
-const PRIORITY_STYLES: Record<number, { dot: string; label: string }> = {
-  1: { dot: "bg-error", label: "Prioritet 1 – haster mest" },
-  2: { dot: "bg-amber-500", label: "Prioritet 2 – viktig, haster ikke" },
-  3: { dot: "bg-sky-500", label: "Prioritet 3 – minst viktig" },
+const PRIORITY_STYLES: Record<number, { dot: string; border: string; label: string }> = {
+  1: { dot: "bg-error", border: "border-l-error", label: "Prioritet 1 – haster mest" },
+  2: { dot: "bg-amber-500", border: "border-l-amber-500", label: "Prioritet 2 – viktig, haster ikke" },
+  3: { dot: "bg-sky-500", border: "border-l-sky-500", label: "Prioritet 3 – minst viktig" },
 };
 
 function detectPriority(content: string): number | null {
@@ -24,15 +26,22 @@ function detectPriority(content: string): number | null {
   return match ? Number(match[1]) : null;
 }
 
-function emptyDayNotes(): Record<number, DayNote> {
-  return Object.fromEntries(
-    TIMETABLE_DAY_LABELS.map((_, i) => [i, { content: "", priority: null, dismissed: false, saved: true }])
-  );
+function sortItems(items: NoteItem[]): NoteItem[] {
+  return [...items].sort((a, b) => {
+    if (a.completed !== b.completed) return a.completed ? 1 : -1;
+    const pa = a.dismissed ? null : a.priority;
+    const pb = b.dismissed ? null : b.priority;
+    const ra = pa ?? 4;
+    const rb = pb ?? 4;
+    if (ra !== rb) return ra - rb;
+    return 0;
+  });
 }
 
 export function HuskelisteTab() {
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
-  const [days, setDays] = useState<Record<number, DayNote>>(emptyDayNotes);
+  const [items, setItems] = useState<NoteItem[]>([]);
+  const [drafts, setDrafts] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -41,16 +50,17 @@ export function HuskelisteTab() {
     fetch(`/api/notater/huskeliste?weekStart=${weekStart.toISOString()}`)
       .then((res) => res.json())
       .then((data) => {
-        const next = emptyDayNotes();
-        for (const note of data.notes ?? []) {
-          next[note.dayOfWeek] = {
-            content: note.content,
-            priority: note.priority,
-            dismissed: note.priority === null && detectPriority(note.content) !== null,
-            saved: true,
-          };
-        }
-        setDays(next);
+        const notes: NoteItem[] = (data.notes ?? []).map(
+          (n: { id: string; dayOfWeek: number; content: string; priority: number | null; completed: boolean }) => ({
+            id: n.id,
+            dayOfWeek: n.dayOfWeek,
+            content: n.content,
+            priority: n.priority,
+            completed: n.completed,
+            dismissed: n.priority === null && detectPriority(n.content) !== null,
+          })
+        );
+        setItems(notes);
         setLoading(false);
       })
       .catch(() => setLoading(false));
@@ -60,50 +70,63 @@ export function HuskelisteTab() {
   const weekNumber = getISOWeekNumber(weekStart);
   const isCurrentWeek = isSameWeek(weekStart, new Date());
 
-  function updateContent(dayOfWeek: number, content: string) {
-    setDays((prev) => ({
-      ...prev,
-      [dayOfWeek]: {
-        ...prev[dayOfWeek],
-        content,
-        dismissed: detectPriority(content) === null ? false : prev[dayOfWeek].dismissed,
-        saved: false,
-      },
-    }));
-  }
-
-  async function persistDay(dayOfWeek: number, content: string, dismissed: boolean) {
-    const priority = dismissed ? null : detectPriority(content);
+  async function addItem(dayOfWeek: number) {
+    const content = (drafts[dayOfWeek] ?? "").trim();
+    if (!content) return;
+    const priority = detectPriority(content);
+    setDrafts((prev) => ({ ...prev, [dayOfWeek]: "" }));
     try {
-      await fetch("/api/notater/huskeliste", {
-        method: "PUT",
+      const res = await fetch("/api/notater/huskeliste", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          weekStart: weekStart.toISOString(),
-          dayOfWeek,
-          content,
-          priority,
-        }),
+        body: JSON.stringify({ weekStart: weekStart.toISOString(), dayOfWeek, content, priority }),
       });
-      setDays((prev) => ({ ...prev, [dayOfWeek]: { ...prev[dayOfWeek], priority, saved: true } }));
+      if (!res.ok) return;
+      const { note } = await res.json();
+      setItems((prev) => [
+        ...prev,
+        { id: note.id, dayOfWeek: note.dayOfWeek, content: note.content, priority: note.priority, completed: false, dismissed: false },
+      ]);
     } catch {
-      // Nettverksfeil - la "saved: false" sta, brukeren ser at det ikke er lagret enna
+      // Nettverksfeil - teksten forblir tapt fra utkastfeltet, men brukeren kan skrive den pa nytt
     }
   }
 
-  function dismissPriority(dayOfWeek: number) {
-    setDays((prev) => ({ ...prev, [dayOfWeek]: { ...prev[dayOfWeek], dismissed: true, saved: false } }));
-    persistDay(dayOfWeek, days[dayOfWeek].content, true);
+  async function patchItem(id: string, patch: { priority?: number | null; completed?: boolean }) {
+    setItems((prev) => prev.map((it) => (it.id === id ? { ...it, ...patch } : it)));
+    try {
+      await fetch(`/api/notater/huskeliste/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patch),
+      });
+    } catch {
+      // Nettverksfeil - lokal tilstand kan avvike fra serveren til neste ukebytte/reload
+    }
   }
 
-  function restorePriority(dayOfWeek: number) {
-    setDays((prev) => ({ ...prev, [dayOfWeek]: { ...prev[dayOfWeek], dismissed: false, saved: false } }));
-    persistDay(dayOfWeek, days[dayOfWeek].content, false);
+  async function deleteItem(id: string) {
+    setItems((prev) => prev.filter((it) => it.id !== id));
+    try {
+      await fetch(`/api/notater/huskeliste/${id}`, { method: "DELETE" });
+    } catch {
+      // Nettverksfeil - elementet kan dukke opp igjen ved neste henting
+    }
   }
 
-  function saveDay(dayOfWeek: number) {
-    const day = days[dayOfWeek];
-    persistDay(dayOfWeek, day.content, day.dismissed);
+  function toggleCompleted(item: NoteItem) {
+    patchItem(item.id, { completed: !item.completed });
+  }
+
+  function dismissPriority(item: NoteItem) {
+    setItems((prev) => prev.map((it) => (it.id === item.id ? { ...it, dismissed: true } : it)));
+    patchItem(item.id, { priority: null });
+  }
+
+  function restorePriority(item: NoteItem) {
+    const detected = detectPriority(item.content);
+    setItems((prev) => prev.map((it) => (it.id === item.id ? { ...it, dismissed: false, priority: detected } : it)));
+    patchItem(item.id, { priority: detected });
   }
 
   return (
@@ -144,66 +167,95 @@ export function HuskelisteTab() {
         ) : (
           <div className="flex flex-col gap-3">
             {TIMETABLE_DAY_LABELS.map((label, dayOfWeek) => {
-              const day = days[dayOfWeek];
-              const detected = day.dismissed ? null : detectPriority(day.content);
-              const style = detected ? PRIORITY_STYLES[detected] : null;
+              const dayItems = sortItems(items.filter((it) => it.dayOfWeek === dayOfWeek));
               return (
-                <div
-                  key={label}
-                  className={cn(
-                    "flex flex-col gap-1.5 rounded-card border bg-background p-3 shadow-card transition-colors",
-                    style ? "border-l-4" : "border-line",
-                    style?.dot === "bg-error" && "border-l-error",
-                    style?.dot === "bg-amber-500" && "border-l-amber-500",
-                    style?.dot === "bg-sky-500" && "border-l-sky-500"
-                  )}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-foreground">{label}</span>
-                    <div className="flex items-center gap-2">
-                      {style && (
-                        <span className="inline-flex items-center gap-1.5 text-xs text-foreground/60">
-                          <span className={cn("h-2 w-2 rounded-full", style.dot)} />
-                          {style.label}
+                <div key={label} className="flex flex-col gap-2 rounded-card border border-line bg-background p-3 shadow-card">
+                  <span className="text-sm font-semibold text-foreground">{label}</span>
+
+                  <div className="flex flex-col gap-1.5">
+                    {dayItems.map((item) => {
+                      const detected = item.dismissed ? null : item.priority;
+                      const style = detected ? PRIORITY_STYLES[detected] : null;
+                      return (
+                        <div
+                          key={item.id}
+                          className={cn(
+                            "flex items-start gap-2 rounded-button border-l-4 bg-background-subtle/40 px-2.5 py-1.5",
+                            style ? style.border : "border-l-transparent",
+                            item.completed && "opacity-50"
+                          )}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={item.completed}
+                            onChange={() => toggleCompleted(item)}
+                            aria-label={`Merk "${item.content}" som gjennomført`}
+                            className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+                          />
+                          <span
+                            className={cn(
+                              "flex-1 whitespace-pre-wrap break-words text-sm text-foreground",
+                              item.completed && "line-through"
+                            )}
+                          >
+                            {item.content}
+                          </span>
+                          {style && (
+                            <button
+                              type="button"
+                              onClick={() => dismissPriority(item)}
+                              aria-label="Ikke prioritet, bare tekst"
+                              title={style.label}
+                              className="mt-0.5 flex shrink-0 items-center gap-1 text-foreground/30 hover:text-error"
+                            >
+                              <span className={cn("h-2 w-2 rounded-full", style.dot)} />
+                              <X size={12} />
+                            </button>
+                          )}
+                          {!style && detectPriority(item.content) !== null && item.dismissed && (
+                            <button
+                              type="button"
+                              onClick={() => restorePriority(item)}
+                              className="mt-0.5 shrink-0 text-xs text-foreground/40 hover:text-primary"
+                            >
+                              Bruk som prioritet
+                            </button>
+                          )}
                           <button
                             type="button"
-                            onClick={() => dismissPriority(dayOfWeek)}
-                            aria-label="Ikke prioritet, bare tekst"
-                            title="Ikke prioritet, bare tekst"
-                            className="text-foreground/30 hover:text-error"
+                            onClick={() => deleteItem(item.id)}
+                            aria-label={`Slett "${item.content}"`}
+                            className="mt-0.5 shrink-0 text-foreground/30 hover:text-error"
                           >
-                            <X size={12} />
+                            <Trash2 size={13} />
                           </button>
-                        </span>
-                      )}
-                      {!style && detectPriority(day.content) !== null && day.dismissed && (
-                        <button
-                          type="button"
-                          onClick={() => restorePriority(dayOfWeek)}
-                          className="text-xs text-foreground/40 hover:text-primary"
-                        >
-                          Bruk som prioritet likevel
-                        </button>
-                      )}
-                      {day.saved ? (
-                        day.content && (
-                          <span className="inline-flex items-center gap-1 text-xs text-secondary">
-                            <Check size={12} /> Lagret
-                          </span>
-                        )
-                      ) : (
-                        <span className="text-xs text-foreground/40">Ikke lagret</span>
-                      )}
-                    </div>
+                        </div>
+                      );
+                    })}
                   </div>
-                  <textarea
-                    value={day.content}
-                    onChange={(e) => updateContent(dayOfWeek, e.target.value)}
-                    onBlur={() => saveDay(dayOfWeek)}
-                    rows={2}
-                    placeholder="Skriv det du vil huske..."
-                    className="rounded-button border border-line bg-background px-3 py-2 text-sm text-foreground placeholder:text-foreground/40 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  />
+
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      addItem(dayOfWeek);
+                    }}
+                    className="flex items-center gap-1.5"
+                  >
+                    <input
+                      type="text"
+                      value={drafts[dayOfWeek] ?? ""}
+                      onChange={(e) => setDrafts((prev) => ({ ...prev, [dayOfWeek]: e.target.value }))}
+                      placeholder="Nytt notat, f.eks. 1. Rette prøver..."
+                      className="flex-1 rounded-button border border-line bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-foreground/40 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                    />
+                    <button
+                      type="submit"
+                      aria-label="Legg til notat"
+                      className="rounded-button bg-primary/10 p-1.5 text-primary hover:bg-primary/20"
+                    >
+                      <Plus size={16} />
+                    </button>
+                  </form>
                 </div>
               );
             })}
@@ -214,8 +266,8 @@ export function HuskelisteTab() {
       <aside className="flex w-full flex-col gap-2 rounded-card border border-line bg-background-subtle/50 p-3 text-xs text-foreground/70 lg:w-56">
         <p className="font-semibold text-foreground">Prioritet</p>
         <p>
-          Skriv <strong>1.</strong>, <strong>2.</strong> eller <strong>3.</strong> først i teksten for å
-          markere prioritet:
+          Skriv <strong>1.</strong>, <strong>2.</strong> eller <strong>3.</strong> først i teksten. Notatet
+          sorteres da automatisk: 1 øverst, 2 i midten, 3 nederst.
         </p>
         <p className="inline-flex items-center gap-1.5">
           <span className="h-2 w-2 rounded-full bg-error" /> 1 = haster mest
@@ -230,6 +282,7 @@ export function HuskelisteTab() {
           Skrev du f.eks. &quot;2. Gjennomgå kapittel 5&quot; uten å mene prioritet? Trykk × ved siden av
           fargemarkøren for å fjerne den.
         </p>
+        <p>Huk av boksen til venstre for å markere et notat som gjennomført. Gjennomførte notater flyttes nederst.</p>
       </aside>
     </div>
   );
