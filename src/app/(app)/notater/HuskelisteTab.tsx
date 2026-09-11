@@ -1,41 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { ChevronLeft, ChevronRight, X, Plus, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { TIMETABLE_DAY_LABELS } from "@/lib/validations";
 import { startOfWeek, addWeeks, getISOWeekNumber, formatShortDate, isSameWeek } from "./weekUtils";
-import { cn } from "@/lib/cn";
+import { detectPriority, sortNotes } from "./noteUtils";
+import { NoteRow, type NoteRowItem } from "./NoteRow";
+import { NoteAddForm } from "./NoteAddForm";
 
-interface NoteItem {
-  id: string;
+interface NoteItem extends NoteRowItem {
   dayOfWeek: number;
-  content: string;
-  priority: number | null;
-  completed: boolean;
-  dismissed: boolean;
-}
-
-const PRIORITY_STYLES: Record<number, { dot: string; border: string; label: string }> = {
-  1: { dot: "bg-error", border: "border-l-error", label: "Prioritet 1 – haster mest" },
-  2: { dot: "bg-pink-500", border: "border-l-pink-500", label: "Prioritet 2 – viktig, haster ikke" },
-  3: { dot: "bg-sky-500", border: "border-l-sky-500", label: "Prioritet 3 – minst viktig" },
-};
-
-function detectPriority(content: string): number | null {
-  const match = content.match(/^([123])\.\s/);
-  return match ? Number(match[1]) : null;
-}
-
-function sortItems(items: NoteItem[]): NoteItem[] {
-  return [...items].sort((a, b) => {
-    if (a.completed !== b.completed) return a.completed ? 1 : -1;
-    const pa = a.dismissed ? null : a.priority;
-    const pb = b.dismissed ? null : b.priority;
-    const ra = pa ?? 4;
-    const rb = pb ?? 4;
-    if (ra !== rb) return ra - rb;
-    return 0;
-  });
 }
 
 export function HuskelisteTab() {
@@ -114,10 +88,6 @@ export function HuskelisteTab() {
     }
   }
 
-  function toggleCompleted(item: NoteItem) {
-    patchItem(item.id, { completed: !item.completed });
-  }
-
   function dismissPriority(item: NoteItem) {
     setItems((prev) => prev.map((it) => (it.id === item.id ? { ...it, dismissed: true } : it)));
     patchItem(item.id, { priority: null });
@@ -167,95 +137,29 @@ export function HuskelisteTab() {
         ) : (
           <div className="flex flex-col gap-3">
             {TIMETABLE_DAY_LABELS.map((label, dayOfWeek) => {
-              const dayItems = sortItems(items.filter((it) => it.dayOfWeek === dayOfWeek));
+              const dayItems = sortNotes(items.filter((it) => it.dayOfWeek === dayOfWeek));
               return (
                 <div key={label} className="flex flex-col gap-2 rounded-card border border-line bg-background p-3 shadow-card">
                   <span className="text-sm font-semibold text-foreground">{label}</span>
 
                   <div className="flex flex-col gap-1.5">
-                    {dayItems.map((item) => {
-                      const detected = item.dismissed ? null : item.priority;
-                      const style = detected ? PRIORITY_STYLES[detected] : null;
-                      return (
-                        <div
-                          key={item.id}
-                          className={cn(
-                            "flex items-start gap-2 rounded-button border-l-4 bg-background-subtle/40 px-2.5 py-1.5",
-                            style ? style.border : "border-l-transparent",
-                            item.completed && "opacity-50"
-                          )}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={item.completed}
-                            onChange={() => toggleCompleted(item)}
-                            aria-label={`Merk "${item.content}" som gjennomført`}
-                            className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
-                          />
-                          <span
-                            className={cn(
-                              "flex-1 whitespace-pre-wrap break-words text-sm text-foreground",
-                              item.completed && "line-through"
-                            )}
-                          >
-                            {item.content}
-                          </span>
-                          {style && (
-                            <button
-                              type="button"
-                              onClick={() => dismissPriority(item)}
-                              aria-label="Ikke prioritet, bare tekst"
-                              title={style.label}
-                              className="mt-0.5 flex shrink-0 items-center gap-1 text-foreground/30 hover:text-error"
-                            >
-                              <span className={cn("h-2 w-2 rounded-full", style.dot)} />
-                              <X size={12} />
-                            </button>
-                          )}
-                          {!style && detectPriority(item.content) !== null && item.dismissed && (
-                            <button
-                              type="button"
-                              onClick={() => restorePriority(item)}
-                              className="mt-0.5 shrink-0 text-xs text-foreground/40 hover:text-primary"
-                            >
-                              Bruk som prioritet
-                            </button>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => deleteItem(item.id)}
-                            aria-label={`Slett "${item.content}"`}
-                            className="mt-0.5 shrink-0 text-foreground/30 hover:text-error"
-                          >
-                            <Trash2 size={13} />
-                          </button>
-                        </div>
-                      );
-                    })}
+                    {dayItems.map((item) => (
+                      <NoteRow
+                        key={item.id}
+                        item={item}
+                        onToggleCompleted={() => patchItem(item.id, { completed: !item.completed })}
+                        onDismissPriority={() => dismissPriority(item)}
+                        onRestorePriority={() => restorePriority(item)}
+                        onDelete={() => deleteItem(item.id)}
+                      />
+                    ))}
                   </div>
 
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      addItem(dayOfWeek);
-                    }}
-                    className="flex items-center gap-1.5"
-                  >
-                    <input
-                      type="text"
-                      value={drafts[dayOfWeek] ?? ""}
-                      onChange={(e) => setDrafts((prev) => ({ ...prev, [dayOfWeek]: e.target.value }))}
-                      placeholder="Nytt notat, f.eks. 1. Rette prøver..."
-                      className="flex-1 rounded-button border border-line bg-background px-3 py-1.5 text-sm text-foreground placeholder:text-foreground/40 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                    />
-                    <button
-                      type="submit"
-                      aria-label="Legg til notat"
-                      className="rounded-button bg-primary/10 p-1.5 text-primary hover:bg-primary/20"
-                    >
-                      <Plus size={16} />
-                    </button>
-                  </form>
+                  <NoteAddForm
+                    value={drafts[dayOfWeek] ?? ""}
+                    onChange={(value) => setDrafts((prev) => ({ ...prev, [dayOfWeek]: value }))}
+                    onSubmit={() => addItem(dayOfWeek)}
+                  />
                 </div>
               );
             })}

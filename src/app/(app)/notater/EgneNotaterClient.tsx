@@ -1,16 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { ListChecks } from "lucide-react";
+import { ListChecks, Star } from "lucide-react";
 import { cn } from "@/lib/cn";
 import { HuskelisteTab } from "./HuskelisteTab";
+import { ViktigeNotaterTab } from "./ViktigeNotaterTab";
 
-const TABS = [{ key: "huskeliste", label: "Huskeliste", icon: ListChecks }] as const;
+const TABS = [
+  { key: "viktig", label: "Viktige notater", icon: Star },
+  { key: "huskeliste", label: "Huskeliste", icon: ListChecks },
+] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
 
 export function EgneNotaterClient() {
-  const [tab, setTab] = useState<TabKey>("huskeliste");
+  const [tab, setTab] = useState<TabKey>("viktig");
 
   return (
     <div className="flex flex-col gap-6">
@@ -33,6 +37,7 @@ export function EgneNotaterClient() {
         ))}
       </div>
 
+      {tab === "viktig" && <ViktigeNotaterTab />}
       {tab === "huskeliste" && <HuskelisteTab />}
     </div>
   );
