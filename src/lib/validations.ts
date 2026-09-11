@@ -281,3 +281,14 @@ export const weeklyNoteUpdateSchema = z.object({
   priority: z.number().int().min(1).max(3).optional().nullable(),
   completed: z.boolean().optional(),
 });
+
+export const importantNoteCreateSchema = z.object({
+  content: z.string().trim().min(1, "Notatet kan ikke være tomt").max(500),
+  priority: z.number().int().min(1).max(3).optional().nullable(),
+});
+
+export const importantNoteUpdateSchema = z.object({
+  content: z.string().trim().min(1, "Notatet kan ikke være tomt").max(500).optional(),
+  priority: z.number().int().min(1).max(3).optional().nullable(),
+  completed: z.boolean().optional(),
+});

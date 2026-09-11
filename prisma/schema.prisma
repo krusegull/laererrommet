@@ -53,6 +53,7 @@ model User {
   timetableEntries TimetableEntry[]
   schoolBreaks     SchoolBreak[]
   weeklyNotes      WeeklyNote[]
+  importantNotes   ImportantNote[]
 }
 
 model Student {
@@ -244,6 +245,19 @@ model WeeklyNote {
   updatedAt DateTime @updatedAt
 
   @@index([userId, weekStart, dayOfWeek])
+}
+
+model ImportantNote {
+  id        String   @id @default(cuid())
+  content   String
+  priority  Int?
+  completed Boolean  @default(false)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
 
 model TerminlisteEvent {
