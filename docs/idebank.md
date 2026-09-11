@@ -203,6 +203,13 @@ knyttes til eksisterende elevtekst-innsending, og hvordan det ev. skal
 håndtere fagspesifikk notasjon (f.eks. matematiske uttrykk, ikke bare
 løpende tekst). Ikke bygg før det bes om.
 
+**Oppdatering 2026-09-11**: presisert av produkteier at dette også bør dekke
+lærerens *egne* håndskrevne ark — ikke bare elevtekster — for eksempel et
+tankekart skrevet for hånd, som gjøres om til digital tekst/struktur.
+Bredere brukstilfelle enn opprinnelig antatt: fra "digitaliser elevtekst"
+til "ta bilde av et hvilket som helst håndskrevet ark og få det inn som
+tekst i appen".
+
 ## KI-basert avviksdeteksjon i elevtekster (nevnt 2026-09-01)
 
 Produkteiers spørsmål: er det mulig å bygge en KI som måler sannsynligheten
@@ -542,5 +549,48 @@ utvidelse av den (raskere/mer strukturert registrering i selve timen, i
 stedet for i etterkant), eller en egen, lettvekts logg ved siden av. Verdt
 å avklare om hurtigtaggene skal være faste (som over) eller
 lærer-/skole-definerte.
+
+Ikke bygg før det bes om.
+
+## Video-forberedelser til timer, med KI-transkribering/redigering (nevnt 2026-09-11)
+
+Idé: lærer kan spille inn videoer som forberedelse til elevene før timen
+(f.eks. en kort gjennomgang de ser hjemme, "flipped classroom"-stil). KI kan
+transkribere talen og/eller redigere videoen (kutte, forbedre lyd, lage
+undertekster). Uavklart: hvor videoene skal lagres (samme
+opplastingsløsning som elevtekster, eller egen lagring pga. filstørrelse?),
+hvor mye redigering KI faktisk skal gjøre (kun transkribering vs. reell
+klipping), og om transkripsjonen kan gjenbrukes andre steder i appen
+(f.eks. som grunnlag for et undervisningsopplegg i Undervisningsbanken).
+
+Ikke bygg før det bes om.
+
+## "Topp 10 undervisningsopplegg" — kuratert liste over nye/velfungerende opplegg (nevnt 2026-09-11)
+
+Idé: en fremhevet liste i Undervisningsbanken med de 10 beste/mest
+velfungerende undervisningsoppleggene — noe nytt og inspirerende, ikke bare
+kronologisk sortert. Uavklart hvordan "topp 10" skal kåres: kuratert
+manuelt (av produkteier/admin), basert på liker/vurdering som allerede
+finnes i Undervisningsbanken, eller en kombinasjon. Uavklart også om listen
+skal rullere (f.eks. månedlig) eller stå fast til noen bytter den ut.
+
+Ikke bygg før det bes om.
+
+## Delt klassedokument der alle elever skriver i samme dokument (nevnt 2026-09-11)
+
+Idé: alle elever i en klasse skriver i samme (delte) dokument, f.eks. som
+svar på faste spørsmål som "Hvilket nivå ligger du på?", "Hva må du bli
+bedre på?", "Hva kan læreren gjøre?". Poenget er at læreren raskt kan bruke
+KI til å få en samlet oversikt over hele klassens svar på én gang, i stedet
+for å lese hver elevtekst separat.
+
+Henger tett sammen med eksisterende elevtekst-innsending og KI-veilederen,
+men er en annen arbeidsflyt: ett dokument med mange bidragsytere, i stedet
+for én tekst per elev. Uavklart: hvordan elevene får tilgang til å skrive i
+samme dokument (elever har i dag ingen egen innlogging i appen — kun
+læreren er bruker), hvordan svarene skilles fra hverandre i dokumentet
+(anonymt, med navn, eller kun synlig for lærer), og personvernshensyn rundt
+at elever skriver direkte i et delt dokument (jf. eget notat om personvern
+ved opplasting av elevtekster, under "Utfordringer og hensyn").
 
 Ikke bygg før det bes om.
