@@ -594,3 +594,39 @@ at elever skriver direkte i et delt dokument (jf. eget notat om personvern
 ved opplasting av elevtekster, under "Utfordringer og hensyn").
 
 Ikke bygg før det bes om.
+
+## OVERSIKT — alt samlet på ett sted (nevnt 2026-09-18)
+
+Verdiargument fra produkteier for hvorfor sentralisering i Lærerrommet er
+verdifullt, ikke bare en funksjon:
+
+- I dag er undervisningsopplegg spredt i forskjellige Facebook-grupper, med
+  mye god diskusjon som forsvinner i feeden, samt lagret internt på hver
+  enkelt skole (utallige mapper, Word-filer osv.) uten deling på tvers.
+  Produkteiers vurdering: "jeg tror alle har mye å lære av hverandre dersom
+  vi utarbeider en delingskultur."
+- Konkret forslag til organisering: én ansvarlig per skole som får i
+  oppgave å laste opp verdifulle dokumenter/opplegg som kan deles med
+  andre skoler — en distribuert, men koordinert, delingsmodell fremfor at
+  alle laster opp fritt.
+- Samme "alt samlet"-tankegang gjelder elevoppfølging: én plass hvor
+  læreren kan se oversikt over elevene, følge utviklingen deres over tid,
+  og se hva den enkelte eleven har behov for videre.
+
+Henger sammen med flere eksisterende deler av appen/idébanken:
+**Undervisningsbanken** (deling av opplegg er allerede bygget internt for
+én lærer/skole, men ikke på tvers av skoler), **Konkurrentlandskap:
+laererro.no** (et eksternt eksempel på deling av undervisningsopplegg), og
+elevoversikten/-siden samt "Notere elevkompetanse underveis i timen" (som
+allerede dekker deler av elevoppfølgingsbehovet, men per lærer/klasse —
+ikke som en tverrgående oversikt).
+
+Uavklart: hvordan tverrskole-deling skal fungere i praksis (åpen deling,
+moderert av en ansvarlig per skole slik produkteier foreslår, eller
+kuratert av Lærerrommet selv — jf. "Topp 10 undervisningsopplegg"), om
+delt innhold skal være gratis/åpent eller en del av en betalt tjeneste
+(jf. "Hvem selger vi til?" og forretningsmodell-notatet), og
+personvernhensyn ved at elevoppfølgingsdata skal være samlet ett sted
+(jf. personvern-notatet under "Utfordringer og hensyn").
+
+Ikke bygg før det bes om.
