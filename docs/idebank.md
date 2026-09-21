@@ -60,6 +60,25 @@ gjelder opptak som involverer elever, reiser det et eget, betydelig
 GDPR-spørsmål utover det appen allerede håndterer (samtykke, lagring,
 sletting av lydfiler er en annen risikoklasse enn tekstnotater).
 
+**Oppdatering 2026-09-21 — konkretisert bruksområde og personvernløsning
+(produkteier)**: bruksområdet er blant annet fagsamtaler (elevsamtaler).
+Her må personvern rundt selve opptaket tenkes nøye gjennom. Forslag:
+**lokal "voice note"-løsning** — opptaket lagres kun lokalt (på lærerens
+enhet), ikke hos en ekstern tjeneste. Poenget er eierskap til dataen: med
+lokal lagring er det ingen tredjepart som "eier" eller sitter på opptaket,
+i motsetning til f.eks. ChatGPT, som (ifølge produkteier) lagrer data i
+minimum 30 dager hos leverandøren.
+
+Henger sammen med appens øvrige personvernlinje (jf. "Personvern ved
+opplasting av elevtekster" under "Utfordringer og hensyn", og prinsippet
+om at ingen elevdata skal sendes til eksterne tjenester i
+avviksdeteksjon-ideen) — samme "ingen data ut av huset"-tankegang gjelder
+her, bare for lyd i stedet for tekst. Uavklart: hvordan transkribering skal
+skje hvis selve lydopptaket ikke skal forlate enheten (lokal
+transkriberingsmodell, à la Ollama-alternativet nevnt under
+avviksdeteksjon-ideen?), hvor lenge/om lydfilen skal beholdes etter
+transkribering, og samtykkeflyt for eleven/foresatte.
+
 ## KI-samskriving av undervisningsopplegg (nevnt 2026-08-25)
 
 "Læreren kan selv lage undervisningsopplegg sammen med KI." Bevisst
