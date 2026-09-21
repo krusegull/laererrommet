@@ -672,3 +672,43 @@ PowerPoint genereres og eksporteres fra appen, og utsendingsmekanismen til
 elevene (elever har i dag ingen egen innlogging i appen).
 
 Ikke bygg før det bes om.
+
+## KI-støtte til muntlig vurdering: opptak → transkribering → vurderingsforslag (nevnt 2026-09-21)
+
+Idé: en løsning lærere kan bruke under muntlige vurderingssituasjoner —
+lydopptak av den muntlige, transkribering av opptaket, og deretter KI som
+hjelper læreren med selve vurderingen av eleven.
+
+**Bevisst avgrenset av produkteier (2026-09-21) for å holde seg innenfor
+retningslinjene**: ingen sanntids oppfølgingsspørsmål fra KI under selve
+prøven. En KI som styrer/leder en muntlig eksamen i sanntid ble vurdert som
+for teknisk krevende og for uklart pedagogisk (uklart om det fortsatt er en
+lærerstyrt muntlig) — dette er bevisst tatt ut av scope, ikke bare uavklart.
+
+Med det droppet gjenstår en klarere og tryggere kjede:
+1. **Lydopptak** — lagres lokalt på lærerens enhet, samme prinsipp som
+   øvrig lydopptak/fagsamtale-idé (ingen data ut av huset, ingen ekstern
+   tjeneste som "eier" opptaket).
+2. **Transkribering** — av opptaket, i etterkant av den muntlige.
+3. **KI-vurderingsforslag** — KI analyserer transkripsjonen og gir læreren
+   et forslag/utkast (styrker, svakheter, forslag til tilbakemelding/vurdering)
+   — **ikke** en automatisk karakter og **ikke** en autonom avgjørelse.
+   Læreren kvalitetssikrer og har alltid siste ord, i tråd med prinsippet
+   allerede lagt til grunn i "KI-basert avviksdeteksjon i elevtekster" og
+   rammeverket i "Vurdering"-ideen (vurdering AV/FOR/SOM læring, eleven skal
+   vite på forhånd at den blir vurdert).
+
+Personvernmessig et hakk mer sensitivt enn tidligere lydopptak-idéer: lyd
+av en (ofte mindreårig) elev i en formell vurderingssituasjon med reelle
+konsekvenser (karakter/standpunkt). Automatiserte avgjørelser med
+"betydelig virkning" for en person er strengt regulert under GDPR — enda
+en grunn til at KI kun skal foreslå, ikke avgjøre.
+
+Uavklart: hvordan transkribering skal skje uten at lyd/tekst forlater
+lærerens enhet (lokal transkriberingsmodell, jf. Ollama-alternativet nevnt
+under avviksdeteksjon-ideen), hvilken vurderingsramme KI-forslaget skal
+bygge på (Osloskolens/PfDK-retningslinjer, samme kunnskapsbase som
+KI-veilederen), samtykkeflyt for elev/foresatte, og om/hvor lenge lydfil og
+transkripsjon skal lagres etter at vurderingsforslaget er generert.
+
+Ikke bygg før det bes om.
