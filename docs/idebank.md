@@ -649,3 +649,26 @@ personvernhensyn ved at elevoppfølgingsdata skal være samlet ett sted
 (jf. personvern-notatet under "Utfordringer og hensyn").
 
 Ikke bygg før det bes om.
+
+## KI-generert forelesningspakke: klonet stemme + PowerPoint, sendt ut i forkant (nevnt 2026-09-21)
+
+Idé: læreren kan klone sin egen stemme, og KI-veilederen lager en
+PowerPoint-presentasjon som deretter sendes ut til elevene i forkant av en
+forelesning — trolig i kombinasjon (f.eks. en presentasjon med den klonede
+stemmen som fortellerspor), men uavklart om video/lyd og PowerPoint er ett
+samlet produkt eller to separate leveranser.
+
+Henger sammen med flere eksisterende idéer: "Video-forberedelser til timer,
+med KI-transkribering/redigering" (samme flipped-classroom-tankegang, men
+her er innholdet KI-generert fra bunnen fremfor en video læreren selv
+spiller inn), "KI-generert podkast om valgfritt emne", og KI-samskriving av
+undervisningsopplegg (som kunne være kilden PowerPointen genereres fra).
+
+Uavklart: hvilken tjeneste som skal gjøre stemmekloning (stor
+personvern-/etisk tyngde ved å klone en persons stemme — krever trolig
+eksplisitt samtykke og en vurdering av om lyddata må sendes til en ekstern
+leverandør, jf. "ingen data ut av huset"-linjen i lydopptak-ideen), hvordan
+PowerPoint genereres og eksporteres fra appen, og utsendingsmekanismen til
+elevene (elever har i dag ingen egen innlogging i appen).
+
+Ikke bygg før det bes om.
