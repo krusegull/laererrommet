@@ -712,3 +712,40 @@ KI-veilederen), samtykkeflyt for elev/foresatte, og om/hvor lenge lydfil og
 transkripsjon skal lagres etter at vurderingsforslaget er generert.
 
 Ikke bygg før det bes om.
+
+## Ferdige tilbakemeldinger + elevnivå samlet, delt ut før prøver (nevnt 2026-10-05)
+
+Idé i to deler som hører sammen:
+
+1. **Ferdige/ofte brukte tilbakemeldinger**: når læreren har lest gjennom
+   en elevtekst og skal gi tilbakemelding, bør noen ferdige, ofte brukte
+   tilbakemeldinger kunne legges inn og velges — ikke for å erstatte
+   lærerens egen vurdering, men for å gjøre selve *skrivingen* raskere.
+   Produkteiers presisering: dette bevarer lærerens profesjon (læreren
+   leser og vurderer fortsatt selv), samtidig som KI/forhåndsdefinerte
+   tekster gjør prosessen mer effektiv.
+2. **Elevnivå og -utvikling samlet ett sted**: elevens nivå og
+   tilbakemeldinger kan lagres og hentes fram igjen — i dag er dette
+   ofte spredt på ulike steder (ulike dokumenter/mapper, jf. "OVERSIKT —
+   alt samlet på ett sted"). Disse tilbakemeldingene/nivåvurderingene kan
+   deles ut til elevene i forkant av en prøve, slik at de vet hvor de
+   står og hva de bør jobbe med før vurderingen.
+
+Henger sammen med flere eksisterende idéer/funksjoner: **Maler-kategori,
+inkl. KI-generert statistikk fra tilbakemeldinger** (ferdige
+tilbakemeldinger er naturlig en undertype av maler), **Notere
+elevkompetanse underveis i timen, med hurtigtagger** (samme
+elevnivå-tankegang, men der er det underveis i timen — her er det mer en
+samlet, delbar oversikt over tid), og den eksisterende
+**Tilbakemeldingslogg** (`FeedbackLog`) som allerede lagrer
+oppgave/positivt/kan-bli-bedre per elev — ferdige tilbakemeldinger kunne
+være et bibliotek man velger fra når man fyller ut denne.
+
+Uavklart: hvordan et bibliotek av "ofte brukte tilbakemeldinger" skal
+organiseres (per fag? per oppgavetype? fritekst-søk?), om elevnivå skal
+være en enkel skala/tag (jf. hurtigtagger-ideen) eller fritekst, og
+hvordan/i hvilket format tilbakemeldinger og nivå skal "deles ut" til
+elever før en prøve (elever har i dag ingen egen innlogging i appen —
+samme åpne spørsmål som i "Delt klassedokument"-ideen).
+
+Ikke bygg før det bes om.
