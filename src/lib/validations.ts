@@ -215,7 +215,7 @@ export const CALENDAR_CATEGORY_LABELS: Record<(typeof CALENDAR_CATEGORIES)[numbe
 export const calendarEventSchema = z
   .object({
     title: z.string().trim().min(1, "Tittel er påkrevd").max(200),
-    description: z.string().trim().max(1000).optional(),
+    description: z.string().trim().max(5000).optional(),
     date: z.coerce.date(),
     endDate: z.coerce.date().optional().nullable(),
     location: z.string().trim().max(200).optional(),
