@@ -292,3 +292,67 @@ export const importantNoteUpdateSchema = z.object({
   priority: z.number().int().min(1).max(3).optional().nullable(),
   completed: z.boolean().optional(),
 });
+
+export const ROOM_OBJECT_TYPES = ["dor", "tavle", "vindu", "kateter", "laerer", "bokhylle", "egen"] as const;
+
+export const classProfileCreateSchema = z.object({
+  name: z.string().trim().min(1, "Navn på klassen er påkrevd").max(60),
+});
+
+export const classProfileUpdateSchema = z.object({
+  name: z.string().trim().min(1, "Navn på klassen er påkrevd").max(60),
+});
+
+export const classStudentSchema = z.object({
+  name: z.string().trim().min(1, "Navn er påkrevd").max(100),
+  gender: z.enum(["gutt", "jente"]),
+});
+
+export const roomObjectSchema = z.object({
+  id: z.string().min(1).max(60),
+  type: z.enum(ROOM_OBJECT_TYPES),
+  label: z.string().trim().min(1, "Navn er påkrevd").max(60),
+  x: z.number().min(0).max(100),
+  y: z.number().min(0).max(100),
+  size: z.number().min(16).max(90).optional(),
+});
+
+export const roomObjectsUpdateSchema = z.object({
+  roomObjects: z.array(roomObjectSchema).max(60),
+});
+
+export const podSchema = z.object({
+  id: z.number().int().min(1),
+  size: z.number().int().min(1).max(6),
+  x: z.number().min(0).max(100),
+  y: z.number().min(0).max(100),
+});
+
+export const podLayoutUpdateSchema = z.object({
+  podLayout: z.array(podSchema).max(40),
+  // false ved ren drag-and-drop av posisjon (ingen grunn til å stokke om elevene),
+  // true (default) når antall seter er endret og kartet bør genereres på nytt.
+  regenerate: z.boolean().optional(),
+});
+
+export const swapSeatSchema = z.object({
+  p1: z.number().int().min(0),
+  s1: z.number().int().min(0),
+  p2: z.number().int().min(0),
+  s2: z.number().int().min(0),
+  force: z.boolean().optional(),
+});
+
+export const toggleLockSchema = z.object({
+  podIndex: z.number().int().min(0),
+  seatIndex: z.number().int().min(0),
+});
+
+export const GRUPPER_MODES = ["random", "manuell", "instruks"] as const;
+
+export const grupperRequestSchema = z.object({
+  mode: z.enum(GRUPPER_MODES),
+  size: z.number().int().min(2).max(10).optional(),
+  instruks: z.string().trim().max(1000).optional(),
+  manualGroups: z.array(z.array(z.string().min(1))).max(40).optional(),
+});
