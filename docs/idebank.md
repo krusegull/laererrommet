@@ -262,8 +262,38 @@ Uavklart: hvordan en "sone" defineres presist (bestemte pulter/rader,
 eller en regel som "ikke bakerste rad" uavhengig av hvor rommet er
 tegnet?), om varselet skal blokkere handlingen helt eller bare advare og
 la læreren overstyre bevisst, og om låsingen er permanent eller kan ha en
-utløpsdato (f.eks. til en hørselshemming er bedre/verre). Ikke bygg før
-det bes om.
+utløpsdato (f.eks. til en hørselshemming er bedre/verre).
+
+**Oppdatering 2026-11-15 — automatisk planlegging + push-varsel
+(produkteier)**: ønsker å kunne skrive en fritekst-instruks i appen etter
+at rom/pulter er satt opp, f.eks. "lag klassekart annenhver uke fram mot
+sommeren 2027, hopp over ferier" — og at appen deretter gjør dette helt av
+seg selv videre. Presisering: **det viktigste er at det skal bli mye
+enklere etter at man har satt det opp én gang** — ikke en engangsjobb, men
+en varig, selvkjørende regel.
+
+Vurdering: fullt mulig, og kan gjenbruke to ting som allerede finnes i
+appen — ferieperiodene under Timeplan (`SchoolBreak`) for å automatisk
+hoppe over ferieuker, og samme type daglige bakgrunnsjobb ("cron") som
+allerede sender kalenderpåminnelser. Selve friteksttolkningen (intervall,
+sluttdato) kan gjøres med samme KI-integrasjon som KI-veilederen allerede
+bruker — læreren bekrefter forslaget før det lagres som en fast regel.
+
+Ønsker også **push-varsel på telefonen**, f.eks. "husk å vise fram
+klassekartet mandag kl. 07.45". Sjekket mot koden: appens eksisterende
+"Varsler" er kun inni appen (ingen e-post/push finnes i appen i dag).
+Tre reelle veier, i stigende byggekostnad:
+1. **Kalender-synk** (anbefalt først) — appen lager en kalenderfil/-feed
+   læreren abonnerer på fra telefonens egen kalenderapp, som da varsler
+   helt normalt uten noe nytt varslingssystem i vår app.
+2. **E-post-varsel** — krever at vi setter opp en e-posttjeneste fra bunnen
+   (finnes ikke i appen i dag).
+3. **Ekte push-varsel** (dukker opp på låseskjermen) — krever at appen
+   installeres som en PWA på hjemskjermen, pluss et helt nytt teknisk
+   oppsett (service worker, push-abonnement per enhet). På iPhone må appen
+   være lagt til på hjemskjermen for at push skal fungere i det hele tatt.
+
+Ikke bygg før det bes om.
 
 ## Digitalisering av håndskrevne elevtekster, også utenfor norsk (nevnt 2026-09-01)
 
