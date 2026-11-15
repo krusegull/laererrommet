@@ -211,7 +211,35 @@ klasserommet kanskje kan brukes som utgangspunkt (f.eks. som bakgrunn å
 plassere elever oppå, eller at KI tolker bildet til å foreslå et oppsett).
 Ingen detaljer avklart (kobling til elevlisten? redigerbart etterpå? kun
 visuelt eller også knyttet til funksjonalitet som sitteplass-basert
-gruppering). Ikke bygg før det bes om.
+gruppering).
+
+**Oppdatering 2026-11-15 — konkretisert av produkteier, vist som klikkbar
+skisse**: ideen er betydelig mer detaljert nå, i fire deler:
+
+1. **Tegn rommet** — læreren plasserer faste kjennetegn ved klasserommet
+   selv (dør, tavle, vinduer, kateter), redigerbart når som helst.
+2. **Grupper pultene** — pultene grupperes i "puter" (f.eks. 2 og 2), med
+   en egen innstilling for gruppestørrelse som kan endres over tid
+   (f.eks. fra 2-og-2 til 3-og-3) uten å måtte tegne rommet på nytt.
+3. **Elevliste med kjønn** — alle elever legges inn med gutt/jente.
+4. **Automatisk generert klassekart** — et nytt, tilfeldig klassekart
+   genereres hver 14. dag, med gutt/jente alternert innad i hver gruppe.
+   Produkteiers presisering: systemet skal gjøre jobben (generere), men
+   læreren må kunne gjøre manuelle endringer etterpå (f.eks. bytte to
+   elever) — ikke en ren randomisering uten mulighet for overstyring.
+
+Se også de to nye, beslektede ideene rett under ("Invitere til
+utviklingssamtaler" ligger i en egen idé, men "Sett klassen i grupper
+ut fra kriterier/randomiser" henger direkte sammen med punkt 4 over — det
+er trolig samme underliggende grupperings-/randomiseringsmotor, bare
+brukt til annet enn fast sitteplassering).
+
+Uavklart: nøyaktig algoritme for gutt/jente-fordeling (unngå at samme to
+elever alltid havner sammen over tid?), om rom-tegningen og
+pult-grupperingen skal være separate steg eller kunne gjøres samtidig, og
+om "automatisk hver 14. dag" betyr en tidsstyrt bakgrunnsjobb eller bare
+at kartet regnes som utløpt og tilbyr regenerering neste gang læreren
+åpner siden. Ikke bygg før det bes om.
 
 ## Digitalisering av håndskrevne elevtekster, også utenfor norsk (nevnt 2026-09-01)
 
@@ -749,3 +777,33 @@ elever før en prøve (elever har i dag ingen egen innlogging i appen —
 samme åpne spørsmål som i "Delt klassedokument"-ideen).
 
 Ikke bygg før det bes om.
+
+## Invitere til utviklingssamtaler (nevnt 2026-11-15)
+
+Idé: mulighet for å invitere til utviklingssamtaler fra appen. Ingen
+detaljer avklart ennå (invitasjon til foresatte, elev, eller begge? via
+e-post/lenke, eller en kalenderinvitasjon knyttet til eksisterende
+Kalender/Timeplan-funksjonalitet? knyttet til Tilbakemeldingslogg/elevnivå
+som grunnlag for samtalen?).
+
+Ikke bygg før det bes om.
+
+## Gruppér klassen etter kriterier, eller bare randomiser (nevnt 2026-11-15)
+
+Idé: sette sammen klassen i grupper (på 3, 4, 5 osv.) enten ut fra egne
+kriterier, eller bare en ren randomisering. Produkteiers eksempel:
+"sett denne klassen sammen i grupper på 3, 4, 5 osv. grupper ut fra disse
+kriteriene XXX. Eller bare 'randomiser'."
+
+Henger trolig sammen med grupperings-/randomiseringsmotoren som uansett må
+bygges for **Klassekart-maler** (se over, oppdatering 2026-11-15, punkt 2
+og 4) — samme underliggende mekanikk (del klassen inn i grupper av en
+valgt størrelse, med eller uten styrende kriterier), men brukt til annet
+enn fast sitteplassering (f.eks. prosjektgrupper, gruppearbeid). Bør
+vurderes som samme byggeklosse gjenbrukt to steder, ikke to separate
+funksjoner.
+
+Uavklart: hva slags "kriterier" (XXX) som er aktuelle utover gutt/jente —
+faglig nivå? personlighet/samarbeidsevne (jf. elevkompetanse-hurtigtagger)?
+unngå at samme elever alltid grupperes sammen over tid? Ikke bygg før det
+bes om.
