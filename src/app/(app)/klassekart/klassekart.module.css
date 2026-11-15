@@ -1,0 +1,467 @@
+.room {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  background-image:
+    linear-gradient(90deg, color-mix(in srgb, var(--color-foreground) 4%, transparent) 1px, transparent 1px),
+    linear-gradient(color-mix(in srgb, var(--color-foreground) 4%, transparent) 1px, transparent 1px);
+  background-size: 8% 8%;
+  background-color: var(--color-background-subtle);
+  border: 2px solid var(--color-line);
+  border-radius: 10px;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.roomObj {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.65rem;
+  color: var(--color-foreground);
+  opacity: 0.85;
+  user-select: none;
+  touch-action: none;
+  z-index: 1;
+}
+.roomObj.dragging {
+  z-index: 5;
+  opacity: 1;
+}
+.shape {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-background);
+  border: 1px solid var(--color-line);
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+  flex-shrink: 0;
+}
+.shapeEditable {
+  cursor: grab;
+}
+.shapeEditable:active {
+  cursor: grabbing;
+}
+.objLabel {
+  padding: 0 3px;
+  border-radius: 4px;
+  max-width: 76px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: color-mix(in srgb, var(--color-background) 70%, transparent);
+}
+.objLabelEditable {
+  cursor: text;
+}
+.objLabelEditable:focus {
+  outline: 1px solid var(--color-primary);
+  background: var(--color-background);
+  white-space: normal;
+  overflow: visible;
+}
+.removeBtn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-error);
+  color: #fff;
+  border: none;
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.resizeHandle {
+  position: absolute;
+  right: -5px;
+  bottom: -5px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  border: 2px solid var(--color-background);
+  cursor: nwse-resize;
+  touch-action: none;
+}
+
+.pod {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  padding: 4px;
+  border-radius: 8px;
+  max-width: 130px;
+  background: color-mix(in srgb, var(--color-primary) 6%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--color-primary) 35%, transparent);
+  touch-action: none;
+  z-index: 2;
+}
+.podEditable {
+  cursor: grab;
+}
+.podEditable:active {
+  cursor: grabbing;
+}
+.podDragging {
+  z-index: 6;
+}
+.desk {
+  position: relative;
+  width: 32px;
+  height: 26px;
+  border-radius: 4px;
+  background: var(--color-background);
+  border: 1px solid var(--color-line);
+  border-left: 3px solid var(--color-line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.52rem;
+  font-weight: 600;
+  color: color-mix(in srgb, var(--color-foreground) 70%, transparent);
+  text-align: center;
+  cursor: default;
+}
+.deskBoy {
+  border-left-color: #2f6fb3;
+  background: #eaf2fa;
+  color: #1a1a2e;
+}
+.deskGirl {
+  border-left-color: #c23e78;
+  background: #fbebf2;
+  color: #1a1a2e;
+}
+.deskSeat {
+  cursor: pointer;
+}
+.deskSelected {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
+.deskLocked {
+  box-shadow: 0 0 0 2px #d97706 inset;
+}
+.podControls {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  display: flex;
+  gap: 2px;
+}
+.podControls button {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1px solid var(--color-line);
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.podRemoveBtn {
+  background: var(--color-error) !important;
+  color: #fff !important;
+  border-color: var(--color-error) !important;
+}
+.lockBtn {
+  position: absolute;
+  top: -7px;
+  left: -7px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-background);
+  border: 1px solid var(--color-line);
+  color: color-mix(in srgb, var(--color-foreground) 60%, transparent);
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 3;
+}
+.lockBtn svg {
+  width: 9px;
+  height: 9px;
+}
+.lockBtn:hover {
+  border-color: #d97706;
+  color: #d97706;
+}
+.deskLocked .lockBtn {
+  background: #d97706;
+  border-color: #d97706;
+  color: #fff;
+}
+
+.lockWarning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+  color: #92400e;
+  background: color-mix(in srgb, #d97706 12%, transparent);
+  border: 1px solid color-mix(in srgb, #d97706 40%, transparent);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+:global([data-theme="dark"]) .lockWarning {
+  color: #fbbf24;
+}
+@media (prefers-color-scheme: dark) {
+  :global(:root:not([data-theme="light"])) .lockWarning {
+    color: #fbbf24;
+  }
+}
+
+.legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: color-mix(in srgb, var(--color-foreground) 65%, transparent);
+}
+.legendDot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-right: 5px;
+}
+
+.presentOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: radial-gradient(ellipse at top, #241f42 0%, #14101f 65%, #0b0914 100%);
+  color: #f4f2ff;
+  overflow-y: auto;
+  padding: max(28px, env(safe-area-inset-top, 0px)) 20px 40px;
+}
+.presentInner {
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.presentEyebrow {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #c6befb;
+  margin: 0;
+}
+.presentTitle {
+  font-size: clamp(2rem, 7vw, 3.6rem);
+  font-weight: 800;
+  margin: 2px 0 22px;
+  letter-spacing: -0.02em;
+  background: linear-gradient(90deg, #fff 10%, #c9bdff 55%, #ff9fc0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-align: center;
+  line-height: 1.15;
+}
+.presentClose {
+  position: fixed;
+  top: max(16px, env(safe-area-inset-top, 0px));
+  right: max(16px, env(safe-area-inset-right, 0px));
+  z-index: 61;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.presentRoom {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: flex-start;
+  gap: 16px;
+}
+.presentPod {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  max-width: 230px;
+  opacity: 0;
+  animation: revealIn 0.5s cubic-bezier(0.2, 0.8, 0.3, 1.1) forwards;
+}
+.presentDesk {
+  padding: 11px 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: clamp(0.8rem, 1.6vw, 1rem);
+  color: #fff;
+  white-space: nowrap;
+  position: relative;
+  isolation: isolate;
+}
+.presentDesk::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 16px;
+  background: inherit;
+  filter: blur(10px);
+  opacity: 0.55;
+  z-index: -1;
+  animation: glowPulse 3.6s ease-in-out infinite;
+}
+.presentLandmark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  opacity: 0;
+  animation: revealIn 0.5s cubic-bezier(0.2, 0.8, 0.3, 1.1) forwards;
+}
+.presentLandmarkIcon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.presentLandmarkLabel {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(244, 242, 255, 0.7);
+  white-space: nowrap;
+}
+.presentHint {
+  margin-top: 26px;
+  color: #c6befb;
+  font-size: 0.82rem;
+  opacity: 0.8;
+}
+
+@keyframes revealIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+@keyframes glowPulse {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.75;
+  }
+}
+
+.shareOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: radial-gradient(ellipse at top, #241f42 0%, #14101f 65%, #0b0914 100%);
+  color: #f4f2ff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  gap: 18px;
+}
+.shareCard {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 20px;
+  padding: 36px 28px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.shareName {
+  font-size: clamp(1.8rem, 6vw, 2.6rem);
+  font-weight: 800;
+  background: linear-gradient(90deg, #fff 10%, #c9bdff 55%, #ff9fc0 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.shareWith {
+  color: #c6befb;
+  font-size: 0.95rem;
+}
+.shareLocation {
+  color: #f4f2ff;
+  opacity: 0.85;
+  font-size: 0.9rem;
+}
+.shareNav {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.shareProgress {
+  color: #c6befb;
+  font-size: 0.82rem;
+}
+
+.grupperResult {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.grupperCard {
+  border: 1px solid var(--color-line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  min-width: 140px;
+  background: var(--color-background);
+}
+.grupperWarning {
+  color: var(--color-error);
+  font-size: 0.75rem;
+  margin-top: 4px;
+}

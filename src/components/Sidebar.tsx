@@ -15,6 +15,7 @@ import {
   CalendarDays,
   CalendarClock,
   ListChecks,
+  LayoutGrid,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 
@@ -22,6 +23,7 @@ const PRIMARY_LINKS = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/veileder", label: "KI-veilederen", icon: Sparkles },
   { href: "/logg", label: "Tilbakemeldingslogg", icon: NotebookPen },
+  { href: "/klassekart", label: "Klassekart", icon: LayoutGrid },
   { href: "/undervisningsbanken", label: "Undervisningsbanken", icon: BookOpen },
   { href: "/meg", label: "Meg", icon: UserRound },
 ];

@@ -77,13 +77,39 @@ model FeedbackLog {
 }
 
 model ClassProfile {
-  id          String     @id @default(cuid())
-  name        String
-  description String?
-  userId      String
-  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  logs        ClassLog[]
-  createdAt   DateTime   @default(now())
+  id           String        @id @default(cuid())
+  name         String
+  description  String?
+  userId       String
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logs         ClassLog[]
+  students     ClassStudent[]
+  seatingChart SeatingChart?
+  createdAt    DateTime      @default(now())
+}
+
+model ClassStudent {
+  id             String       @id @default(cuid())
+  classProfileId String
+  classProfile   ClassProfile @relation(fields: [classProfileId], references: [id], onDelete: Cascade)
+  name           String
+  gender         String
+  createdAt      DateTime     @default(now())
+
+  @@index([classProfileId])
+}
+
+model SeatingChart {
+  id             String       @id @default(cuid())
+  classProfileId String       @unique
+  classProfile   ClassProfile @relation(fields: [classProfileId], references: [id], onDelete: Cascade)
+  roomObjects    Json         @default("[]")
+  podLayout      Json         @default("[]")
+  pods           Json         @default("[]")
+  locks          Json         @default("[]")
+  pairHistory    Json         @default("{}")
+  grupper        Json         @default("[]")
+  updatedAt      DateTime     @updatedAt
 }
 
 model ClassLog {
