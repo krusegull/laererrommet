@@ -807,3 +807,23 @@ Uavklart: hva slags "kriterier" (XXX) som er aktuelle utover gutt/jente —
 faglig nivå? personlighet/samarbeidsevne (jf. elevkompetanse-hurtigtagger)?
 unngå at samme elever alltid grupperes sammen over tid? Ikke bygg før det
 bes om.
+
+## Bygg undervisningsopplegg/spill fra bilder av hele pensumboka (nevnt 2026-11-15)
+
+Idé: ta bilder av hele pensumboka (ikke bare enkeltsider), og la KI bygge
+undervisningsopplegg eller spill ut fra innholdet.
+
+Henger sammen med **Digitalisering av håndskrevne elevtekster** (samme
+bilde-til-tekst-mekanikk, men her er kilden en hel lærebok, ikke
+elevtekster eller lærerens egne håndskrevne ark) og **KI-samskriving av
+undervisningsopplegg** (dette kunne være én konkret kilde opplegget
+samskrives fra). Et "spill"-sluttprodukt er nytt sammenlignet med de
+ideene — ingen spillmekanikk finnes i appen i dag.
+
+Uavklart: hvor mange bilder/sider dette er snakk om i praksis (en hel bok
+er mye KI-kontekst — trolig må deles opp og behandles i biter, ikke sendes
+samlet), opphavsrett ved å digitalisere en hel lærebok (annerledes enn
+elevtekster/egne ark, siden boka ikke er skrevet av læreren selv), og hva
+slags "spill" som er aktuelt (quiz? interaktiv fortelling? noe annet?).
+
+Ikke bygg før det bes om.
