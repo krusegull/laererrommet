@@ -239,7 +239,31 @@ elever alltid havner sammen over tid?), om rom-tegningen og
 pult-grupperingen skal være separate steg eller kunne gjøres samtidig, og
 om "automatisk hver 14. dag" betyr en tidsstyrt bakgrunnsjobb eller bare
 at kartet regnes som utløpt og tilbyr regenerering neste gang læreren
-åpner siden. Ikke bygg før det bes om.
+åpner siden.
+
+**Oppdatering 2026-11-15 — låste plasser + varsel ved brudd (produkteier
+fremhevet dette som spesielt bra)**: mulighet til å "låse" enkelte elever
+til en fast plass (f.eks. av hensyn til syn/hørsel/konsentrasjon), mens
+resten av klassen randomiseres rundt dem. Konkret eksempel fra
+produkteier: en elev som av hørselshensyn ikke kan sitte bakerst.
+
+Krav som kom fram: dette må ikke bare være en "unngå denne sonen"-regel
+som håndheves stille — **det må gi et tydelig varsel** dersom noen
+(automatgenerering eller en manuell plassbytte) forsøker å plassere en
+låst elev i strid med regelen. Gjelder altså både når systemet genererer
+automatisk OG når læreren bytter manuelt i etterkant.
+
+Samme behov gjelder **gruppearbeid**, ikke bare fast sitteplassering — se
+"Gruppér klassen etter kriterier, eller bare randomiser" under, som
+dermed også trenger denne låse-/varsel-mekanikken, ikke bare
+gutt/jente-kriteriet.
+
+Uavklart: hvordan en "sone" defineres presist (bestemte pulter/rader,
+eller en regel som "ikke bakerste rad" uavhengig av hvor rommet er
+tegnet?), om varselet skal blokkere handlingen helt eller bare advare og
+la læreren overstyre bevisst, og om låsingen er permanent eller kan ha en
+utløpsdato (f.eks. til en hørselshemming er bedre/verre). Ikke bygg før
+det bes om.
 
 ## Digitalisering av håndskrevne elevtekster, også utenfor norsk (nevnt 2026-09-01)
 
@@ -805,8 +829,14 @@ funksjoner.
 
 Uavklart: hva slags "kriterier" (XXX) som er aktuelle utover gutt/jente —
 faglig nivå? personlighet/samarbeidsevne (jf. elevkompetanse-hurtigtagger)?
-unngå at samme elever alltid grupperes sammen over tid? Ikke bygg før det
-bes om.
+unngå at samme elever alltid grupperes sammen over tid?
+
+**Oppdatering 2026-11-15**: trenger samme låse-/varsel-mekanikk som nå er
+beskrevet under Klassekart-maler (en elev kan ha en fast begrensning, f.eks.
+av helsehensyn, som skal gjelde i gruppearbeid også — ikke bare ved fast
+sitteplassering — med tydelig varsel hvis en gruppering bryter regelen).
+
+Ikke bygg før det bes om.
 
 ## Bygg undervisningsopplegg/spill fra bilder av hele pensumboka (nevnt 2026-11-15)
 
@@ -825,5 +855,40 @@ er mye KI-kontekst — trolig må deles opp og behandles i biter, ikke sendes
 samlet), opphavsrett ved å digitalisere en hel lærebok (annerledes enn
 elevtekster/egne ark, siden boka ikke er skrevet av læreren selv), og hva
 slags "spill" som er aktuelt (quiz? interaktiv fortelling? noe annet?).
+
+Ikke bygg før det bes om.
+
+## Ressursbibliotek: dele undervisningsopplegg direkte med elevene (nevnt 2026-11-15)
+
+Idé: mange ulike ressurser til elevene samlet i appen, som enkelt kan
+deles med dem — produkteier viste til skolenmin.no som eksempel på en
+tjeneste der læreren enkelt kan finne/dele oppgaver til elevene. Nevnte
+også at de har laget en egen app i Claude om første verdenskrig, og
+spurte om dette kan overføres hit.
+
+To separate problemer i denne ideen:
+1. **Lagre/organisere ressurser** — dette kan Undervisningsbanken trolig
+   dekke mye av allerede, bare for lærere.
+2. **Faktisk dele med elever** — vanskeligere, siden elever ikke har egen
+   innlogging i appen i dag (samme åpne spørsmål som i "Delt
+   klassedokument" og "Ferdige tilbakemeldinger + elevnivå"-ideene).
+
+**Vurdering gitt i samtalen**: fremfor å bygge en hel egen elevrettet
+ressursportal (en helt ny målgruppe appen ikke er bygget for), er en
+lettere løsning trolig bedre som første steg — en offentlig delbar lenke
+per undervisningsopplegg i Undervisningsbanken (ingen innlogging kreves
+for den som åpner lenken), à la en delingslenke i Google Docs. Et eget
+Claude-bygget opplegg (som førstevereldskrig-appen) kunne da limes inn
+eller lenkes til som en ressurs på et opplegg, og deles videre med samme
+mekanisme.
+
+Uavklart: om en offentlig lenke er personvernmessig uproblematisk (ingen
+elevdata i selve opplegget, kun lærerens eget innhold — trolig greit, men
+bør dobbeltsjekkes), hvordan et eksternt Claude-bygget opplegg (som
+førstevereldskrig-appen) konkret skal "overføres" inn (lime inn kode? bare
+lenke til den eksisterende Claude-artifacten?), og om skolenmin.no-stilen
+(et bredt, ferdig ressursbibliotek) noen gang er et mål i seg selv, eller
+om det alltid vil være utenfor appens egentlige fokus (lærerens eget
+verktøy, ikke en ressursbank for hele Norge).
 
 Ikke bygg før det bes om.
