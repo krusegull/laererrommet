@@ -866,6 +866,30 @@ beskrevet under Klassekart-maler (en elev kan ha en fast begrensning, f.eks.
 av helsehensyn, som skal gjelde i gruppearbeid også — ikke bare ved fast
 sitteplassering — med tydelig varsel hvis en gruppering bryter regelen).
 
+**Oppdatering 2026-11-15 — tre måter å lage grupper på + historikk +
+evaluering (produkteier, vist som skisse)**: bekreftet at randomisering
+fortsatt skal være én mulighet, men ikke den eneste. Tre måter å lage
+grupper på:
+1. **Randomiser** — som i dag.
+2. **Lærer lager gruppene selv** — manuell plassering av elever i grupper.
+3. **Skriv en bestilling** — fritekst-instruks (gjenbruker trolig samme
+   KI-tolkning som er foreslått for Klassekart sin automatiske planlegging,
+   se over).
+
+**Viktig presisering**: alt må lagres — spesielt **hvem som har vært i
+gruppe med hvem tidligere**, slik at man kan se/unngå gjentakelser over
+tid (henger sammen med det åpne spørsmålet om å unngå samme
+grupperinger — se over).
+
+**Ny idé, bevisst utsatt av produkteier til senere** (skal likevel lagres
+nå): mulighet for læreren til å registrere **om et gruppearbeid fungerte
+godt eller ikke**, og la appen hente ut data/mønstre fra dette — altså
+innsikt i **hvilke elever som faktisk jobber godt sammen**, basert på
+historisk tilbakemelding, ikke bare tilfeldig gruppehistorikk. Dette er en
+naturlig videreføring av gruppe-historikken over, men krever en egen
+datamodell for "gruppeøkt + utfall" og er tydelig flagget som noe som kan
+vente.
+
 Ikke bygg før det bes om.
 
 ## Bygg undervisningsopplegg/spill fra bilder av hele pensumboka (nevnt 2026-11-15)
