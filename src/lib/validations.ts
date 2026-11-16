@@ -354,6 +354,10 @@ export const swapSeatSchema = z.object({
   force: z.boolean().optional(),
 });
 
+export const generateSeatingSchema = z.object({
+  instruks: z.string().trim().max(1000).optional(),
+});
+
 export const toggleLockSchema = z.object({
   podIndex: z.number().int().min(0),
   seatIndex: z.number().int().min(0),
