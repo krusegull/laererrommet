@@ -108,6 +108,35 @@
   justify-content: center;
   padding: 0;
 }
+.sizeControls {
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  display: grid;
+  grid-template-columns: repeat(2, 18px);
+  gap: 2px;
+  z-index: 4;
+}
+.sizeControls button {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1px solid var(--color-line);
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-size: 8px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.sizeControls button:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
 .resizeHandle {
   position: absolute;
   right: -10px;

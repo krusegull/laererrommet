@@ -82,8 +82,8 @@ export function RoomEditor({
           </Button>
         </form>
         <p className="mt-2 text-xs text-foreground/50">
-          Dra gjenstandene dit de står i klasserommet. Dra i det lilla hjørnemerket nederst til høyre for å
-          gjøre dem større eller mindre, i både bredde og høyde.
+          Dra gjenstandene dit de står i klasserommet. Bruk B−/B+ og H−/H+ øverst til venstre på hver
+          gjenstand for å endre bredde og høyde hver for seg — eller dra i det lilla hjørnemerket.
         </p>
       </div>
       <Card>
