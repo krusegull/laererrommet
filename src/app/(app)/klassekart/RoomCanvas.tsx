@@ -332,7 +332,7 @@ function PodItem({
             )}
             onClick={clickable ? () => onSeatClick(seatIndex) : undefined}
           >
-            {student ? student.name.split(" ")[0] : ""}
+            {student ? student.name : ""}
             {locksEnabled && student && (
               <button
                 type="button"

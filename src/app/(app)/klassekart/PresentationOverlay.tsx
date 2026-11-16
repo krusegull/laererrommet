@@ -83,7 +83,7 @@ export function PresentationOverlay({
                   const student = seats[seatIndex] ? studentById.get(seats[seatIndex] as string) : null;
                   return (
                     <div key={seatIndex} className={styles.presentDesk} style={{ background: color }}>
-                      {student ? student.name.split(" ")[0] : "–"}
+                      {student ? student.name : "–"}
                     </div>
                   );
                 })}

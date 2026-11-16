@@ -68,3 +68,57 @@ export async function askClaude({
   console.error("Anthropic API feilet etter flere forsøk:", lastError);
   throw new Error("Klarte ikke å nå KI-tjenesten etter flere forsøk. Prøv igjen om litt.");
 }
+
+export async function askClaudeWithImage({
+  system,
+  prompt,
+  imageBase64,
+  mediaType,
+  maxTokens = 2048,
+}: {
+  system: string;
+  prompt: string;
+  imageBase64: string;
+  mediaType: "image/jpeg" | "image/png" | "image/gif" | "image/webp";
+  maxTokens?: number;
+}): Promise<string> {
+  const anthropic = getClient();
+  if (!anthropic) {
+    throw new AIUnavailableError();
+  }
+
+  let lastError: unknown;
+
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    try {
+      const response = await anthropic.messages.create({
+        model: MODEL,
+        max_tokens: maxTokens,
+        system,
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "image", source: { type: "base64", media_type: mediaType, data: imageBase64 } },
+              { type: "text", text: prompt },
+            ],
+          },
+        ],
+      });
+
+      const textBlock = response.content.find((block) => block.type === "text");
+      if (textBlock && textBlock.type === "text") {
+        return textBlock.text;
+      }
+      throw new Error("Tomt svar fra KI-tjenesten");
+    } catch (error) {
+      lastError = error;
+      if (attempt < MAX_RETRIES) {
+        await sleep(RETRY_DELAY_MS * attempt);
+      }
+    }
+  }
+
+  console.error("Anthropic API feilet etter flere forsøk:", lastError);
+  throw new Error("Klarte ikke å nå KI-tjenesten etter flere forsøk. Prøv igjen om litt.");
+}
