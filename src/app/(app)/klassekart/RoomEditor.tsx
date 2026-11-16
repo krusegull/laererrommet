@@ -5,18 +5,24 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
+import type { IMAGE_MEDIA_TYPES } from "@/lib/validations";
 import type { RoomObject } from "@/lib/klassekart/types";
 import { RoomCanvas } from "./RoomCanvas";
+import { ImportPreviousMap } from "./ImportPreviousMap";
 import { LABELS, RoomIcon } from "./icons";
 
 const PALETTE: RoomObject["type"][] = ["dor", "tavle", "vindu", "kateter", "laerer", "bokhylle"];
 
 export function RoomEditor({
   roomObjects,
+  hasExistingData,
   onChange,
+  onImportImage,
 }: {
   roomObjects: RoomObject[];
+  hasExistingData: boolean;
   onChange: (next: RoomObject[]) => void;
+  onImportImage: (base64: string, mediaType: (typeof IMAGE_MEDIA_TYPES)[number]) => Promise<void>;
 }) {
   const [customName, setCustomName] = useState("");
 
@@ -44,7 +50,9 @@ export function RoomEditor({
   }
 
   return (
-    <div className="grid gap-4 md:grid-cols-[200px_1fr]">
+    <div className="flex flex-col gap-4">
+      <ImportPreviousMap hasExistingData={hasExistingData} onImported={onImportImage} />
+      <div className="grid gap-4 md:grid-cols-[200px_1fr]">
       <div className="flex flex-col gap-2">
         <p className="text-sm font-medium text-foreground">Legg til gjenstand</p>
         {PALETTE.map((type) => (
@@ -78,6 +86,7 @@ export function RoomEditor({
       <Card>
         <RoomCanvas roomObjects={roomObjects} podLayout={[]} objectsEditable onObjectsChange={onChange} />
       </Card>
+      </div>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { Plus, Trash2 } from "lucide-react";
 import { LoadingDots } from "@/components/ui/LoadingDots";
 import { cn } from "@/lib/cn";
 import type { Gender, Pod, RoomObject } from "@/lib/klassekart/types";
+import type { IMAGE_MEDIA_TYPES } from "@/lib/validations";
 import type { ClassDetail, ClassSummary, TabKey } from "./types";
 import { RoomEditor } from "./RoomEditor";
 import { PodEditor } from "./PodEditor";
@@ -114,6 +115,25 @@ export function KlassekartClient() {
     }
   }
 
+  async function handleImportImage(imageBase64: string, mediaType: (typeof IMAGE_MEDIA_TYPES)[number]) {
+    if (!detail) return;
+    const data = await fetchJson<{
+      roomObjects: RoomObject[];
+      podLayout: Pod[];
+      pods: ClassDetail["pods"];
+      students: ClassDetail["students"];
+    }>(`/api/klassekart/${detail.id}/import-image`, {
+      method: "POST",
+      body: JSON.stringify({ imageBase64, mediaType }),
+    });
+    setDetail((prev) =>
+      prev
+        ? { ...prev, roomObjects: data.roomObjects, podLayout: data.podLayout, pods: data.pods, students: data.students, locks: [] }
+        : prev
+    );
+    setClasses((prev) => prev.map((c) => (c.id === detail.id ? { ...c, studentCount: data.students.length } : c)));
+  }
+
   async function handlePodLayoutChange(next: Pod[], regenerate: boolean) {
     if (!detail) return;
     setDetail({ ...detail, podLayout: next });
@@ -152,6 +172,22 @@ export function KlassekartClient() {
       });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Klarte ikke å lagre eleven");
+    }
+  }
+
+  async function handleBulkAddStudents(entries: { name: string; gender: Gender }[]) {
+    if (!detail) return;
+    try {
+      const data = await fetchJson<{ students: { id: string; name: string; gender: Gender }[] }>(
+        `/api/klassekart/${detail.id}/students/bulk`,
+        { method: "POST", body: JSON.stringify({ students: entries }) }
+      );
+      setDetail((prev) => (prev ? { ...prev, students: [...prev.students, ...data.students] } : prev));
+      setClasses((prev) =>
+        prev.map((c) => (c.id === detail.id ? { ...c, studentCount: c.studentCount + data.students.length } : c))
+      );
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Klarte ikke å legge til elevene");
     }
   }
 
@@ -324,7 +360,14 @@ export function KlassekartClient() {
             </div>
           ) : (
             <>
-              {tab === "rom" && <RoomEditor roomObjects={detail.roomObjects} onChange={handleRoomObjectsChange} />}
+              {tab === "rom" && (
+                <RoomEditor
+                  roomObjects={detail.roomObjects}
+                  hasExistingData={detail.roomObjects.length > 0 || detail.students.length > 0}
+                  onChange={handleRoomObjectsChange}
+                  onImportImage={handleImportImage}
+                />
+              )}
               {tab === "pulter" && (
                 <PodEditor
                   roomObjects={detail.roomObjects}
@@ -339,6 +382,7 @@ export function KlassekartClient() {
                   onAdd={handleAddStudent}
                   onUpdate={handleUpdateStudent}
                   onDelete={handleDeleteStudent}
+                  onBulkAdd={handleBulkAddStudents}
                 />
               )}
               {tab === "kart" && (

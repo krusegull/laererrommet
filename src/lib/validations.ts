@@ -308,6 +308,17 @@ export const classStudentSchema = z.object({
   gender: z.enum(["gutt", "jente"]),
 });
 
+export const classStudentsBulkSchema = z.object({
+  students: z.array(classStudentSchema).min(1, "Listen er tom").max(100),
+});
+
+export const IMAGE_MEDIA_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"] as const;
+
+export const importClassImageSchema = z.object({
+  imageBase64: z.string().min(1, "Mangler bilde"),
+  mediaType: z.enum(IMAGE_MEDIA_TYPES),
+});
+
 export const roomObjectSchema = z.object({
   id: z.string().min(1).max(60),
   type: z.enum(ROOM_OBJECT_TYPES),
