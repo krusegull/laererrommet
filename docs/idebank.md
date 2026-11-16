@@ -922,3 +922,25 @@ om det alltid vil være utenfor appens egentlige fokus (lærerens eget
 verktøy, ikke en ressursbank for hele Norge).
 
 Ikke bygg før det bes om.
+
+## Tverrfaglig quiz-spill, à la "Er du smartere enn en femteklassing?" (nevnt 2026-11-16)
+
+Idé: hvorfor må en runde/økt bare handle om ett fag? Et større spill som
+henter oppgaver fra *alle* skolens fag samtidig, à la "Er du smartere enn
+en femteklassing?" — eventuelt som en Jeopardy-variant, der spørsmål er
+sortert i poengkategorier og vanskeligere spørsmål gir høyere poeng.
+
+Henger sammen med **Bygg undervisningsopplegg/spill fra bilder av hele
+pensumboka** (samme behov for en spillmekanikk appen ikke har i dag), men
+er et annet format: ikke ett opplegg bygget fra én lærebok/tema, men en
+spillmotor som kan trekke spørsmål på tvers av fag og vanskelighetsgrad —
+mer som en gjenbrukbar "spillplate" enn et enkelt opplegg.
+
+Uavklart: hvor spørsmålene skal komme fra (skrives inn manuelt av lærer(e)
+per fag? genereres av KI fra pensum/læreplanmål? en blanding — et delt
+spørsmålsbibliotek flere lærere bidrar til, på tvers av fag), om det er
+ment for én klasse/elev om gangen eller en felles klasseromsaktivitet med
+lag (nærmere en TV-quiz), og hvordan poengskalering etter vanskelighetsgrad
+skal vurderes/settes (av læreren selv, eller automatisk av KI).
+
+Ikke bygg før det bes om.
