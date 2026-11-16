@@ -204,16 +204,18 @@ export function KlassekartClient() {
     }
   }
 
-  async function handleGenerate() {
-    if (!detail) return;
+  async function handleGenerate(instruks?: string) {
+    if (!detail) return {};
     try {
-      const data = await fetchJson<{ pods: ClassDetail["pods"]; locks: ClassDetail["locks"] }>(
+      const data = await fetchJson<{ pods: ClassDetail["pods"]; locks: ClassDetail["locks"]; aiFallback?: boolean }>(
         `/api/klassekart/${detail.id}/generate`,
-        { method: "POST" }
+        { method: "POST", body: JSON.stringify({ instruks }) }
       );
       setDetail((prev) => (prev ? { ...prev, pods: data.pods, locks: data.locks, updatedAt: new Date().toISOString() } : prev));
+      return { aiFallback: data.aiFallback };
     } catch (e) {
       setError(e instanceof Error ? e.message : "Klarte ikke å generere klassekart");
+      return {};
     }
   }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, Eye, RefreshCw, Users } from "lucide-react";
+import { AlertTriangle, Eye, RefreshCw, Sparkles, Users } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import type { LockEntry, Pod, PodSeats, RoomObject, StudentLite } from "@/lib/klassekart/types";
@@ -35,7 +35,7 @@ export function SeatingView({
   locks: LockEntry[];
   students: StudentLite[];
   updatedAt: string | null;
-  onGenerate: () => Promise<void>;
+  onGenerate: (instruks?: string) => Promise<{ aiFallback?: boolean }>;
   onToggleLock: (podIndex: number, seatIndex: number) => Promise<void>;
   onSwap: (p1: number, s1: number, p2: number, s2: number, force?: boolean) => Promise<
     { ok: true } | { ok: false; locked: { id: string; name: string }[] }
@@ -46,13 +46,29 @@ export function SeatingView({
   const [selected, setSelected] = useState<{ pod: number; seat: number } | null>(null);
   const [pendingSwap, setPendingSwap] = useState<PendingSwap | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [instruksOpen, setInstruksOpen] = useState(false);
+  const [instruks, setInstruks] = useState("");
+  const [aiFallbackMsg, setAiFallbackMsg] = useState(false);
 
   const hasSeating = pods.some((seats) => seats.some((id) => id));
 
   async function handleGenerate() {
     setGenerating(true);
+    setAiFallbackMsg(false);
     try {
       await onGenerate();
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  async function handleGenerateWithInstruction() {
+    if (!instruks.trim()) return;
+    setGenerating(true);
+    setAiFallbackMsg(false);
+    try {
+      const result = await onGenerate(instruks.trim());
+      if (result.aiFallback) setAiFallbackMsg(true);
     } finally {
       setGenerating(false);
     }
@@ -87,9 +103,17 @@ export function SeatingView({
         <p className="text-sm text-foreground/60">
           {updatedAt ? "Sist generert: " + new Date(updatedAt).toLocaleString("nb-NO") : "Ikke generert ennå"}
         </p>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button type="button" size="sm" onClick={handleGenerate} loading={generating}>
             <RefreshCw size={14} /> Generer nytt kart
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={() => setInstruksOpen((v) => !v)}
+          >
+            <Sparkles size={14} /> Gi instruks
           </Button>
           <Button type="button" variant="ghost" size="sm" onClick={onOpenPresent} disabled={!hasSeating}>
             <Eye size={14} /> Vis til elevene
@@ -99,6 +123,40 @@ export function SeatingView({
           </Button>
         </div>
       </div>
+
+      {instruksOpen && (
+        <div className="flex flex-col gap-2 rounded-button border border-line p-3">
+          <label className="flex flex-col gap-1.5 text-sm">
+            <span className="font-medium text-foreground">Instruks til KI-en</span>
+            <textarea
+              value={instruks}
+              onChange={(e) => setInstruks(e.target.value)}
+              rows={3}
+              placeholder='F.eks. «Emma skal sitte foran, og Noah og Lucas skal ikke sitte sammen»'
+              className="rounded-button border border-line bg-background px-3 py-2 text-sm text-foreground placeholder:text-foreground/40 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          </label>
+          <Button
+            type="button"
+            size="sm"
+            onClick={handleGenerateWithInstruction}
+            loading={generating}
+            disabled={!instruks.trim()}
+            className="self-start"
+          >
+            <Sparkles size={14} /> Generer med instruks
+          </Button>
+          <p className="text-xs text-foreground/50">
+            Låste seter respekteres uansett. Der instruksen ikke sier noe spesifikt, fordeler KI-en resten
+            noenlunde jevnt mellom gutter og jenter.
+          </p>
+          {aiFallbackMsg && (
+            <p className="text-sm text-foreground/60">
+              KI-en var ikke tilgjengelig akkurat nå, så kartet ble generert med vanlig randomisering i stedet.
+            </p>
+          )}
+        </div>
+      )}
 
       {pendingSwap && (
         <div className={styles.lockWarning}>

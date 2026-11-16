@@ -88,3 +88,64 @@ export function randomGroups(students: StudentLite[], size: number): Grupper {
   }
   return groups;
 }
+
+function clearStudent(pods: PodSeats, studentId: string) {
+  for (const seats of pods) {
+    for (let i = 0; i < seats.length; i++) {
+      if (seats[i] === studentId) seats[i] = null;
+    }
+  }
+}
+
+/**
+ * Bygger et gyldig sete-oppsett fra KI-ens forslag: forkaster ugyldige/
+ * doble elev-id-er, tvinger gjennom låste plasser (selv om KI-en overså
+ * dem), og fyller eventuelle elever KI-en glemte inn i ledige seter.
+ * Garanterer at resultatet alltid matcher podLayout nøyaktig, uansett
+ * hvor rotete KI-svaret er.
+ */
+export function repairPods(
+  aiPods: unknown,
+  podLayout: Pod[],
+  students: StudentLite[],
+  locks: LockEntry[]
+): PodSeats {
+  const validIds = new Set(students.map((s) => s.id));
+  const pods: PodSeats = podLayout.map((p) => new Array(p.size).fill(null));
+  const used = new Set<string>();
+
+  if (Array.isArray(aiPods)) {
+    for (let i = 0; i < podLayout.length && i < aiPods.length; i++) {
+      const group = aiPods[i];
+      if (!Array.isArray(group)) continue;
+      for (let s = 0; s < podLayout[i].size; s++) {
+        const id = group[s];
+        if (typeof id === "string" && validIds.has(id) && !used.has(id)) {
+          pods[i][s] = id;
+          used.add(id);
+        }
+      }
+    }
+  }
+
+  validLocks(locks, students, podLayout).forEach((l) => {
+    if (pods[l.podIndex][l.seatIndex] === l.studentId) return;
+    const current = pods[l.podIndex][l.seatIndex];
+    if (current) used.delete(current);
+    if (used.has(l.studentId)) clearStudent(pods, l.studentId);
+    pods[l.podIndex][l.seatIndex] = l.studentId;
+    used.add(l.studentId);
+  });
+
+  const unplaced = students.filter((s) => !used.has(s.id));
+  let ui = 0;
+  for (const seats of pods) {
+    for (let s = 0; s < seats.length; s++) {
+      if (seats[s] === null && ui < unplaced.length) {
+        seats[s] = unplaced[ui++].id;
+      }
+    }
+  }
+
+  return pods;
+}
