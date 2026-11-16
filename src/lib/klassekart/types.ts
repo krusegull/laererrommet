@@ -12,7 +12,9 @@ export interface RoomObject {
   label: string;
   x: number;
   y: number;
-  size?: number;
+  /** Bredde/høyde i px. Udefinert bruker typens realistiske standardmål (se DEFAULT_DIMENSIONS). */
+  w?: number;
+  h?: number;
 }
 
 export interface Pod {

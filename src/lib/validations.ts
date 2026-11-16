@@ -325,7 +325,8 @@ export const roomObjectSchema = z.object({
   label: z.string().trim().min(1, "Navn er påkrevd").max(60),
   x: z.number().min(0).max(100),
   y: z.number().min(0).max(100),
-  size: z.number().min(16).max(90).optional(),
+  w: z.number().min(10).max(220).optional(),
+  h: z.number().min(10).max(220).optional(),
 });
 
 export const roomObjectsUpdateSchema = z.object({
