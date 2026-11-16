@@ -302,6 +302,42 @@ function RoomObjectItem({
           ×
         </button>
       )}
+      {editable && (
+        <div className={styles.sizeControls}>
+          <button
+            type="button"
+            aria-label={"Smalere " + obj.label}
+            title="Smalere"
+            onClick={() => onResizeEnd(Math.max(MIN_OBJ_DIM, w - 10), h)}
+          >
+            B−
+          </button>
+          <button
+            type="button"
+            aria-label={"Bredere " + obj.label}
+            title="Bredere"
+            onClick={() => onResizeEnd(Math.min(MAX_OBJ_DIM, w + 10), h)}
+          >
+            B+
+          </button>
+          <button
+            type="button"
+            aria-label={"Lavere " + obj.label}
+            title="Lavere"
+            onClick={() => onResizeEnd(w, Math.max(MIN_OBJ_DIM, h - 10))}
+          >
+            H−
+          </button>
+          <button
+            type="button"
+            aria-label={"Høyere " + obj.label}
+            title="Høyere"
+            onClick={() => onResizeEnd(w, Math.min(MAX_OBJ_DIM, h + 10))}
+          >
+            H+
+          </button>
+        </div>
+      )}
     </div>
   );
 }
