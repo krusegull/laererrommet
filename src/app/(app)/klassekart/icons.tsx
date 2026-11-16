@@ -126,3 +126,12 @@ export function LockIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
+export function ResizeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
+      <path d="M21 15v6h-6M21 21 13 13" />
+      <path d="M9 3H3v6" />
+    </svg>
+  );
+}

@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 import type { LockEntry, Pod, PodSeats, RoomObject, StudentLite } from "@/lib/klassekart/types";
-import { MAX_OBJ_DIM, MIN_OBJ_DIM, LABELS, LockIcon, RoomIcon, objectDimensions } from "./icons";
+import { MAX_OBJ_DIM, MIN_OBJ_DIM, LABELS, LockIcon, ResizeIcon, RoomIcon, objectDimensions } from "./icons";
 import styles from "./klassekart.module.css";
 
 const ALIGN_THRESHOLD = 1.5;
@@ -262,7 +262,16 @@ function RoomObjectItem({
         <div className={styles.shapeIcon} style={{ width: Math.min(w, h) * 0.6, height: Math.min(w, h) * 0.6 }}>
           <RoomIcon type={obj.type} />
         </div>
-        {editable && <div className={styles.resizeHandle} onPointerDown={handleResizeStart} />}
+        {editable && (
+          <div
+            className={styles.resizeHandle}
+            onPointerDown={handleResizeStart}
+            title="Dra for å endre størrelse"
+            aria-label={"Endre størrelse på " + obj.label}
+          >
+            <ResizeIcon />
+          </div>
+        )}
       </div>
       {editable ? (
         <span

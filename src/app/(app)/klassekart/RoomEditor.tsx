@@ -82,8 +82,8 @@ export function RoomEditor({
           </Button>
         </form>
         <p className="mt-2 text-xs text-foreground/50">
-          Dra gjenstandene dit de står i klasserommet. Dra i den lille prikken nederst til høyre for å endre
-          størrelse — en tavle er som regel større enn et vindu.
+          Dra gjenstandene dit de står i klasserommet. Dra i det lilla hjørnemerket nederst til høyre for å
+          gjøre dem større eller mindre, i både bredde og høyde.
         </p>
       </div>
       <Card>
