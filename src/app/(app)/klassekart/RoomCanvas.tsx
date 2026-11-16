@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { cn } from "@/lib/cn";
 import type { LockEntry, Pod, PodSeats, RoomObject, StudentLite } from "@/lib/klassekart/types";
-import { MAX_OBJ_SIZE, MIN_OBJ_SIZE, LABELS, LockIcon, RoomIcon, objectSize } from "./icons";
+import { MAX_OBJ_DIM, MIN_OBJ_DIM, LABELS, LockIcon, RoomIcon, objectDimensions } from "./icons";
 import styles from "./klassekart.module.css";
 
 interface RoomCanvasProps {
@@ -51,6 +51,8 @@ export function RoomCanvas({
     onObjectsChange(roomObjects.map((o) => (o.id === id ? { ...o, ...patch } : o)));
   }
 
+
+
   function removeObject(id: string) {
     if (!onObjectsChange) return;
     onObjectsChange(roomObjects.filter((o) => o.id !== id));
@@ -75,7 +77,7 @@ export function RoomCanvas({
           roomRef={roomRef}
           editable={objectsEditable}
           onDragEnd={(x, y) => updateObject(obj.id, { x, y })}
-          onResizeEnd={(size) => updateObject(obj.id, { size })}
+          onResizeEnd={(w, h) => updateObject(obj.id, { w, h })}
           onLabelChange={(label) => updateObject(obj.id, { label })}
           onRemove={() => removeObject(obj.id)}
         />
@@ -117,13 +119,13 @@ function RoomObjectItem({
   roomRef: React.RefObject<HTMLDivElement | null>;
   editable: boolean;
   onDragEnd: (x: number, y: number) => void;
-  onResizeEnd: (size: number) => void;
+  onResizeEnd: (w: number, h: number) => void;
   onLabelChange: (label: string) => void;
   onRemove: () => void;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const shapeRef = useRef<HTMLDivElement>(null);
-  const size = objectSize(obj);
+  const { w, h } = objectDimensions(obj);
 
   function handleDragStart(e: React.PointerEvent) {
     if (!editable) return;
@@ -164,25 +166,28 @@ function RoomObjectItem({
     const shape = shapeRef.current;
     if (!shape) return;
     (e.target as HTMLElement).setPointerCapture(e.pointerId);
-    const startSize = size;
+    const startW = w;
+    const startH = h;
     const startX = e.clientX;
     const startY = e.clientY;
-    let lastSize = startSize;
+    let lastW = startW;
+    let lastH = startH;
 
     function onMove(ev: PointerEvent) {
-      const delta = Math.max(ev.clientX - startX, ev.clientY - startY);
-      const next = Math.max(MIN_OBJ_SIZE, Math.min(MAX_OBJ_SIZE, startSize + delta));
-      lastSize = next;
+      const nextW = Math.max(MIN_OBJ_DIM, Math.min(MAX_OBJ_DIM, startW + (ev.clientX - startX)));
+      const nextH = Math.max(MIN_OBJ_DIM, Math.min(MAX_OBJ_DIM, startH + (ev.clientY - startY)));
+      lastW = nextW;
+      lastH = nextH;
       if (shape) {
-        shape.style.width = next + "px";
-        shape.style.height = next + "px";
+        shape.style.width = nextW + "px";
+        shape.style.height = nextH + "px";
       }
     }
     function onUp(ev: PointerEvent) {
       (ev.target as HTMLElement).releasePointerCapture(ev.pointerId);
       window.removeEventListener("pointermove", onMove);
       window.removeEventListener("pointerup", onUp);
-      onResizeEnd(Math.round(lastSize));
+      onResizeEnd(Math.round(lastW), Math.round(lastH));
     }
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
@@ -197,11 +202,13 @@ function RoomObjectItem({
       <div
         ref={shapeRef}
         className={cn(styles.shape, editable && styles.shapeEditable)}
-        style={{ width: size, height: size }}
+        style={{ width: w, height: h }}
         onPointerDown={handleDragStart}
         aria-hidden="true"
       >
-        <RoomIcon type={obj.type} />
+        <div className={styles.shapeIcon} style={{ width: Math.min(w, h) * 0.6, height: Math.min(w, h) * 0.6 }}>
+          <RoomIcon type={obj.type} />
+        </div>
         {editable && <div className={styles.resizeHandle} onPointerDown={handleResizeStart} />}
       </div>
       {editable ? (

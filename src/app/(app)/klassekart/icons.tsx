@@ -10,21 +10,39 @@ export const LABELS: Record<RoomObject["type"], string> = {
   egen: "Gjenstand",
 };
 
-export const DEFAULT_SIZE: Record<RoomObject["type"], number> = {
-  dor: 34,
-  vindu: 24,
-  tavle: 56,
-  kateter: 38,
-  laerer: 30,
-  bokhylle: 40,
-  egen: 30,
+/**
+ * Standardmål per gjenstandstype (bredde x høyde i px), basert på typiske
+ * virkelige mål i et klasserom:
+ * - Tavle: en vanlig klasseromstavle er gjerne rundt 200x100 cm - klart
+ *   avlangt og den største, flate gjenstanden i rommet.
+ * - Dør: en standard innerdør er ca. 90x210 cm - smalere enn tavla, men
+ *   stående/høy.
+ * - Vindu: et klasseromsvindu er typisk i størrelsesorden 120-150 cm bredt.
+ * - Kateter/lærerpult: en pult/kateter er ca. 120x60 cm - merkbart mindre
+ *   enn tavla.
+ * - Bokhylle/skap: et skap langs veggen er gjerne grunt og under en meter
+ *   bredt.
+ * - Lærer: omtrent på størrelse med en person sett ovenfra.
+ * - Egen (f.eks. "PC-skap"): typisk et lite skap, på størrelse med lærer.
+ * Tallene under er skalert ned for skjermvisning, men beholder disse
+ * innbyrdes forholdene.
+ */
+export const DEFAULT_DIMENSIONS: Record<RoomObject["type"], { w: number; h: number }> = {
+  tavle: { w: 100, h: 46 },
+  dor: { w: 40, h: 80 },
+  vindu: { w: 64, h: 52 },
+  kateter: { w: 54, h: 28 },
+  bokhylle: { w: 42, h: 20 },
+  laerer: { w: 22, h: 22 },
+  egen: { w: 26, h: 22 },
 };
 
-export const MIN_OBJ_SIZE = 16;
-export const MAX_OBJ_SIZE = 90;
+export const MIN_OBJ_DIM = 10;
+export const MAX_OBJ_DIM = 220;
 
-export function objectSize(obj: RoomObject): number {
-  return obj.size || DEFAULT_SIZE[obj.type] || 30;
+export function objectDimensions(obj: RoomObject): { w: number; h: number } {
+  const fallback = DEFAULT_DIMENSIONS[obj.type] ?? { w: 30, h: 30 };
+  return { w: obj.w || fallback.w, h: obj.h || fallback.h };
 }
 
 export function RoomIcon({ type }: { type: RoomObject["type"] }) {

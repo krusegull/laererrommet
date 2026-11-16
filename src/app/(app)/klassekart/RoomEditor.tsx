@@ -29,14 +29,17 @@ export function RoomEditor({
   function addObject(type: RoomObject["type"], label: string) {
     // Plassert forskjøvet etter antall gjenstander (ikke tilfeldig) - rene
     // posisjoner uten tilfeldighet gjør at komponenten forblir forutsigbar.
-    // Læreren drar den dit den faktisk skal stå rett etterpå.
-    const offset = roomObjects.length % 6;
+    // Færre per rad og større avstand enn før - nå som gjenstander har
+    // realistiske (og til dels store/avlange) mål, blir det for trangt med
+    // tett pakking: nabogjenstander kan overlappe og blokkere hverandres
+    // dra-/endre størrelse-håndtak.
+    const offset = roomObjects.length % 4;
     const obj: RoomObject = {
       id: crypto.randomUUID(),
       type,
       label,
-      x: 20 + offset * 11,
-      y: 20 + Math.floor(roomObjects.length / 6) * 18,
+      x: 15 + offset * 24,
+      y: 20 + Math.floor(roomObjects.length / 4) * 26,
     };
     onChange([...roomObjects, obj]);
   }

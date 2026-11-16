@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { X } from "lucide-react";
 import type { Pod, PodSeats, RoomObject, StudentLite } from "@/lib/klassekart/types";
-import { RoomIcon, objectSize } from "./icons";
+import { RoomIcon, objectDimensions } from "./icons";
 import styles from "./klassekart.module.css";
 
 const PRESENT_COLORS = ["#7b6ef2", "#ff6f9c", "#2fc6a0", "#ffb347", "#4fa6ff"];
@@ -65,7 +65,12 @@ export function PresentationOverlay({
           {items.map((item, i) => {
             const itemDelay = item.delay;
             if (item.kind === "furniture") {
-              const presentSz = Math.max(26, Math.min(110, Math.round(objectSize(item.obj) * 1.3)));
+              const dims = objectDimensions(item.obj);
+              // Ikonet vises alltid udistorsert (kvadratisk) her - selve
+              // formen er mindre viktig enn i Rom-fanen. Størrelsen følger
+              // likevel gjenstandens reelle "bigness" (geometrisk snitt av
+              // bredde/høyde), så en tavle fortsatt synes tydelig større.
+              const presentSz = Math.max(26, Math.min(130, Math.round(Math.sqrt(dims.w * dims.h) * 1.3)));
               return (
                 <div key={"f" + i} className={styles.presentLandmark} style={{ animationDelay: itemDelay + "ms" }}>
                   <div className={styles.presentLandmarkIcon} style={{ width: presentSz, height: presentSz }}>
