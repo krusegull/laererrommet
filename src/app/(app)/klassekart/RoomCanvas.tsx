@@ -1,10 +1,37 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 import type { LockEntry, Pod, PodSeats, RoomObject, StudentLite } from "@/lib/klassekart/types";
 import { MAX_OBJ_DIM, MIN_OBJ_DIM, LABELS, LockIcon, RoomIcon, objectDimensions } from "./icons";
 import styles from "./klassekart.module.css";
+
+const ALIGN_THRESHOLD = 1.5;
+
+/**
+ * Sammenligner en posisjon under dragging mot andre gjenstander av samme
+ * type (pulter mot pulter, gjenstander mot gjenstander) og snapper til
+ * samme x/y hvis noe er nær nok - samme idé som "smarte guider" i
+ * PowerPoint/Figma. Returnerer (eventuelt snappet) posisjon pluss hvilken
+ * hjelpelinje som skal vises.
+ */
+function computeAlignment(x: number, y: number, others: { x: number; y: number }[]) {
+  let guideX: number | null = null;
+  let guideY: number | null = null;
+  let snappedX = x;
+  let snappedY = y;
+  for (const o of others) {
+    if (guideX === null && Math.abs(o.x - x) < ALIGN_THRESHOLD) {
+      guideX = o.x;
+      snappedX = o.x;
+    }
+    if (guideY === null && Math.abs(o.y - y) < ALIGN_THRESHOLD) {
+      guideY = o.y;
+      snappedY = o.y;
+    }
+  }
+  return { x: snappedX, y: snappedY, guideX, guideY };
+}
 
 interface RoomCanvasProps {
   roomObjects: RoomObject[];
@@ -41,6 +68,7 @@ export function RoomCanvas({
 }: RoomCanvasProps) {
   const roomRef = useRef<HTMLDivElement>(null);
   const studentById = new Map(students.map((s) => [s.id, s]));
+  const [guides, setGuides] = useState<{ x: number | null; y: number | null }>({ x: null, y: null });
 
   function lockAt(podIndex: number, seatIndex: number) {
     return locks.find((l) => l.podIndex === podIndex && l.seatIndex === seatIndex);
@@ -51,7 +79,19 @@ export function RoomCanvas({
     onObjectsChange(roomObjects.map((o) => (o.id === id ? { ...o, ...patch } : o)));
   }
 
+  function alignObjectDrag(id: string, x: number, y: number) {
+    const others = roomObjects.filter((o) => o.id !== id).map((o) => ({ x: o.x, y: o.y }));
+    const result = computeAlignment(x, y, others);
+    setGuides({ x: result.guideX, y: result.guideY });
+    return result;
+  }
 
+  function alignPodDrag(id: number, x: number, y: number) {
+    const others = podLayout.filter((p) => p.id !== id).map((p) => ({ x: p.x, y: p.y }));
+    const result = computeAlignment(x, y, others);
+    setGuides({ x: result.guideX, y: result.guideY });
+    return result;
+  }
 
   function removeObject(id: string) {
     if (!onObjectsChange) return;
@@ -76,7 +116,11 @@ export function RoomCanvas({
           obj={obj}
           roomRef={roomRef}
           editable={objectsEditable}
-          onDragEnd={(x, y) => updateObject(obj.id, { x, y })}
+          onDragging={(x, y) => alignObjectDrag(obj.id, x, y)}
+          onDragEnd={(x, y) => {
+            updateObject(obj.id, { x, y });
+            setGuides({ x: null, y: null });
+          }}
           onResizeEnd={(w, h) => updateObject(obj.id, { w, h })}
           onLabelChange={(label) => updateObject(obj.id, { label })}
           onRemove={() => removeObject(obj.id)}
@@ -95,13 +139,19 @@ export function RoomCanvas({
           locksEnabled={locksEnabled}
           lockAt={lockAt}
           selectedSeat={selectedSeat}
-          onDragEnd={(x, y) => updatePod(pod.id, { x, y }, false)}
+          onDragging={(x, y) => alignPodDrag(pod.id, x, y)}
+          onDragEnd={(x, y) => {
+            updatePod(pod.id, { x, y }, false);
+            setGuides({ x: null, y: null });
+          }}
           onSizeChange={(size) => updatePod(pod.id, { size }, true)}
           onRemove={() => removePod(pod.id)}
           onSeatClick={(seatIndex) => onSeatClick?.(podIndex, seatIndex)}
           onToggleLock={(seatIndex) => onToggleLock?.(podIndex, seatIndex)}
         />
       ))}
+      {guides.x !== null && <div className={styles.guideV} style={{ left: guides.x + "%" }} />}
+      {guides.y !== null && <div className={styles.guideH} style={{ top: guides.y + "%" }} />}
     </div>
   );
 }
@@ -110,6 +160,7 @@ function RoomObjectItem({
   obj,
   roomRef,
   editable,
+  onDragging,
   onDragEnd,
   onResizeEnd,
   onLabelChange,
@@ -118,6 +169,7 @@ function RoomObjectItem({
   obj: RoomObject;
   roomRef: React.RefObject<HTMLDivElement | null>;
   editable: boolean;
+  onDragging: (x: number, y: number) => { x: number; y: number };
   onDragEnd: (x: number, y: number) => void;
   onResizeEnd: (w: number, h: number) => void;
   onLabelChange: (label: string) => void;
@@ -140,8 +192,9 @@ function RoomObjectItem({
 
     function onMove(ev: PointerEvent) {
       const rect = room!.getBoundingClientRect();
-      const x = Math.max(2, Math.min(98, ((ev.clientX - rect.left) / rect.width) * 100));
-      const y = Math.max(2, Math.min(98, ((ev.clientY - rect.top) / rect.height) * 100));
+      const rawX = Math.max(2, Math.min(98, ((ev.clientX - rect.left) / rect.width) * 100));
+      const rawY = Math.max(2, Math.min(98, ((ev.clientY - rect.top) / rect.height) * 100));
+      const { x, y } = onDragging(rawX, rawY);
       lastX = x;
       lastY = y;
       if (wrap) {
@@ -255,6 +308,7 @@ function PodItem({
   locksEnabled,
   lockAt,
   selectedSeat,
+  onDragging,
   onDragEnd,
   onSizeChange,
   onRemove,
@@ -271,6 +325,7 @@ function PodItem({
   locksEnabled: boolean;
   lockAt: (podIndex: number, seatIndex: number) => LockEntry | undefined;
   selectedSeat: { pod: number; seat: number } | null;
+  onDragging: (x: number, y: number) => { x: number; y: number };
   onDragEnd: (x: number, y: number) => void;
   onSizeChange: (size: number) => void;
   onRemove: () => void;
@@ -293,8 +348,9 @@ function PodItem({
 
     function onMove(ev: PointerEvent) {
       const rect = room!.getBoundingClientRect();
-      const x = Math.max(4, Math.min(96, ((ev.clientX - rect.left) / rect.width) * 100));
-      const y = Math.max(4, Math.min(96, ((ev.clientY - rect.top) / rect.height) * 100));
+      const rawX = Math.max(4, Math.min(96, ((ev.clientX - rect.left) / rect.width) * 100));
+      const rawY = Math.max(4, Math.min(96, ((ev.clientY - rect.top) / rect.height) * 100));
+      const { x, y } = onDragging(rawX, rawY);
       lastX = x;
       lastY = y;
       if (wrap) {
