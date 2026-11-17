@@ -213,7 +213,11 @@ function RoomObjectItem({
     window.addEventListener("pointerup", onUp);
   }
 
-  function makeResizeHandler(axis: "x" | "y" | "both") {
+  // dirX/dirY angir hvilken retning denne kanten/dette hjørnet drar i:
+  // 1 = høyre/nede (vokser når pekeren flytter seg høyre/ned),
+  // -1 = venstre/oppe (vokser når pekeren flytter seg venstre/opp),
+  // 0 = uendret på den aksen.
+  function makeResizeHandler(dirX: -1 | 0 | 1, dirY: -1 | 0 | 1) {
     return function handleResizeStart(e: React.PointerEvent) {
       e.preventDefault();
       e.stopPropagation();
@@ -235,19 +239,21 @@ function RoomObjectItem({
       let lastYPct = startYPct;
 
       function onMove(ev: PointerEvent) {
-        const nextW =
-          axis === "y" ? startW : Math.max(MIN_OBJ_DIM, Math.min(MAX_OBJ_DIM, startW + (ev.clientX - startClientX)));
-        const nextH =
-          axis === "x" ? startH : Math.max(MIN_OBJ_DIM, Math.min(MAX_OBJ_DIM, startH + (ev.clientY - startClientY)));
+        const dx = ev.clientX - startClientX;
+        const dy = ev.clientY - startClientY;
+        const nextW = dirX === 0 ? startW : Math.max(MIN_OBJ_DIM, Math.min(MAX_OBJ_DIM, startW + dirX * dx));
+        const nextH = dirY === 0 ? startH : Math.max(MIN_OBJ_DIM, Math.min(MAX_OBJ_DIM, startH + dirY * dy));
+        const dW = nextW - startW;
+        const dH = nextH - startH;
         // .roomObj sentreres på (x, y) via translate(-50%, -50%), så uten
         // justering her vokser boksen symmetrisk ut fra midtpunktet når
         // bredden/høyden endres - kanten man drar i flytter seg da bare
         // halvveis, og motsatt kant flytter seg uventet den andre veien.
-        // Forskyver midtpunktet med halve størrelsesendringen for å holde
-        // motstående kant/hjørne fast, slik vanlige endre-størrelse-håndtak
-        // fungerer.
-        const nextXPct = axis === "y" ? startXPct : startXPct + (((nextW - startW) / 2) / rect.width) * 100;
-        const nextYPct = axis === "x" ? startYPct : startYPct + (((nextH - startH) / 2) / rect.height) * 100;
+        // Forskyver midtpunktet med halve størrelsesendringen i riktig
+        // retning for å holde den motstående kanten/hjørnet fast, slik
+        // vanlige endre-størrelse-håndtak fungerer.
+        const nextXPct = startXPct + ((dirX * (dW / 2)) / rect.width) * 100;
+        const nextYPct = startYPct + ((dirY * (dH / 2)) / rect.height) * 100;
         lastW = nextW;
         lastH = nextH;
         lastXPct = nextXPct;
@@ -292,19 +298,49 @@ function RoomObjectItem({
           <>
             <div
               className={cn(styles.resizeEdge, styles.resizeEdgeRight)}
-              onPointerDown={makeResizeHandler("x")}
+              onPointerDown={makeResizeHandler(1, 0)}
+              title="Dra for å endre bredden"
+              aria-label={"Endre bredden på " + obj.label}
+            />
+            <div
+              className={cn(styles.resizeEdge, styles.resizeEdgeLeft)}
+              onPointerDown={makeResizeHandler(-1, 0)}
               title="Dra for å endre bredden"
               aria-label={"Endre bredden på " + obj.label}
             />
             <div
               className={cn(styles.resizeEdge, styles.resizeEdgeBottom)}
-              onPointerDown={makeResizeHandler("y")}
+              onPointerDown={makeResizeHandler(0, 1)}
               title="Dra for å endre høyden"
               aria-label={"Endre høyden på " + obj.label}
             />
             <div
-              className={cn(styles.resizeEdge, styles.resizeEdgeCorner)}
-              onPointerDown={makeResizeHandler("both")}
+              className={cn(styles.resizeEdge, styles.resizeEdgeTop)}
+              onPointerDown={makeResizeHandler(0, -1)}
+              title="Dra for å endre høyden"
+              aria-label={"Endre høyden på " + obj.label}
+            />
+            <div
+              className={cn(styles.resizeEdge, styles.resizeEdgeCornerBR)}
+              onPointerDown={makeResizeHandler(1, 1)}
+              title="Dra for å endre størrelse"
+              aria-label={"Endre størrelse på " + obj.label}
+            />
+            <div
+              className={cn(styles.resizeEdge, styles.resizeEdgeCornerBL)}
+              onPointerDown={makeResizeHandler(-1, 1)}
+              title="Dra for å endre størrelse"
+              aria-label={"Endre størrelse på " + obj.label}
+            />
+            <div
+              className={cn(styles.resizeEdge, styles.resizeEdgeCornerTR)}
+              onPointerDown={makeResizeHandler(1, -1)}
+              title="Dra for å endre størrelse"
+              aria-label={"Endre størrelse på " + obj.label}
+            />
+            <div
+              className={cn(styles.resizeEdge, styles.resizeEdgeCornerTL)}
+              onPointerDown={makeResizeHandler(-1, -1)}
               title="Dra for å endre størrelse"
               aria-label={"Endre størrelse på " + obj.label}
             />
