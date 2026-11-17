@@ -213,37 +213,41 @@ function RoomObjectItem({
     window.addEventListener("pointerup", onUp);
   }
 
-  function handleResizeStart(e: React.PointerEvent) {
-    e.preventDefault();
-    e.stopPropagation();
-    const shape = shapeRef.current;
-    if (!shape) return;
-    (e.target as HTMLElement).setPointerCapture(e.pointerId);
-    const startW = w;
-    const startH = h;
-    const startX = e.clientX;
-    const startY = e.clientY;
-    let lastW = startW;
-    let lastH = startH;
+  function makeResizeHandler(axis: "x" | "y" | "both") {
+    return function handleResizeStart(e: React.PointerEvent) {
+      e.preventDefault();
+      e.stopPropagation();
+      const shape = shapeRef.current;
+      if (!shape) return;
+      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+      const startW = w;
+      const startH = h;
+      const startX = e.clientX;
+      const startY = e.clientY;
+      let lastW = startW;
+      let lastH = startH;
 
-    function onMove(ev: PointerEvent) {
-      const nextW = Math.max(MIN_OBJ_DIM, Math.min(MAX_OBJ_DIM, startW + (ev.clientX - startX)));
-      const nextH = Math.max(MIN_OBJ_DIM, Math.min(MAX_OBJ_DIM, startH + (ev.clientY - startY)));
-      lastW = nextW;
-      lastH = nextH;
-      if (shape) {
-        shape.style.width = nextW + "px";
-        shape.style.height = nextH + "px";
+      function onMove(ev: PointerEvent) {
+        const nextW =
+          axis === "y" ? startW : Math.max(MIN_OBJ_DIM, Math.min(MAX_OBJ_DIM, startW + (ev.clientX - startX)));
+        const nextH =
+          axis === "x" ? startH : Math.max(MIN_OBJ_DIM, Math.min(MAX_OBJ_DIM, startH + (ev.clientY - startY)));
+        lastW = nextW;
+        lastH = nextH;
+        if (shape) {
+          shape.style.width = nextW + "px";
+          shape.style.height = nextH + "px";
+        }
       }
-    }
-    function onUp(ev: PointerEvent) {
-      (ev.target as HTMLElement).releasePointerCapture(ev.pointerId);
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
-      onResizeEnd(Math.round(lastW), Math.round(lastH));
-    }
-    window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp);
+      function onUp(ev: PointerEvent) {
+        (ev.target as HTMLElement).releasePointerCapture(ev.pointerId);
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+        onResizeEnd(Math.round(lastW), Math.round(lastH));
+      }
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+    };
   }
 
   return (
@@ -263,14 +267,28 @@ function RoomObjectItem({
           <RoomIcon type={obj.type} />
         </div>
         {editable && (
-          <div
-            className={styles.resizeHandle}
-            onPointerDown={handleResizeStart}
-            title="Dra for å endre størrelse"
-            aria-label={"Endre størrelse på " + obj.label}
-          >
-            <ResizeIcon />
-          </div>
+          <>
+            <div
+              className={cn(styles.resizeHandle, styles.resizeHandleCorner)}
+              onPointerDown={makeResizeHandler("both")}
+              title="Dra for å endre størrelse"
+              aria-label={"Endre størrelse på " + obj.label}
+            >
+              <ResizeIcon />
+            </div>
+            <div
+              className={cn(styles.resizeHandle, styles.resizeHandleRight)}
+              onPointerDown={makeResizeHandler("x")}
+              title="Dra for å endre bredden"
+              aria-label={"Endre bredden på " + obj.label}
+            />
+            <div
+              className={cn(styles.resizeHandle, styles.resizeHandleBottom)}
+              onPointerDown={makeResizeHandler("y")}
+              title="Dra for å endre høyden"
+              aria-label={"Endre høyden på " + obj.label}
+            />
+          </>
         )}
       </div>
       {editable ? (
@@ -301,42 +319,6 @@ function RoomObjectItem({
         >
           ×
         </button>
-      )}
-      {editable && (
-        <div className={styles.sizeControls}>
-          <button
-            type="button"
-            aria-label={"Smalere " + obj.label}
-            title="Smalere"
-            onClick={() => onResizeEnd(Math.max(MIN_OBJ_DIM, w - 10), h)}
-          >
-            B−
-          </button>
-          <button
-            type="button"
-            aria-label={"Bredere " + obj.label}
-            title="Bredere"
-            onClick={() => onResizeEnd(Math.min(MAX_OBJ_DIM, w + 10), h)}
-          >
-            B+
-          </button>
-          <button
-            type="button"
-            aria-label={"Lavere " + obj.label}
-            title="Lavere"
-            onClick={() => onResizeEnd(w, Math.max(MIN_OBJ_DIM, h - 10))}
-          >
-            H−
-          </button>
-          <button
-            type="button"
-            aria-label={"Høyere " + obj.label}
-            title="Høyere"
-            onClick={() => onResizeEnd(w, Math.min(MAX_OBJ_DIM, h + 10))}
-          >
-            H+
-          </button>
-        </div>
       )}
     </div>
   );
