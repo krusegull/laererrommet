@@ -38,7 +38,7 @@ export const DEFAULT_DIMENSIONS: Record<RoomObject["type"], { w: number; h: numb
 };
 
 export const MIN_OBJ_DIM = 10;
-export const MAX_OBJ_DIM = 220;
+export const MAX_OBJ_DIM = 500;
 
 export function objectDimensions(obj: RoomObject): { w: number; h: number } {
   const fallback = DEFAULT_DIMENSIONS[obj.type] ?? { w: 30, h: 30 };
@@ -127,11 +127,3 @@ export function LockIcon({ className }: { className?: string }) {
   );
 }
 
-export function ResizeIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round">
-      <path d="M21 15v6h-6M21 21 13 13" />
-      <path d="M9 3H3v6" />
-    </svg>
-  );
-}

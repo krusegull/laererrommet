@@ -108,54 +108,33 @@
   justify-content: center;
   padding: 0;
 }
-.resizeHandle {
+.resizeEdge {
   position: absolute;
-  background: var(--color-primary);
-  border: 2px solid var(--color-background);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  background: transparent;
   touch-action: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  z-index: 5;
+  z-index: 4;
 }
-.resizeHandle svg {
-  width: 12px;
-  height: 12px;
-  pointer-events: none;
-}
-.resizeHandle:hover {
-  background: var(--color-primary-hover);
-}
-.resizeHandleCorner {
-  right: -10px;
-  bottom: -10px;
-  width: 22px;
-  height: 22px;
-  border-radius: 7px;
-  cursor: nwse-resize;
-}
-.resizeHandleCorner:hover {
-  transform: scale(1.1);
-}
-.resizeHandleRight {
-  right: -8px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 14px;
-  height: 22px;
-  border-radius: 5px;
+.resizeEdgeRight {
+  top: 0;
+  bottom: 0;
+  right: -4px;
+  width: 8px;
   cursor: ew-resize;
 }
-.resizeHandleBottom {
-  bottom: -8px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 22px;
-  height: 14px;
-  border-radius: 5px;
+.resizeEdgeBottom {
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 8px;
   cursor: ns-resize;
+}
+.resizeEdgeCorner {
+  right: -5px;
+  bottom: -5px;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+  z-index: 5;
 }
 
 .pod {
