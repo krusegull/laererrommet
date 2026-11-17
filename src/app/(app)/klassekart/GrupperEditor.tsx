@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Sparkles } from "lucide-react";
+import { Eye, Plus, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { cn } from "@/lib/cn";
-import type { Grupper, StudentLite } from "@/lib/klassekart/types";
+import type { Grupper, Pod, PodSeats, StudentLite } from "@/lib/klassekart/types";
+import { PresentationOverlay } from "./PresentationOverlay";
 
 type Mode = "random" | "manuell" | "instruks";
 
@@ -17,10 +18,12 @@ interface RunResult {
 }
 
 export function GrupperEditor({
+  className,
   students,
   grupper,
   onRun,
 }: {
+  className: string;
   students: StudentLite[];
   grupper: Grupper;
   onRun: (payload: {
@@ -37,6 +40,15 @@ export function GrupperEditor({
   const [selectedStudent, setSelectedStudent] = useState<string | null>(null);
   const [result, setResult] = useState<RunResult>({ grupper, warnings: [] });
   const [running, setRunning] = useState(false);
+  const [presentOpen, setPresentOpen] = useState(false);
+
+  // Grupper har ingen fysisk plassering i rommet - til presentasjonen bygger
+  // vi derfor en "pod" per gruppe på sparket, kun for å gjenbruke samme
+  // presentasjonsvisning som klassekartet (den bryr seg bare om rekkefølge,
+  // ikke faktisk x/y).
+  const groupPodLayout: Pod[] = result.grupper.map((g, i) => ({ id: i, size: g.length, x: 0, y: i }));
+  const groupPods: PodSeats = result.grupper;
+  const groupLabels = result.grupper.map((_, i) => "Gruppe " + (i + 1));
 
   const nameOf = new Map(students.map((s) => [s.id, s.name]));
   const assignedIds = new Set(manualGroups.flat());
@@ -200,7 +212,18 @@ export function GrupperEditor({
       )}
 
       <div>
-        <p className="mb-2 text-sm font-medium text-foreground">Siste gruppeinndeling</p>
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <p className="text-sm font-medium text-foreground">Siste gruppeinndeling</p>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setPresentOpen(true)}
+            disabled={result.grupper.length === 0}
+          >
+            <Eye size={14} /> Vis til elevene
+          </Button>
+        </div>
         {result.grupper.length === 0 ? (
           <p className="text-sm text-foreground/50">Ingen grupper laget ennå.</p>
         ) : (
@@ -225,6 +248,18 @@ export function GrupperEditor({
           </ul>
         )}
       </div>
+
+      <PresentationOverlay
+        open={presentOpen}
+        onClose={() => setPresentOpen(false)}
+        className={className}
+        eyebrow="Grupper"
+        roomObjects={[]}
+        podLayout={groupPodLayout}
+        pods={groupPods}
+        students={students}
+        podLabels={groupLabels}
+      />
     </div>
   );
 }
