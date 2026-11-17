@@ -121,6 +121,13 @@
   width: 8px;
   cursor: ew-resize;
 }
+.resizeEdgeLeft {
+  top: 0;
+  bottom: 0;
+  left: -4px;
+  width: 8px;
+  cursor: ew-resize;
+}
 .resizeEdgeBottom {
   left: 0;
   right: 0;
@@ -128,12 +135,43 @@
   height: 8px;
   cursor: ns-resize;
 }
-.resizeEdgeCorner {
+.resizeEdgeTop {
+  left: 0;
+  right: 0;
+  top: -4px;
+  height: 8px;
+  cursor: ns-resize;
+}
+.resizeEdgeCornerBR {
   right: -5px;
   bottom: -5px;
   width: 14px;
   height: 14px;
   cursor: nwse-resize;
+  z-index: 5;
+}
+.resizeEdgeCornerTL {
+  left: -5px;
+  top: -5px;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+  z-index: 5;
+}
+.resizeEdgeCornerBL {
+  left: -5px;
+  bottom: -5px;
+  width: 14px;
+  height: 14px;
+  cursor: nesw-resize;
+  z-index: 5;
+}
+.resizeEdgeCornerTR {
+  right: -5px;
+  top: -5px;
+  width: 14px;
+  height: 14px;
+  cursor: nesw-resize;
   z-index: 5;
 }
 
