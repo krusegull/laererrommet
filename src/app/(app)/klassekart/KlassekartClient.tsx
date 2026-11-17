@@ -403,7 +403,12 @@ export function KlassekartClient() {
                 />
               )}
               {tab === "grupper" && (
-                <GrupperEditor students={detail.students} grupper={detail.grupper} onRun={handleRunGrupper} />
+                <GrupperEditor
+                  className={detail.name}
+                  students={detail.students}
+                  grupper={detail.grupper}
+                  onRun={handleRunGrupper}
+                />
               )}
             </>
           )}

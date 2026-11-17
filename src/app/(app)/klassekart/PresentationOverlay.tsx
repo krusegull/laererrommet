@@ -12,18 +12,23 @@ export function PresentationOverlay({
   open,
   onClose,
   className,
+  eyebrow = "Klassekart",
   roomObjects,
   podLayout,
   pods,
   students,
+  podLabels,
 }: {
   open: boolean;
   onClose: () => void;
   className: string;
+  eyebrow?: string;
   roomObjects: RoomObject[];
   podLayout: Pod[];
   pods: PodSeats;
   students: StudentLite[];
+  /** Valgfri etikett per pod (f.eks. "Gruppe 1"), vist over pulten/gruppen. */
+  podLabels?: string[];
 }) {
   useEffect(() => {
     if (!open) return;
@@ -59,7 +64,7 @@ export function PresentationOverlay({
         <X size={18} />
       </button>
       <div className={styles.presentInner}>
-        <p className={styles.presentEyebrow}>Klassekart</p>
+        <p className={styles.presentEyebrow}>{eyebrow}</p>
         <h1 className={styles.presentTitle}>{className}</h1>
         <div className={styles.presentRoom}>
           {items.map((item, i) => {
@@ -82,16 +87,20 @@ export function PresentationOverlay({
             }
             const color = PRESENT_COLORS[item.podIndex % PRESENT_COLORS.length];
             const seats = pods[item.podIndex] ?? [];
+            const label = podLabels?.[item.podIndex];
             return (
-              <div key={"p" + i} className={styles.presentPod} style={{ animationDelay: itemDelay + "ms" }}>
-                {Array.from({ length: item.pod.size }).map((_, seatIndex) => {
-                  const student = seats[seatIndex] ? studentById.get(seats[seatIndex] as string) : null;
-                  return (
-                    <div key={seatIndex} className={styles.presentDesk} style={{ background: color }}>
-                      {student ? student.name : "–"}
-                    </div>
-                  );
-                })}
+              <div key={"p" + i} className={styles.presentPodWrap} style={{ animationDelay: itemDelay + "ms" }}>
+                {label && <p className={styles.presentPodLabel}>{label}</p>}
+                <div className={styles.presentPod}>
+                  {Array.from({ length: item.pod.size }).map((_, seatIndex) => {
+                    const student = seats[seatIndex] ? studentById.get(seats[seatIndex] as string) : null;
+                    return (
+                      <div key={seatIndex} className={styles.presentDesk} style={{ background: color }}>
+                        {student ? student.name : "–"}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             );
           })}
