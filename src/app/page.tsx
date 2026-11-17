@@ -76,6 +76,18 @@ export default async function LandingPage() {
           </div>
         </section>
 
+        <section className="border-t border-line py-16">
+          <div className="mx-auto max-w-2xl px-4 text-center sm:px-6">
+            <h2 className="text-2xl font-bold text-foreground">Hvorfor Lærerrommet?</h2>
+            <p className="mt-4 text-foreground/70">
+              Lærerhverdagen er full av gode intensjoner og for lite tid. Det er dokumentasjon,
+              rapportering og alt rundt undervisningen — ikke lønna — som oftest gjør at lærere
+              kjenner seg utbrent. Lærerrommet er bygget for å gi deg noe av den tiden tilbake:
+              mindre tid på skjemaer og klassekart, mer tid med elevene og kollegene dine.
+            </p>
+          </div>
+        </section>
+
         <section id="funksjoner" className="border-t border-line bg-background-subtle py-16">
           <div className="mx-auto grid max-w-5xl gap-6 px-4 sm:grid-cols-3 sm:px-6">
             {FEATURES.map(({ icon: Icon, title, description }) => (
