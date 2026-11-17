@@ -82,9 +82,9 @@ export function RoomEditor({
           </Button>
         </form>
         <p className="mt-2 text-xs text-foreground/50">
-          Dra gjenstandene dit de står i klasserommet. Dra i de lilla håndtakene for å endre størrelse:
-          hjørnet endrer begge retninger, kanten til høyre endrer bare bredden og kanten nederst endrer
-          bare høyden.
+          Dra gjenstandene dit de står i klasserommet. Dra helt i kanten av en gjenstand for å endre
+          størrelsen: kanten til høyre endrer bredden, kanten nederst endrer høyden, og hjørnet nede til
+          høyre endrer begge.
         </p>
       </div>
       <Card>

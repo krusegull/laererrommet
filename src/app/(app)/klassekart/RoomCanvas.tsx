@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { cn } from "@/lib/cn";
 import type { LockEntry, Pod, PodSeats, RoomObject, StudentLite } from "@/lib/klassekart/types";
-import { MAX_OBJ_DIM, MIN_OBJ_DIM, LABELS, LockIcon, ResizeIcon, RoomIcon, objectDimensions } from "./icons";
+import { MAX_OBJ_DIM, MIN_OBJ_DIM, LABELS, LockIcon, RoomIcon, objectDimensions } from "./icons";
 import styles from "./klassekart.module.css";
 
 const ALIGN_THRESHOLD = 1.5;
@@ -121,7 +121,7 @@ export function RoomCanvas({
             updateObject(obj.id, { x, y });
             setGuides({ x: null, y: null });
           }}
-          onResizeEnd={(w, h) => updateObject(obj.id, { w, h })}
+          onResizeEnd={(w, h, x, y) => updateObject(obj.id, { w, h, x, y })}
           onLabelChange={(label) => updateObject(obj.id, { label })}
           onRemove={() => removeObject(obj.id)}
         />
@@ -171,7 +171,7 @@ function RoomObjectItem({
   editable: boolean;
   onDragging: (x: number, y: number) => { x: number; y: number };
   onDragEnd: (x: number, y: number) => void;
-  onResizeEnd: (w: number, h: number) => void;
+  onResizeEnd: (w: number, h: number, x: number, y: number) => void;
   onLabelChange: (label: string) => void;
   onRemove: () => void;
 }) {
@@ -218,32 +218,54 @@ function RoomObjectItem({
       e.preventDefault();
       e.stopPropagation();
       const shape = shapeRef.current;
-      if (!shape) return;
+      const wrap = wrapRef.current;
+      const room = roomRef.current;
+      if (!shape || !wrap || !room) return;
       (e.target as HTMLElement).setPointerCapture(e.pointerId);
+      const rect = room.getBoundingClientRect();
       const startW = w;
       const startH = h;
-      const startX = e.clientX;
-      const startY = e.clientY;
+      const startXPct = obj.x;
+      const startYPct = obj.y;
+      const startClientX = e.clientX;
+      const startClientY = e.clientY;
       let lastW = startW;
       let lastH = startH;
+      let lastXPct = startXPct;
+      let lastYPct = startYPct;
 
       function onMove(ev: PointerEvent) {
         const nextW =
-          axis === "y" ? startW : Math.max(MIN_OBJ_DIM, Math.min(MAX_OBJ_DIM, startW + (ev.clientX - startX)));
+          axis === "y" ? startW : Math.max(MIN_OBJ_DIM, Math.min(MAX_OBJ_DIM, startW + (ev.clientX - startClientX)));
         const nextH =
-          axis === "x" ? startH : Math.max(MIN_OBJ_DIM, Math.min(MAX_OBJ_DIM, startH + (ev.clientY - startY)));
+          axis === "x" ? startH : Math.max(MIN_OBJ_DIM, Math.min(MAX_OBJ_DIM, startH + (ev.clientY - startClientY)));
+        // .roomObj sentreres på (x, y) via translate(-50%, -50%), så uten
+        // justering her vokser boksen symmetrisk ut fra midtpunktet når
+        // bredden/høyden endres - kanten man drar i flytter seg da bare
+        // halvveis, og motsatt kant flytter seg uventet den andre veien.
+        // Forskyver midtpunktet med halve størrelsesendringen for å holde
+        // motstående kant/hjørne fast, slik vanlige endre-størrelse-håndtak
+        // fungerer.
+        const nextXPct = axis === "y" ? startXPct : startXPct + (((nextW - startW) / 2) / rect.width) * 100;
+        const nextYPct = axis === "x" ? startYPct : startYPct + (((nextH - startH) / 2) / rect.height) * 100;
         lastW = nextW;
         lastH = nextH;
+        lastXPct = nextXPct;
+        lastYPct = nextYPct;
         if (shape) {
           shape.style.width = nextW + "px";
           shape.style.height = nextH + "px";
+        }
+        if (wrap) {
+          wrap.style.left = nextXPct + "%";
+          wrap.style.top = nextYPct + "%";
         }
       }
       function onUp(ev: PointerEvent) {
         (ev.target as HTMLElement).releasePointerCapture(ev.pointerId);
         window.removeEventListener("pointermove", onMove);
         window.removeEventListener("pointerup", onUp);
-        onResizeEnd(Math.round(lastW), Math.round(lastH));
+        onResizeEnd(Math.round(lastW), Math.round(lastH), lastXPct, lastYPct);
       }
       window.addEventListener("pointermove", onMove);
       window.addEventListener("pointerup", onUp);
@@ -269,24 +291,22 @@ function RoomObjectItem({
         {editable && (
           <>
             <div
-              className={cn(styles.resizeHandle, styles.resizeHandleCorner)}
-              onPointerDown={makeResizeHandler("both")}
-              title="Dra for å endre størrelse"
-              aria-label={"Endre størrelse på " + obj.label}
-            >
-              <ResizeIcon />
-            </div>
-            <div
-              className={cn(styles.resizeHandle, styles.resizeHandleRight)}
+              className={cn(styles.resizeEdge, styles.resizeEdgeRight)}
               onPointerDown={makeResizeHandler("x")}
               title="Dra for å endre bredden"
               aria-label={"Endre bredden på " + obj.label}
             />
             <div
-              className={cn(styles.resizeHandle, styles.resizeHandleBottom)}
+              className={cn(styles.resizeEdge, styles.resizeEdgeBottom)}
               onPointerDown={makeResizeHandler("y")}
               title="Dra for å endre høyden"
               aria-label={"Endre høyden på " + obj.label}
+            />
+            <div
+              className={cn(styles.resizeEdge, styles.resizeEdgeCorner)}
+              onPointerDown={makeResizeHandler("both")}
+              title="Dra for å endre størrelse"
+              aria-label={"Endre størrelse på " + obj.label}
             />
           </>
         )}
