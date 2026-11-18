@@ -6,7 +6,7 @@ import { LoadingDots } from "@/components/ui/LoadingDots";
 import { cn } from "@/lib/cn";
 import type { Gender, Pod, RoomObject } from "@/lib/klassekart/types";
 import type { IMAGE_MEDIA_TYPES } from "@/lib/validations";
-import type { ClassDetail, ClassSummary, TabKey } from "./types";
+import type { ChartDetail, ChartSummary, ClassDetail, ClassSummary, TabKey } from "./types";
 import { RoomEditor } from "./RoomEditor";
 import { PodEditor } from "./PodEditor";
 import { RosterEditor } from "./RosterEditor";
@@ -23,6 +23,20 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: "grupper", label: "Lag grupper" },
 ];
 
+function currentIsoWeek(): number {
+  const now = new Date();
+  const d = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
+}
+
+function chartLabel(chart: { label: string; week: number | null; year: number | null }): string {
+  if (chart.week) return "Uke " + chart.week + (chart.year ? " (" + chart.year + ")" : "");
+  return chart.label;
+}
+
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, {
     ...init,
@@ -37,10 +51,17 @@ export function KlassekartClient() {
   const [classes, setClasses] = useState<ClassSummary[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [detail, setDetail] = useState<ClassDetail | null>(null);
+  const [selectedChartId, setSelectedChartId] = useState<string | null>(null);
+  const [chart, setChart] = useState<ChartDetail | null>(null);
   const [loadingClasses, setLoadingClasses] = useState(true);
   const [loadingDetail, setLoadingDetail] = useState(false);
+  const [loadingChart, setLoadingChart] = useState(false);
   const [tab, setTab] = useState<TabKey>("rom");
   const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [newChartOpen, setNewChartOpen] = useState(false);
+  const [newChartWeek, setNewChartWeek] = useState<string>(() => String(currentIsoWeek()));
+  const [newChartYear, setNewChartYear] = useState<string>(() => String(new Date().getFullYear()));
+  const [renamingChartId, setRenamingChartId] = useState<string | null>(null);
   const [presentOpen, setPresentOpen] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -60,10 +81,26 @@ export function KlassekartClient() {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- tilsiktet henting ved valg av klasse, jf. https://react.dev/reference/react/useEffect#fetching-data-with-effects
     setLoadingDetail(true);
     fetchJson<{ class: ClassDetail }>(`/api/klassekart/${selectedId}`)
-      .then((data) => setDetail(data.class))
+      .then((data) => {
+        setDetail(data.class);
+        setSelectedChartId(data.class.charts[0]?.id ?? null);
+      })
       .catch((e) => setError(e.message))
       .finally(() => setLoadingDetail(false));
   }, [selectedId]);
+
+  useEffect(() => {
+    if (!selectedId || !selectedChartId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- tilsiktet nullstilling når det ikke finnes et valgt kart
+      setChart(null);
+      return;
+    }
+    setLoadingChart(true);
+    fetchJson<{ chart: ChartDetail }>(`/api/klassekart/${selectedId}/charts/${selectedChartId}`)
+      .then((data) => setChart(data.chart))
+      .catch((e) => setError(e.message))
+      .finally(() => setLoadingChart(false));
+  }, [selectedId, selectedChartId]);
 
   async function handleAddClass() {
     try {
@@ -89,7 +126,7 @@ export function KlassekartClient() {
   }
 
   async function handleDeleteClass(id: string) {
-    if (!window.confirm("Slette denne klassen? Dette fjerner også elevlisten og klassekartet.")) return;
+    if (!window.confirm("Slette denne klassen? Dette fjerner også elevlisten og alle klassekart.")) return;
     try {
       await fetchJson(`/api/klassekart/${id}`, { method: "DELETE" });
       setClasses((prev) => {
@@ -102,11 +139,63 @@ export function KlassekartClient() {
     }
   }
 
-  async function handleRoomObjectsChange(next: RoomObject[]) {
+  async function handleAddChart() {
     if (!detail) return;
-    setDetail({ ...detail, roomObjects: next });
+    const week = newChartWeek.trim() ? Number(newChartWeek) : undefined;
+    const year = newChartYear.trim() ? Number(newChartYear) : undefined;
     try {
-      await fetchJson(`/api/klassekart/${detail.id}/room`, {
+      const data = await fetchJson<{ chart: ChartSummary }>(`/api/klassekart/${detail.id}/charts`, {
+        method: "POST",
+        body: JSON.stringify({ week, year, cloneFromChartId: selectedChartId ?? undefined }),
+      });
+      setDetail((prev) => (prev ? { ...prev, charts: [data.chart, ...prev.charts] } : prev));
+      setSelectedChartId(data.chart.id);
+      setNewChartOpen(false);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Klarte ikke å lage nytt klassekart");
+    }
+  }
+
+  async function handleRenameChart(chartId: string, patch: { week?: number | null; year?: number | null }) {
+    if (!detail) return;
+    try {
+      const data = await fetchJson<{ chart: ChartSummary }>(`/api/klassekart/${detail.id}/charts/${chartId}`, {
+        method: "PATCH",
+        body: JSON.stringify(patch),
+      });
+      setDetail((prev) =>
+        prev ? { ...prev, charts: prev.charts.map((c) => (c.id === chartId ? data.chart : c)) } : prev
+      );
+      if (chart?.id === chartId) {
+        setChart((prev) => (prev ? { ...prev, week: data.chart.week, year: data.chart.year, label: data.chart.label } : prev));
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Klarte ikke å lagre uken");
+    }
+    setRenamingChartId(null);
+  }
+
+  async function handleDeleteChart(chartId: string) {
+    if (!detail) return;
+    if (!window.confirm("Slette dette klassekartet?")) return;
+    try {
+      await fetchJson(`/api/klassekart/${detail.id}/charts/${chartId}`, { method: "DELETE" });
+      setDetail((prev) => {
+        if (!prev) return prev;
+        const nextCharts = prev.charts.filter((c) => c.id !== chartId);
+        if (selectedChartId === chartId) setSelectedChartId(nextCharts[0]?.id ?? null);
+        return { ...prev, charts: nextCharts };
+      });
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Klarte ikke å slette klassekartet");
+    }
+  }
+
+  async function handleRoomObjectsChange(next: RoomObject[]) {
+    if (!detail || !chart) return;
+    setChart({ ...chart, roomObjects: next });
+    try {
+      await fetchJson(`/api/klassekart/${detail.id}/charts/${chart.id}/room`, {
         method: "PUT",
         body: JSON.stringify({ roomObjects: next }),
       });
@@ -116,33 +205,32 @@ export function KlassekartClient() {
   }
 
   async function handleImportImage(imageBase64: string, mediaType: (typeof IMAGE_MEDIA_TYPES)[number]) {
-    if (!detail) return;
+    if (!detail || !chart) return;
     const data = await fetchJson<{
       roomObjects: RoomObject[];
       podLayout: Pod[];
-      pods: ClassDetail["pods"];
+      pods: ChartDetail["pods"];
       students: ClassDetail["students"];
-    }>(`/api/klassekart/${detail.id}/import-image`, {
+    }>(`/api/klassekart/${detail.id}/charts/${chart.id}/import-image`, {
       method: "POST",
       body: JSON.stringify({ imageBase64, mediaType }),
     });
-    setDetail((prev) =>
-      prev
-        ? { ...prev, roomObjects: data.roomObjects, podLayout: data.podLayout, pods: data.pods, students: data.students, locks: [] }
-        : prev
+    setChart((prev) =>
+      prev ? { ...prev, roomObjects: data.roomObjects, podLayout: data.podLayout, pods: data.pods, locks: [] } : prev
     );
+    setDetail((prev) => (prev ? { ...prev, students: data.students } : prev));
     setClasses((prev) => prev.map((c) => (c.id === detail.id ? { ...c, studentCount: data.students.length } : c)));
   }
 
   async function handlePodLayoutChange(next: Pod[], regenerate: boolean) {
-    if (!detail) return;
-    setDetail({ ...detail, podLayout: next });
+    if (!detail || !chart) return;
+    setChart({ ...chart, podLayout: next });
     try {
-      const data = await fetchJson<{ podLayout: Pod[]; pods: ClassDetail["pods"]; locks: ClassDetail["locks"] }>(
-        `/api/klassekart/${detail.id}/pods`,
+      const data = await fetchJson<{ podLayout: Pod[]; pods: ChartDetail["pods"]; locks: ChartDetail["locks"] }>(
+        `/api/klassekart/${detail.id}/charts/${chart.id}/pods`,
         { method: "PUT", body: JSON.stringify({ podLayout: next, regenerate }) }
       );
-      setDetail((prev) => (prev ? { ...prev, podLayout: data.podLayout, pods: data.pods, locks: data.locks } : prev));
+      setChart((prev) => (prev ? { ...prev, podLayout: data.podLayout, pods: data.pods, locks: data.locks } : prev));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Klarte ikke å lagre pultoppsettet");
     }
@@ -199,19 +287,31 @@ export function KlassekartClient() {
       setClasses((prev) =>
         prev.map((c) => (c.id === detail.id ? { ...c, studentCount: c.studentCount - 1 } : c))
       );
+      // Eleven kan ha hatt plass/lås/gruppe i det kartet som vises akkurat nå
+      // (serveren rydder dette på ALLE klassens kart) - speiler det lokalt.
+      setChart((prev) =>
+        prev
+          ? {
+              ...prev,
+              pods: prev.pods.map((seats) => seats.map((sid) => (sid === id ? null : sid))),
+              locks: prev.locks.filter((l) => l.studentId !== id),
+              grupper: prev.grupper.map((g) => g.filter((sid) => sid !== id)),
+            }
+          : prev
+      );
     } catch (e) {
       setError(e instanceof Error ? e.message : "Klarte ikke å fjerne eleven");
     }
   }
 
   async function handleGenerate(instruks?: string) {
-    if (!detail) return {};
+    if (!detail || !chart) return {};
     try {
-      const data = await fetchJson<{ pods: ClassDetail["pods"]; locks: ClassDetail["locks"]; aiFallback?: boolean }>(
-        `/api/klassekart/${detail.id}/generate`,
+      const data = await fetchJson<{ pods: ChartDetail["pods"]; locks: ChartDetail["locks"]; aiFallback?: boolean }>(
+        `/api/klassekart/${detail.id}/charts/${chart.id}/generate`,
         { method: "POST", body: JSON.stringify({ instruks }) }
       );
-      setDetail((prev) => (prev ? { ...prev, pods: data.pods, locks: data.locks, updatedAt: new Date().toISOString() } : prev));
+      setChart((prev) => (prev ? { ...prev, pods: data.pods, locks: data.locks, updatedAt: new Date().toISOString() } : prev));
       return { aiFallback: data.aiFallback };
     } catch (e) {
       setError(e instanceof Error ? e.message : "Klarte ikke å generere klassekart");
@@ -220,21 +320,21 @@ export function KlassekartClient() {
   }
 
   async function handleToggleLock(podIndex: number, seatIndex: number) {
-    if (!detail) return;
+    if (!detail || !chart) return;
     try {
-      const data = await fetchJson<{ locks: ClassDetail["locks"] }>(`/api/klassekart/${detail.id}/lock`, {
-        method: "POST",
-        body: JSON.stringify({ podIndex, seatIndex }),
-      });
-      setDetail((prev) => (prev ? { ...prev, locks: data.locks } : prev));
+      const data = await fetchJson<{ locks: ChartDetail["locks"] }>(
+        `/api/klassekart/${detail.id}/charts/${chart.id}/lock`,
+        { method: "POST", body: JSON.stringify({ podIndex, seatIndex }) }
+      );
+      setChart((prev) => (prev ? { ...prev, locks: data.locks } : prev));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Klarte ikke å låse plassen");
     }
   }
 
   async function handleSwap(p1: number, s1: number, p2: number, s2: number, force?: boolean) {
-    if (!detail) return { ok: true as const };
-    const res = await fetch(`/api/klassekart/${detail.id}/swap`, {
+    if (!detail || !chart) return { ok: true as const };
+    const res = await fetch(`/api/klassekart/${detail.id}/charts/${chart.id}/swap`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ p1, s1, p2, s2, force }),
@@ -247,7 +347,7 @@ export function KlassekartClient() {
       setError(data.error ?? "Klarte ikke å bytte plass");
       return { ok: true as const };
     }
-    setDetail((prev) => (prev ? { ...prev, pods: data.pods, locks: data.locks } : prev));
+    setChart((prev) => (prev ? { ...prev, pods: data.pods, locks: data.locks } : prev));
     return { ok: true as const };
   }
 
@@ -257,12 +357,12 @@ export function KlassekartClient() {
     instruks?: string;
     manualGroups?: string[][];
   }) {
-    if (!detail) return { grupper: [], warnings: [] };
+    if (!detail || !chart) return { grupper: [], warnings: [] };
     const data = await fetchJson<{ grupper: string[][]; warnings: string[]; aiFallback?: boolean }>(
-      `/api/klassekart/${detail.id}/grupper`,
+      `/api/klassekart/${detail.id}/charts/${chart.id}/grupper`,
       { method: "POST", body: JSON.stringify(payload) }
     );
-    setDetail((prev) => (prev ? { ...prev, grupper: data.grupper } : prev));
+    setChart((prev) => (prev ? { ...prev, grupper: data.grupper } : prev));
     return data;
   }
 
@@ -340,6 +440,106 @@ export function KlassekartClient() {
 
       {selectedId && detail && (
         <>
+          <div className="flex flex-wrap items-center gap-2 border-t border-line pt-3">
+            <span className="text-xs font-medium uppercase tracking-wide text-foreground/40">Klassekart:</span>
+            {detail.charts.map((c) => (
+              <div
+                key={c.id}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm",
+                  selectedChartId === c.id ? "border-primary bg-primary/10 text-primary" : "border-line text-foreground/70"
+                )}
+              >
+                {renamingChartId === c.id ? (
+                  <input
+                    autoFocus
+                    type="number"
+                    min={1}
+                    max={53}
+                    defaultValue={c.week ?? ""}
+                    placeholder="Uke"
+                    className="w-12 bg-transparent outline-none"
+                    onBlur={(e) => {
+                      const next = e.currentTarget.value.trim();
+                      handleRenameChart(c.id, { week: next ? Number(next) : null, year: new Date().getFullYear() });
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") e.currentTarget.blur();
+                    }}
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedChartId(c.id)}
+                    onDoubleClick={() => setRenamingChartId(c.id)}
+                    title="Dobbeltklikk for å endre uke"
+                  >
+                    {chartLabel(c)}
+                  </button>
+                )}
+                {detail.charts.length > 1 && (
+                  <button
+                    type="button"
+                    aria-label={"Slett " + chartLabel(c)}
+                    onClick={() => handleDeleteChart(c.id)}
+                    className="text-foreground/30 hover:text-error"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                )}
+              </div>
+            ))}
+            {!newChartOpen ? (
+              <button
+                type="button"
+                onClick={() => setNewChartOpen(true)}
+                className="flex items-center gap-1 rounded-full border border-dashed border-line px-3 py-1 text-sm text-foreground/60 hover:border-primary hover:text-primary"
+              >
+                <Plus size={13} /> Nytt klassekart
+              </button>
+            ) : (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleAddChart();
+                }}
+                className="flex items-center gap-1.5 rounded-full border border-line px-2 py-1"
+              >
+                <label className="flex items-center gap-1 text-xs text-foreground/60">
+                  Uke
+                  <input
+                    autoFocus
+                    type="number"
+                    min={1}
+                    max={53}
+                    value={newChartWeek}
+                    onChange={(e) => setNewChartWeek(e.target.value)}
+                    className="w-12 rounded border border-line bg-background px-1 py-0.5 text-sm"
+                  />
+                </label>
+                <label className="flex items-center gap-1 text-xs text-foreground/60">
+                  År
+                  <input
+                    type="number"
+                    value={newChartYear}
+                    onChange={(e) => setNewChartYear(e.target.value)}
+                    className="w-16 rounded border border-line bg-background px-1 py-0.5 text-sm"
+                  />
+                </label>
+                <button type="submit" className="rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-white">
+                  Lag
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNewChartOpen(false)}
+                  className="text-xs text-foreground/50"
+                >
+                  Avbryt
+                </button>
+              </form>
+            )}
+          </div>
+
           <div className="flex gap-1 border-b border-line">
             {TABS.map((t) => (
               <button
@@ -356,7 +556,7 @@ export function KlassekartClient() {
             ))}
           </div>
 
-          {loadingDetail ? (
+          {loadingDetail || loadingChart || !chart ? (
             <div className="flex justify-center py-12">
               <LoadingDots />
             </div>
@@ -364,16 +564,16 @@ export function KlassekartClient() {
             <>
               {tab === "rom" && (
                 <RoomEditor
-                  roomObjects={detail.roomObjects}
-                  hasExistingData={detail.roomObjects.length > 0 || detail.students.length > 0}
+                  roomObjects={chart.roomObjects}
+                  hasExistingData={chart.roomObjects.length > 0 || detail.students.length > 0}
                   onChange={handleRoomObjectsChange}
                   onImportImage={handleImportImage}
                 />
               )}
               {tab === "pulter" && (
                 <PodEditor
-                  roomObjects={detail.roomObjects}
-                  podLayout={detail.podLayout}
+                  roomObjects={chart.roomObjects}
+                  podLayout={chart.podLayout}
                   students={detail.students}
                   onPodLayoutChange={handlePodLayoutChange}
                 />
@@ -389,12 +589,12 @@ export function KlassekartClient() {
               )}
               {tab === "kart" && (
                 <SeatingView
-                  roomObjects={detail.roomObjects}
-                  podLayout={detail.podLayout}
-                  pods={detail.pods}
-                  locks={detail.locks}
+                  roomObjects={chart.roomObjects}
+                  podLayout={chart.podLayout}
+                  pods={chart.pods}
+                  locks={chart.locks}
                   students={detail.students}
-                  updatedAt={detail.updatedAt}
+                  updatedAt={chart.updatedAt}
                   onGenerate={handleGenerate}
                   onToggleLock={handleToggleLock}
                   onSwap={handleSwap}
@@ -406,30 +606,34 @@ export function KlassekartClient() {
                 <GrupperEditor
                   className={detail.name}
                   students={detail.students}
-                  grupper={detail.grupper}
+                  grupper={chart.grupper}
                   onRun={handleRunGrupper}
                 />
               )}
             </>
           )}
 
-          <PresentationOverlay
-            open={presentOpen}
-            onClose={() => setPresentOpen(false)}
-            className={detail.name}
-            roomObjects={detail.roomObjects}
-            podLayout={detail.podLayout}
-            pods={detail.pods}
-            students={detail.students}
-          />
-          <ShareOverlay
-            open={shareOpen}
-            onClose={() => setShareOpen(false)}
-            roomObjects={detail.roomObjects}
-            podLayout={detail.podLayout}
-            pods={detail.pods}
-            students={detail.students}
-          />
+          {chart && (
+            <>
+              <PresentationOverlay
+                open={presentOpen}
+                onClose={() => setPresentOpen(false)}
+                className={detail.name}
+                roomObjects={chart.roomObjects}
+                podLayout={chart.podLayout}
+                pods={chart.pods}
+                students={detail.students}
+              />
+              <ShareOverlay
+                open={shareOpen}
+                onClose={() => setShareOpen(false)}
+                roomObjects={chart.roomObjects}
+                podLayout={chart.podLayout}
+                pods={chart.pods}
+                students={detail.students}
+              />
+            </>
+          )}
         </>
       )}
     </div>

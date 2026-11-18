@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
 import { generateSeatingSchema } from "@/lib/validations";
-import { getOwnedClass } from "@/lib/klassekart/getOwnedClass";
+import { getOwnedChart } from "@/lib/klassekart/getOwnedChart";
 import { generateSeating, repairPods, validLocks } from "@/lib/klassekart/seating";
 import { askClaude, AIUnavailableError } from "@/lib/anthropic";
 import type { LockEntry, Pod, PodSeats, RoomObject, StudentLite } from "@/lib/klassekart/types";
@@ -57,16 +57,19 @@ function buildUserMessage(
   ].join("\n");
 }
 
-export async function POST(request: Request, { params }: { params: Promise<{ classId: string }> }) {
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ classId: string; chartId: string }> }
+) {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return NextResponse.json({ error: "Ikke innlogget" }, { status: 401 });
   }
 
-  const { classId } = await params;
-  const classProfile = await getOwnedClass(classId, session.user.id);
-  if (!classProfile) {
-    return NextResponse.json({ error: "Fant ikke klassen" }, { status: 404 });
+  const { classId, chartId } = await params;
+  const chart = await getOwnedChart(classId, chartId, session.user.id);
+  if (!chart) {
+    return NextResponse.json({ error: "Fant ikke klassekartet" }, { status: 404 });
   }
 
   const body = await request.json().catch(() => ({}));
@@ -78,18 +81,18 @@ export async function POST(request: Request, { params }: { params: Promise<{ cla
     );
   }
 
-  const podLayout = (classProfile.seatingChart?.podLayout as Pod[] | null) ?? [];
+  const podLayout = (chart.podLayout as unknown as Pod[] | null) ?? [];
   if (podLayout.length === 0) {
     return NextResponse.json({ error: "Legg til pultgrupper før du genererer et klassekart" }, { status: 400 });
   }
 
-  const students: StudentLite[] = classProfile.students.map((s) => ({
+  const students: StudentLite[] = chart.classProfile.students.map((s) => ({
     id: s.id,
     name: s.name,
     gender: s.gender as "gutt" | "jente",
   }));
-  const existingLocks = (classProfile.seatingChart?.locks as LockEntry[] | null) ?? [];
-  const roomObjects = (classProfile.seatingChart?.roomObjects as RoomObject[] | null) ?? [];
+  const existingLocks = (chart.locks as unknown as LockEntry[] | null) ?? [];
+  const roomObjects = (chart.roomObjects as unknown as RoomObject[] | null) ?? [];
 
   let pods: PodSeats;
   let locks: LockEntry[];
@@ -123,7 +126,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ cla
   }
 
   await prisma.seatingChart.update({
-    where: { classProfileId: classId },
+    where: { id: chartId },
     data: { pods, locks: locks as unknown as Prisma.InputJsonValue },
   });
 

@@ -3,18 +3,21 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { roomObjectsUpdateSchema } from "@/lib/validations";
-import { getOwnedClass } from "@/lib/klassekart/getOwnedClass";
+import { getOwnedChart } from "@/lib/klassekart/getOwnedChart";
 
-export async function PUT(request: Request, { params }: { params: Promise<{ classId: string }> }) {
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ classId: string; chartId: string }> }
+) {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return NextResponse.json({ error: "Ikke innlogget" }, { status: 401 });
   }
 
-  const { classId } = await params;
-  const classProfile = await getOwnedClass(classId, session.user.id);
-  if (!classProfile) {
-    return NextResponse.json({ error: "Fant ikke klassen" }, { status: 404 });
+  const { classId, chartId } = await params;
+  const chart = await getOwnedChart(classId, chartId, session.user.id);
+  if (!chart) {
+    return NextResponse.json({ error: "Fant ikke klassekartet" }, { status: 404 });
   }
 
   const body = await request.json().catch(() => null);
@@ -27,7 +30,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ clas
   }
 
   await prisma.seatingChart.update({
-    where: { classProfileId: classId },
+    where: { id: chartId },
     data: { roomObjects: parsed.data.roomObjects },
   });
 

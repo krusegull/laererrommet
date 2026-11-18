@@ -312,6 +312,20 @@ export const classStudentsBulkSchema = z.object({
   students: z.array(classStudentSchema).min(1, "Listen er tom").max(100),
 });
 
+export const chartCreateSchema = z.object({
+  label: z.string().trim().max(60).optional(),
+  week: z.number().int().min(1, "Uke må være 1-53").max(53, "Uke må være 1-53").optional().nullable(),
+  year: z.number().int().min(2000).max(2100).optional().nullable(),
+  /** Hvis satt, dupliseres rom/pulter/seter/grupper fra dette kartet som utgangspunkt. */
+  cloneFromChartId: z.string().cuid().optional(),
+});
+
+export const chartUpdateSchema = z.object({
+  label: z.string().trim().min(1, "Navn er påkrevd").max(60).optional(),
+  week: z.number().int().min(1, "Uke må være 1-53").max(53, "Uke må være 1-53").optional().nullable(),
+  year: z.number().int().min(2000).max(2100).optional().nullable(),
+});
+
 export const IMAGE_MEDIA_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"] as const;
 
 export const importClassImageSchema = z.object({

@@ -22,13 +22,13 @@ export async function GET(_request: Request, { params }: { params: Promise<{ cla
       id: classProfile.id,
       name: classProfile.name,
       students: classProfile.students.map((s) => ({ id: s.id, name: s.name, gender: s.gender })),
-      roomObjects: classProfile.seatingChart?.roomObjects ?? [],
-      podLayout: classProfile.seatingChart?.podLayout ?? [],
-      pods: classProfile.seatingChart?.pods ?? [],
-      locks: classProfile.seatingChart?.locks ?? [],
-      pairHistory: classProfile.seatingChart?.pairHistory ?? {},
-      grupper: classProfile.seatingChart?.grupper ?? [],
-      updatedAt: classProfile.seatingChart?.updatedAt?.toISOString() ?? null,
+      charts: classProfile.seatingCharts.map((c) => ({
+        id: c.id,
+        label: c.label,
+        week: c.week,
+        year: c.year,
+        updatedAt: c.updatedAt.toISOString(),
+      })),
     },
   });
 }

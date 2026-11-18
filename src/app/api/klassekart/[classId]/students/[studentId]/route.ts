@@ -62,18 +62,20 @@ export async function DELETE(
 
   await prisma.classStudent.delete({ where: { id: studentId } });
 
-  const chart = classProfile.seatingChart;
-  if (chart) {
-    const pods = (chart.pods as PodSeats | null) ?? [];
-    const locks = (chart.locks as LockEntry[] | null) ?? [];
-    const grupper = (chart.grupper as Grupper | null) ?? [];
+  // Elevlisten er felles for alle klassekart i klassen, så referanser til den
+  // slettede eleven må ryddes i ALLE kart, ikke bare ett.
+  const charts = await prisma.seatingChart.findMany({ where: { classProfileId: classId } });
+  for (const chart of charts) {
+    const pods = (chart.pods as unknown as PodSeats | null) ?? [];
+    const locks = (chart.locks as unknown as LockEntry[] | null) ?? [];
+    const grupper = (chart.grupper as unknown as Grupper | null) ?? [];
 
     const cleanedPods = pods.map((seats) => seats.map((id) => (id === studentId ? null : id)));
     const cleanedLocks = locks.filter((l) => l.studentId !== studentId);
     const cleanedGrupper = grupper.map((group) => group.filter((id) => id !== studentId));
 
     await prisma.seatingChart.update({
-      where: { classProfileId: classId },
+      where: { id: chart.id },
       data: {
         pods: cleanedPods,
         locks: cleanedLocks as unknown as Prisma.InputJsonValue,
