@@ -4,9 +4,9 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
 import { ROOM_OBJECT_TYPES, importClassImageSchema } from "@/lib/validations";
-import { getOwnedClass } from "@/lib/klassekart/getOwnedClass";
+import { getOwnedChart } from "@/lib/klassekart/getOwnedChart";
 import { askClaudeWithImage, AIUnavailableError } from "@/lib/anthropic";
-import type { Pod, PodSeats, RoomObject } from "@/lib/klassekart/types";
+import type { Grupper, LockEntry, Pod, PodSeats, RoomObject } from "@/lib/klassekart/types";
 
 const SYSTEM_PROMPT =
   "Du hjelper en lærer å digitalisere et klasseromskart (ofte fra en PowerPoint-slide) til strukturert JSON. " +
@@ -24,16 +24,19 @@ function clampPct(n: unknown): number {
   return Math.max(0, Math.min(100, num));
 }
 
-export async function POST(request: Request, { params }: { params: Promise<{ classId: string }> }) {
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ classId: string; chartId: string }> }
+) {
   const session = await getServerSession(authOptions);
   if (!session?.user) {
     return NextResponse.json({ error: "Ikke innlogget" }, { status: 401 });
   }
 
-  const { classId } = await params;
-  const classProfile = await getOwnedClass(classId, session.user.id);
-  if (!classProfile) {
-    return NextResponse.json({ error: "Fant ikke klassen" }, { status: 404 });
+  const { classId, chartId } = await params;
+  const chart = await getOwnedChart(classId, chartId, session.user.id);
+  if (!chart) {
+    return NextResponse.json({ error: "Fant ikke klassekartet" }, { status: 404 });
   }
 
   const body = await request.json().catch(() => null);
@@ -109,7 +112,35 @@ export async function POST(request: Request, { params }: { params: Promise<{ cla
 
   // Slett eksisterende elever/romoppsett for klassen før import - dette er ment å
   // sette opp klassen fra bunnen av et tidligere kart, ikke slå sammen med noe.
+  // Elevlisten er felles for alle klassekart i klassen, så vi må også rydde
+  // referanser til de slettede elevene i de ANDRE klassekartene (ikke bare
+  // kartet vi importerer inn i), ellers blir pods/locks/grupper der stående
+  // med elev-id-er som ikke lenger finnes.
+  const oldStudentIds = new Set(chart.classProfile.students.map((s) => s.id));
   await prisma.classStudent.deleteMany({ where: { classProfileId: classId } });
+
+  const otherCharts = await prisma.seatingChart.findMany({
+    where: { classProfileId: classId, id: { not: chartId } },
+  });
+  for (const other of otherCharts) {
+    const otherPods = ((other.pods as unknown as PodSeats | null) ?? []).map((seats) =>
+      seats.map((id) => (id && oldStudentIds.has(id) ? null : id))
+    );
+    const otherLocks = ((other.locks as unknown as LockEntry[] | null) ?? []).filter(
+      (l) => !oldStudentIds.has(l.studentId)
+    );
+    const otherGrupper = ((other.grupper as unknown as Grupper | null) ?? []).map((group) =>
+      group.filter((id) => !oldStudentIds.has(id))
+    );
+    await prisma.seatingChart.update({
+      where: { id: other.id },
+      data: {
+        pods: otherPods,
+        locks: otherLocks as unknown as Prisma.InputJsonValue,
+        grupper: otherGrupper,
+      },
+    });
+  }
 
   const podLayout: Pod[] = [];
   const pods: PodSeats = [];
@@ -130,7 +161,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ cla
   }
 
   await prisma.seatingChart.update({
-    where: { classProfileId: classId },
+    where: { id: chartId },
     data: {
       roomObjects: roomObjects as unknown as Prisma.InputJsonValue,
       podLayout: podLayout as unknown as Prisma.InputJsonValue,

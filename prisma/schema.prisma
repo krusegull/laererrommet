@@ -77,15 +77,15 @@ model FeedbackLog {
 }
 
 model ClassProfile {
-  id           String        @id @default(cuid())
-  name         String
-  description  String?
-  userId       String
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  logs         ClassLog[]
-  students     ClassStudent[]
-  seatingChart SeatingChart?
-  createdAt    DateTime      @default(now())
+  id            String         @id @default(cuid())
+  name          String
+  description   String?
+  userId        String
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logs          ClassLog[]
+  students      ClassStudent[]
+  seatingCharts SeatingChart[]
+  createdAt     DateTime       @default(now())
 }
 
 model ClassStudent {
@@ -99,17 +99,27 @@ model ClassStudent {
   @@index([classProfileId])
 }
 
+/// Ett klassekart er ett selvstendig "øyeblikksbilde" av rom + pultoppsett +
+/// seteplassering for en klasse. En klasse kan ha flere - typisk ett per
+/// skoleuke - og læreren setter selv hvilken uke/år hvert kart gjelder for.
 model SeatingChart {
   id             String       @id @default(cuid())
-  classProfileId String       @unique
+  classProfileId String
   classProfile   ClassProfile @relation(fields: [classProfileId], references: [id], onDelete: Cascade)
+  label          String       @default("Kart 1")
+  week           Int?
+  year           Int?
   roomObjects    Json         @default("[]")
   podLayout      Json         @default("[]")
   pods           Json         @default("[]")
   locks          Json         @default("[]")
   pairHistory    Json         @default("{}")
   grupper        Json         @default("[]")
+  createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
+
+  @@index([classProfileId])
+  @@index([classProfileId, year, week])
 }
 
 model ClassLog {

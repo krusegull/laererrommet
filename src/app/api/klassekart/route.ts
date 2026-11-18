@@ -40,7 +40,7 @@ export async function POST(request: Request) {
     data: {
       name: parsed.data.name,
       userId: session.user.id,
-      seatingChart: { create: {} },
+      seatingCharts: { create: {} },
     },
   });
 
