@@ -54,6 +54,7 @@ model User {
   schoolBreaks     SchoolBreak[]
   weeklyNotes      WeeklyNote[]
   importantNotes   ImportantNote[]
+  vurderingsMaler  VurderingsMal[]
 }
 
 model Student {
@@ -371,6 +372,40 @@ model ActivityLog {
   type        String
   description String
   createdAt   DateTime @default(now())
+}
+
+/// En navngitt vurderingsmal (f.eks. "Norsk skriftlig 8. trinn") med egne
+/// vektede kriterier og en karakterskala læreren selv definerer - karakter-
+/// grenser varierer bevisst fra mal til mal, siden samme poengsum kan bety
+/// ulik karakter på ulike trinn.
+model VurderingsMal {
+  id          String                @id @default(cuid())
+  userId      String
+  user        User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  /// Karakterskala: liste av {label, minScore}, sortert stigende på minScore.
+  skala       Json                  @default("[]")
+  kriterier   VurderingsKriterium[]
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+}
+
+model VurderingsKriterium {
+  id          String        @id @default(cuid())
+  malId       String
+  mal         VurderingsMal @relation(fields: [malId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  /// Vekting i prosent - alle kriteriene i en mal skal til sammen bli 100.
+  weight      Int
+  /// Fritekst: hva som regnes som ekstra bra å få med under dette kriteriet.
+  ekstraBra   String?
+  order       Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([malId])
 }
 
 enum Role {

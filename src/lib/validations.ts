@@ -386,3 +386,46 @@ export const grupperRequestSchema = z.object({
   instruks: z.string().trim().max(1000).optional(),
   manualGroups: z.array(z.array(z.string().min(1))).max(40).optional(),
 });
+
+export const malCreateSchema = z.object({
+  name: z.string().trim().min(1, "Navn på malen er påkrevd").max(100),
+  description: z.string().trim().max(500).optional(),
+});
+
+export const malUpdateSchema = z.object({
+  name: z.string().trim().min(1, "Navn på malen er påkrevd").max(100).optional(),
+  description: z.string().trim().max(500).optional().nullable(),
+});
+
+export const skalaEntrySchema = z.object({
+  label: z.string().trim().min(1, "Mangler navn på karakteren").max(20),
+  minScore: z.number().int().min(0).max(100),
+});
+
+export const skalaUpdateSchema = z.object({
+  skala: z
+    .array(skalaEntrySchema)
+    .max(20)
+    .refine(
+      (entries) => entries.every((e, i) => i === 0 || e.minScore > entries[i - 1].minScore),
+      "Karaktergrensene må ligge i stigende rekkefølge på poengsum"
+    ),
+});
+
+export const kriteriumSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().trim().min(1, "Navn på kriteriet er påkrevd").max(100),
+  description: z.string().trim().max(500).optional(),
+  weight: z.number().int().min(0).max(100),
+  ekstraBra: z.string().trim().max(500).optional(),
+});
+
+export const kriterierUpdateSchema = z.object({
+  kriterier: z
+    .array(kriteriumSchema)
+    .max(30)
+    .refine(
+      (list) => list.length === 0 || list.reduce((sum, k) => sum + k.weight, 0) === 100,
+      "Vektingen av kriteriene må til sammen bli 100 %"
+    ),
+});
