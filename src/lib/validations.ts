@@ -441,6 +441,18 @@ export const elevTekstCreateSchema = z.object({
   tilbakemelding: z.string().trim().max(5000).optional(),
 });
 
+export const elevTekstKommentarCreateSchema = z
+  .object({
+    startOffset: z.number().int().min(0),
+    endOffset: z.number().int().min(0),
+    kommentar: z.string().trim().min(1, "Kommentaren kan ikke være tom").max(1000),
+  })
+  .refine((d) => d.endOffset > d.startOffset, { message: "Ugyldig tekstutvalg" });
+
+export const elevTekstKommentarUpdateSchema = z.object({
+  kommentar: z.string().trim().min(1, "Kommentaren kan ikke være tom").max(1000),
+});
+
 export const kriterieVurderingEntrySchema = z.object({
   kriteriumId: z.string(),
   kriteriumName: z.string().max(100),

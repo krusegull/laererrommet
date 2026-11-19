@@ -22,6 +22,14 @@ function serialize(tekst: Awaited<ReturnType<typeof getOwnedElevTekst>>) {
     karakter: tekst.karakter,
     kriterieVurdering: tekst.kriterieVurdering,
     tilbakemelding: tekst.tilbakemelding,
+    kommentarer: tekst.kommentarer.map((k) => ({
+      id: k.id,
+      startOffset: k.startOffset,
+      endOffset: k.endOffset,
+      kommentar: k.kommentar,
+      kilde: k.kilde,
+      createdAt: k.createdAt.toISOString(),
+    })),
     skala: tekst.mal.skala,
     dato: tekst.dato.toISOString(),
     updatedAt: tekst.updatedAt.toISOString(),
@@ -84,7 +92,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ te
           }
         : {}),
     },
-    include: { student: true, mal: { include: { kriterier: { orderBy: { order: "asc" } } } } },
+    include: {
+      student: true,
+      mal: { include: { kriterier: { orderBy: { order: "asc" } } } },
+      kommentarer: { orderBy: { startOffset: "asc" } },
+    },
   });
 
   return NextResponse.json({ tekst: serialize(updated) });

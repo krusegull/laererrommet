@@ -11,6 +11,18 @@ export interface Kriterium {
   ekstraBra?: string;
 }
 
+export type KommentarKilde = "laerer" | "ki";
+
+/** En kommentar knyttet til et konkret utsnitt av en elevtekst (som i Word). */
+export interface ElevTekstKommentar {
+  id: string;
+  startOffset: number;
+  endOffset: number;
+  kommentar: string;
+  kilde: KommentarKilde;
+  createdAt: string;
+}
+
 /** Pr.-kriterium poenggivning fra et KI-forslag - et øyeblikksbilde av kriteriet. */
 export interface KriterieVurdering {
   kriteriumId: string;

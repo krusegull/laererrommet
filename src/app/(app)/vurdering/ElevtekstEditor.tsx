@@ -9,8 +9,9 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingDots } from "@/components/ui/LoadingDots";
 import { cn } from "@/lib/cn";
 import { resolveKarakter } from "@/lib/vurdering/karakter";
-import type { KriterieVurdering } from "@/lib/vurdering/types";
+import type { ElevTekstKommentar, KriterieVurdering } from "@/lib/vurdering/types";
 import type { MalSummary, ElevTekstDetail, ElevTekstSummary } from "./types";
+import { AnnotatedText } from "./AnnotatedText";
 
 interface ClassSummaryLite {
   id: string;
@@ -61,6 +62,7 @@ export function ElevtekstEditor() {
   const [savingVurdering, setSavingVurdering] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [calibratedWithCount, setCalibratedWithCount] = useState<number | null>(null);
+  const [kommentarer, setKommentarer] = useState<ElevTekstKommentar[]>([]);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -104,6 +106,7 @@ export function ElevtekstEditor() {
         setFeedbackDraft(data.tekst.tilbakemelding ?? "");
         setKriterieVurderingDraft(data.tekst.kriterieVurdering);
         setCalibratedWithCount(null);
+        setKommentarer(data.tekst.kommentarer);
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoadingSelected(false));
@@ -194,15 +197,42 @@ export function ElevtekstEditor() {
         tilbakemelding: string;
         kriterieVurdering: KriterieVurdering[];
         calibratedWithCount: number;
+        kommentarer: ElevTekstKommentar[];
       }>(`/api/vurdering/elevtekster/${selected.id}/ai-forslag`, { method: "POST" });
       setScoreDraft(String(data.score));
       setFeedbackDraft(data.tilbakemelding);
       setKriterieVurderingDraft(data.kriterieVurdering);
       setCalibratedWithCount(data.calibratedWithCount);
+      setKommentarer((prev) => [...prev, ...data.kommentarer]);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Klarte ikke å hente KI-forslag");
     } finally {
       setAiLoading(false);
+    }
+  }
+
+  async function handleAddComment(startOffset: number, endOffset: number, kommentarTekst: string) {
+    if (!selected) return;
+    try {
+      const data = await fetchJson<{ kommentar: ElevTekstKommentar }>(
+        `/api/vurdering/elevtekster/${selected.id}/kommentarer`,
+        { method: "POST", body: JSON.stringify({ startOffset, endOffset, kommentar: kommentarTekst }) }
+      );
+      setKommentarer((prev) => [...prev, data.kommentar]);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Klarte ikke å lagre kommentaren");
+    }
+  }
+
+  async function handleDeleteComment(kommentarId: string) {
+    if (!selected) return;
+    const previous = kommentarer;
+    setKommentarer((prev) => prev.filter((k) => k.id !== kommentarId));
+    try {
+      await fetchJson(`/api/vurdering/elevtekster/${selected.id}/kommentarer/${kommentarId}`, { method: "DELETE" });
+    } catch (e) {
+      setKommentarer(previous);
+      setError(e instanceof Error ? e.message : "Klarte ikke å slette kommentaren");
     }
   }
 
@@ -445,10 +475,12 @@ export function ElevtekstEditor() {
                 }
               >
                 <div className="flex flex-col gap-4">
-                  <details>
-                    <summary className="cursor-pointer text-sm font-medium text-foreground">Vis teksten</summary>
-                    <p className="mt-2 whitespace-pre-wrap text-sm text-foreground/80">{selected.tekst}</p>
-                  </details>
+                  <AnnotatedText
+                    text={selected.tekst}
+                    comments={kommentarer}
+                    onAddComment={handleAddComment}
+                    onDeleteComment={handleDeleteComment}
+                  />
 
                   <div className="grid gap-3 sm:grid-cols-[160px_1fr]">
                     <div className="flex flex-col gap-1.5">
@@ -524,8 +556,9 @@ export function ElevtekstEditor() {
                     </Button>
                   </div>
                   <p className="text-xs text-foreground/50">
-                    KI-forslaget fyller ut poengsum og tilbakemelding under - se gjennom og rediger før du
-                    lagrer. Elevteksten sendes til Claude (Anthropic) sin API for å lage forslaget.
+                    KI-forslaget fyller ut poengsum og tilbakemelding under, og legger inn noen kommentarer
+                    direkte i teksten over - se gjennom og rediger/slett før du lagrer. Elevteksten sendes
+                    til Claude (Anthropic) sin API for å lage forslaget.
                   </p>
                   {calibratedWithCount !== null && (
                     <p className="text-xs text-foreground/50">
