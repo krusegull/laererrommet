@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingDots } from "@/components/ui/LoadingDots";
 import { cn } from "@/lib/cn";
 import { resolveKarakter } from "@/lib/vurdering/karakter";
+import type { KriterieVurdering } from "@/lib/vurdering/types";
 import type { MalSummary, ElevTekstDetail, ElevTekstSummary } from "./types";
 
 interface ClassSummaryLite {
@@ -56,6 +57,7 @@ export function ElevtekstEditor() {
   const [loadingSelected, setLoadingSelected] = useState(false);
   const [scoreDraft, setScoreDraft] = useState<string>("");
   const [feedbackDraft, setFeedbackDraft] = useState("");
+  const [kriterieVurderingDraft, setKriterieVurderingDraft] = useState<KriterieVurdering[] | null>(null);
   const [savingVurdering, setSavingVurdering] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
 
@@ -99,6 +101,7 @@ export function ElevtekstEditor() {
         setSelected(data.tekst);
         setScoreDraft(data.tekst.score != null ? String(data.tekst.score) : "");
         setFeedbackDraft(data.tekst.tilbakemelding ?? "");
+        setKriterieVurderingDraft(data.tekst.kriterieVurdering);
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoadingSelected(false));
@@ -166,9 +169,10 @@ export function ElevtekstEditor() {
       const score = scoreDraft.trim() === "" ? null : Number(scoreDraft);
       const data = await fetchJson<{ tekst: ElevTekstDetail }>(`/api/vurdering/elevtekster/${selected.id}`, {
         method: "PATCH",
-        body: JSON.stringify({ score, tilbakemelding: feedbackDraft }),
+        body: JSON.stringify({ score, tilbakemelding: feedbackDraft, kriterieVurdering: kriterieVurderingDraft }),
       });
       setSelected(data.tekst);
+      setKriterieVurderingDraft(data.tekst.kriterieVurdering);
       setTekster((prev) =>
         prev.map((t) => (t.id === data.tekst.id ? { ...t, score: data.tekst.score, karakter: data.tekst.karakter } : t))
       );
@@ -183,17 +187,25 @@ export function ElevtekstEditor() {
     if (!selected) return;
     setAiLoading(true);
     try {
-      const data = await fetchJson<{ score: number; tilbakemelding: string }>(
+      const data = await fetchJson<{ score: number; tilbakemelding: string; kriterieVurdering: KriterieVurdering[] }>(
         `/api/vurdering/elevtekster/${selected.id}/ai-forslag`,
         { method: "POST" }
       );
       setScoreDraft(String(data.score));
       setFeedbackDraft(data.tilbakemelding);
+      setKriterieVurderingDraft(data.kriterieVurdering);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Klarte ikke å hente KI-forslag");
     } finally {
       setAiLoading(false);
     }
+  }
+
+  function handleManualScoreChange(value: string) {
+    setScoreDraft(value);
+    // Et manuelt tastet poeng gjør ikke lenger KI-regnestykket gyldig - det
+    // ville vist en nedbryting som ikke lenger summerer til tallet som vises.
+    setKriterieVurderingDraft(null);
   }
 
   async function handleDelete(id: string) {
@@ -443,7 +455,7 @@ export function ElevtekstEditor() {
                         min={0}
                         max={100}
                         value={scoreDraft}
-                        onChange={(e) => setScoreDraft(e.target.value)}
+                        onChange={(e) => handleManualScoreChange(e.target.value)}
                         className="rounded-button border border-line bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                       />
                       {livePreviewKarakter && (
@@ -466,6 +478,30 @@ export function ElevtekstEditor() {
                       />
                     </label>
                   </div>
+
+                  {kriterieVurderingDraft && kriterieVurderingDraft.length > 0 && (
+                    <div className="flex flex-col gap-2 rounded-button border border-line p-3">
+                      <p className="text-sm font-medium text-foreground">Regnestykke fra KI-forslaget</p>
+                      {kriterieVurderingDraft.map((k) => (
+                        <div key={k.kriteriumId} className="flex flex-col gap-0.5 border-b border-line pb-2 last:border-0 last:pb-0">
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="font-medium text-foreground">
+                              {k.kriteriumName} ({k.weight}%)
+                            </span>
+                            <span className="text-foreground/60">
+                              {k.poengandel} p → bidrag {Math.round((k.weight / 100) * k.poengandel)} p
+                            </span>
+                          </div>
+                          {k.ekstraBraOppfylt !== null && (
+                            <span className={cn("text-xs", k.ekstraBraOppfylt ? "text-success" : "text-foreground/40")}>
+                              {k.ekstraBraOppfylt ? "✓ Ekstra bra-kriteriene oppfylt" : "Ekstra bra-kriteriene ikke oppfylt"}
+                            </span>
+                          )}
+                          {k.kommentar && <p className="text-sm text-foreground/70">{k.kommentar}</p>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
                   <div className="flex items-center gap-2">
                     <Button

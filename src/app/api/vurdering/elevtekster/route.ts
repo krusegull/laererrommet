@@ -110,6 +110,7 @@ export async function POST(request: Request) {
       score: tekst.score,
       karakter: tekst.karakter,
       tilbakemelding: tekst.tilbakemelding,
+      kriterieVurdering: tekst.kriterieVurdering,
       skala: tekst.mal.skala,
       dato: tekst.dato.toISOString(),
       updatedAt: tekst.updatedAt.toISOString(),

@@ -31,10 +31,13 @@ export async function askClaude({
   system,
   messages,
   maxTokens = 1024,
+  temperature,
 }: {
   system: string;
   messages: { role: "user" | "assistant"; content: string }[];
   maxTokens?: number;
+  /** 0-1. Lavere gir mer konsistente, forutsigbare svar - nyttig for ting som skal regnes/vurderes likt hver gang. */
+  temperature?: number;
 }): Promise<string> {
   const anthropic = getClient();
   if (!anthropic) {
@@ -50,6 +53,7 @@ export async function askClaude({
         max_tokens: maxTokens,
         system,
         messages,
+        ...(temperature !== undefined ? { temperature } : {}),
       });
 
       const textBlock = response.content.find((block) => block.type === "text");

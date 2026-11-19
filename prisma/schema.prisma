@@ -427,6 +427,12 @@ model ElevTekst {
   /// lagret som et øyeblikksbilde, så historiske vurderinger ikke endres om
   /// skalaen justeres senere.
   karakter       String?
+  /// Pr.-kriterium poenggivning fra siste KI-forslag (valgfritt - et
+  /// øyeblikksbilde av navn/vekt på genereringstidspunktet, så det fortsatt
+  /// gir mening selv om kriteriene siden endres). Null ved rent manuell
+  /// vurdering. Gir et transparent regnestykke for hvordan sluttpoengsummen
+  /// ble satt sammen.
+  kriterieVurdering Json?
   tilbakemelding String?
   dato           DateTime       @default(now())
   createdAt      DateTime       @default(now())
