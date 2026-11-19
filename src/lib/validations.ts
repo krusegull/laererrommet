@@ -429,3 +429,22 @@ export const kriterierUpdateSchema = z.object({
       "Vektingen av kriteriene må til sammen bli 100 %"
     ),
 });
+
+export const elevTekstCreateSchema = z.object({
+  classId: z.string().cuid(),
+  classStudentId: z.string().cuid(),
+  malId: z.string().cuid(),
+  tittel: z.string().trim().min(1, "Tittel er påkrevd").max(150),
+  tekst: z.string().trim().min(1, "Teksten kan ikke være tom").max(20000),
+  dato: z.string().optional(),
+  score: z.number().int().min(0).max(100).optional().nullable(),
+  tilbakemelding: z.string().trim().max(5000).optional(),
+});
+
+export const elevTekstUpdateSchema = z.object({
+  tittel: z.string().trim().min(1, "Tittel er påkrevd").max(150).optional(),
+  tekst: z.string().trim().min(1, "Teksten kan ikke være tom").max(20000).optional(),
+  dato: z.string().optional(),
+  score: z.number().int().min(0).max(100).optional().nullable(),
+  tilbakemelding: z.string().trim().max(5000).optional().nullable(),
+});

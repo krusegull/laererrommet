@@ -15,3 +15,22 @@ export interface MalDetail {
   kriterier: Kriterium[];
   updatedAt: string;
 }
+
+export interface ElevTekstSummary {
+  id: string;
+  studentId: string;
+  studentName: string;
+  malId: string;
+  malName: string;
+  tittel: string;
+  score: number | null;
+  karakter: string | null;
+  dato: string;
+  updatedAt: string;
+}
+
+export interface ElevTekstDetail extends ElevTekstSummary {
+  tekst: string;
+  tilbakemelding: string | null;
+  skala: SkalaEntry[];
+}

@@ -10,6 +10,7 @@ import { LoadingDots } from "@/components/ui/LoadingDots";
 import { cn } from "@/lib/cn";
 import type { Kriterium, SkalaEntry } from "@/lib/vurdering/types";
 import type { MalDetail, MalSummary } from "./types";
+import { ElevtekstEditor } from "./ElevtekstEditor";
 
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, {
@@ -25,7 +26,7 @@ function newKriterium(): Kriterium {
   return { id: crypto.randomUUID(), name: "", description: "", weight: 0, ekstraBra: "" };
 }
 
-export function VurderingClient() {
+function MalerEditor() {
   const [maler, setMaler] = useState<MalSummary[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [mal, setMal] = useState<MalDetail | null>(null);
@@ -400,6 +401,38 @@ export function VurderingClient() {
           </Card>
         </>
       ))}
+    </div>
+  );
+}
+
+const SECTIONS = [
+  { key: "maler", label: "Maler" },
+  { key: "elevtekster", label: "Elevtekster" },
+] as const;
+
+type SectionKey = (typeof SECTIONS)[number]["key"];
+
+export function VurderingClient() {
+  const [section, setSection] = useState<SectionKey>("maler");
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex gap-1 border-b border-line">
+        {SECTIONS.map((s) => (
+          <button
+            key={s.key}
+            type="button"
+            onClick={() => setSection(s.key)}
+            className={cn(
+              "px-3 py-2 text-sm font-medium",
+              section === s.key ? "border-b-2 border-primary text-primary" : "text-foreground/60"
+            )}
+          >
+            {s.label}
+          </button>
+        ))}
+      </div>
+      {section === "maler" ? <MalerEditor /> : <ElevtekstEditor />}
     </div>
   );
 }
