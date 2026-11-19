@@ -8,6 +8,7 @@ import type { KriterieVurdering } from "@/lib/vurdering/types";
 
 const MAX_CALIBRATION_EXAMPLES = 3;
 const CALIBRATION_EXCERPT_LENGTH = 500;
+const MAX_INLINE_KOMMENTARER = 6;
 
 const SYSTEM_PROMPT =
   "Du hjelper en lærer å vurdere en elevtekst opp mot en vurderingsmal med vektede kriterier. " +
@@ -26,8 +27,15 @@ const SYSTEM_PROMPT =
   "Skriv også en samlet tilbakemelding som ELEVEN selv skal lese og forstå: trekk fram konkret hva som er " +
   "bra, hva som bør forbedres, og gi konkrete, brukbare råd til neste tekst. Skriv i et språk eleven " +
   "forstår - ikke bruk fagspråk fra kriteriene uten å forklare det. " +
+  `I tillegg: foreslå inntil ${MAX_INLINE_KOMMENTARER} korte kommentarer knyttet til helt spesifikke ` +
+  "steder i teksten (som kommentarer i Word) - f.eks. en setning med godt billedspråk, en gjentatt " +
+  "skrivefeil, eller en svak overgang. For hver: «utdrag» må være et EKSAKT, ORDRETT sitat - kopiert " +
+  "tegn for tegn med riktig tegnsetting og store/små bokstaver - rett fra elevteksten over, ikke " +
+  "omskrevet eller forkortet med «...». Hold hvert utdrag kort (under 15 ord) og unikt nok til at det " +
+  "bare finnes ett sted i teksten. Et utdrag som ikke finnes ordrett i teksten blir forkastet. " +
   "Svar KUN med gyldig JSON på nøyaktig denne formen, ingen forklaring og ingen markdown-blokk:\n" +
-  '{"kriterier":[{"kriteriumId":"...","poengandel":0-100,"kommentar":"...","ekstraBraOppfylt":true|false|null}],"tilbakemelding":"..."}\n' +
+  '{"kriterier":[{"kriteriumId":"...","poengandel":0-100,"kommentar":"...","ekstraBraOppfylt":true|false|null}],' +
+  '"tilbakemelding":"...","inlineKommentarer":[{"utdrag":"...","kommentar":"..."}]}\n' +
   "«kriterier» må ha nøyaktig én oppføring per kriterium du fikk oppgitt, med samme kriteriumId.";
 
 interface CalibrationExample {
@@ -142,7 +150,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ te
     return NextResponse.json({ error: "Klarte ikke å tolke KI-forslaget. Prøv igjen." }, { status: 502 });
   }
 
-  let parsed: { kriterier?: unknown; tilbakemelding?: unknown };
+  let parsed: { kriterier?: unknown; tilbakemelding?: unknown; inlineKommentarer?: unknown };
   try {
     parsed = JSON.parse(match[0]);
   } catch {
@@ -185,10 +193,57 @@ export async function POST(_request: Request, { params }: { params: Promise<{ te
   const weightedScore = kriterieVurdering.reduce((sum, k) => sum + (k.weight / 100) * k.poengandel, 0);
   const score = Math.max(0, Math.min(100, Math.round(weightedScore)));
 
+  // Løser inline-kommentarene opp mot faktiske tegnposisjoner selv - stoler
+  // ikke på at KI-en oppgir presise offset-tall (det gjør de upålitelig).
+  // Et utdrag som ikke finnes ordrett i teksten, eller som overlapper en
+  // annen kommentar, blir bare forkastet i stedet for å feile forespørselen.
+  const aiInline = Array.isArray(parsed.inlineKommentarer) ? parsed.inlineKommentarer : [];
+  const takenRanges: { start: number; end: number }[] = tekst.kommentarer.map((k) => ({
+    start: k.startOffset,
+    end: k.endOffset,
+  }));
+  const resolvedInline: { startOffset: number; endOffset: number; kommentar: string }[] = [];
+
+  for (const entry of aiInline) {
+    if (resolvedInline.length >= MAX_INLINE_KOMMENTARER) break;
+    if (typeof entry !== "object" || entry === null) continue;
+    const utdrag = "utdrag" in entry && typeof entry.utdrag === "string" ? entry.utdrag : null;
+    const kommentarTekst = "kommentar" in entry && typeof entry.kommentar === "string" ? entry.kommentar.trim() : "";
+    if (!utdrag || !kommentarTekst) continue;
+
+    const start = tekst.tekst.indexOf(utdrag);
+    if (start === -1) continue;
+    const end = start + utdrag.length;
+    const overlaps = takenRanges.some((r) => start < r.end && end > r.start);
+    if (overlaps) continue;
+
+    takenRanges.push({ start, end });
+    resolvedInline.push({ startOffset: start, endOffset: end, kommentar: kommentarTekst });
+  }
+
+  const createdKommentarer =
+    resolvedInline.length > 0
+      ? await prisma.$transaction(
+          resolvedInline.map((k) =>
+            prisma.elevTekstKommentar.create({
+              data: { elevTekstId: tekst.id, startOffset: k.startOffset, endOffset: k.endOffset, kommentar: k.kommentar, kilde: "ki" },
+            })
+          )
+        )
+      : [];
+
   return NextResponse.json({
     score,
     tilbakemelding,
     kriterieVurdering,
     calibratedWithCount: calibrationExamples.length,
+    kommentarer: createdKommentarer.map((k) => ({
+      id: k.id,
+      startOffset: k.startOffset,
+      endOffset: k.endOffset,
+      kommentar: k.kommentar,
+      kilde: k.kilde,
+      createdAt: k.createdAt.toISOString(),
+    })),
   });
 }

@@ -435,12 +435,31 @@ model ElevTekst {
   kriterieVurdering Json?
   tilbakemelding String?
   dato           DateTime       @default(now())
+  kommentarer    ElevTekstKommentar[]
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
   @@index([userId])
   @@index([studentId])
   @@index([malId])
+}
+
+/// En kommentar knyttet til et konkret utsnitt av en elevtekst (som
+/// kommentarer i Word) - ikke den samlede tilbakemeldingen, som lagres
+/// direkte på ElevTekst. startOffset/endOffset er tegnposisjoner i
+/// ElevTekst.tekst slik den var da kommentaren ble lagt til.
+model ElevTekstKommentar {
+  id          String    @id @default(cuid())
+  elevTekstId String
+  elevTekst   ElevTekst @relation(fields: [elevTekstId], references: [id], onDelete: Cascade)
+  startOffset Int
+  endOffset   Int
+  kommentar   String
+  /// "laerer" (lagt til manuelt) eller "ki" (foreslått av et KI-forslag).
+  kilde       String    @default("laerer")
+  createdAt   DateTime  @default(now())
+
+  @@index([elevTekstId])
 }
 
 model VurderingsKriterium {
