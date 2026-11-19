@@ -5,11 +5,13 @@ import { ArrowLeft, Lightbulb, Dumbbell, FileText, CalendarClock, CheckCircle2 }
 import { authOptions } from "@/lib/auth";
 import { getOwnedStudent } from "@/lib/getOwnedStudent";
 import { computeStudentStatus, STATUS_LABEL } from "@/lib/studentStatus";
+import { getStudentOversikt } from "@/lib/vurdering/getStudentOversikt";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { AIActionCard } from "@/components/AIActionCard";
 import { NewFeedbackButton } from "./NewFeedbackButton";
+import { VurderingsUtviklingClient } from "./VurderingsUtviklingClient";
 
 const STATUS_BADGE = { positive: "success", neutral: "neutral", negative: "error" } as const;
 
@@ -24,6 +26,7 @@ export default async function StudentDetailPage({
   if (!student) notFound();
 
   const status = computeStudentStatus(student.logs);
+  const vurderingsOversikt = await getStudentOversikt(student.id, session!.user.id);
 
   return (
     <div className="flex flex-col gap-6">
@@ -36,6 +39,8 @@ export default async function StudentDetailPage({
           <Badge variant={STATUS_BADGE[status]}>{STATUS_LABEL[status]}</Badge>
         </div>
       </div>
+
+      <VurderingsUtviklingClient studentId={student.id} oversikt={vurderingsOversikt} />
 
       <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
         <div className="flex flex-col gap-4">
