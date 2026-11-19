@@ -969,4 +969,19 @@ flere elevtekster per elev før det gir mening). Elevene refereres naturlig
 via den delte elevprofilen (`Student`-modellen), samme identitet som
 Elevtekster og Tilbakemeldingslogg bruker.
 
+**Mekanisme-idé (nevnt 2026-11-20): "golf-handicap" for kategorien størst
+faglig utvikling.** I golf justeres poengsum mot spillerens eget
+ferdighetsnivå (handicap), slik at spillere på ulikt nivå kan konkurrere
+rettferdig mot hverandre - det er FORBEDRING relativt til eget utgangspunkt
+som teller, ikke absolutt poengsum. Samme prinsipp kan brukes for "størst
+faglig utvikling": rangér elever etter relativ fremgang fra sitt eget
+utgangsnivå (f.eks. endring i poengsum over tid, eller endring relativt til
+spredningen i egne tidligere resultater), ikke etter absolutt poengsum/
+karakter. Det er nettopp mekanismen som gjør "alle har muligheten til å få
+til" noe mer enn en god intensjon - en elev som går fra svakt til middels
+kan dermed rangere like høyt som en som går fra sterkt til enda sterkere.
+Krever at utregningen for denne ene kategorien er tydelig forskjellig fra
+de andre (som fortsatt kan være absolutte/manuelle), og nok datapunkter
+per elev til at "utvikling" er meningsfullt å regne ut.
+
 Ikke bygg før det bes om.
