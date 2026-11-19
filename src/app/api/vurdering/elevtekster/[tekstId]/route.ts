@@ -74,7 +74,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ te
       ...(parsed.data.score !== undefined ? { score: parsed.data.score, karakter } : {}),
       ...(parsed.data.tilbakemelding !== undefined ? { tilbakemelding: parsed.data.tilbakemelding } : {}),
     },
-    include: { student: true, mal: true },
+    include: { student: true, mal: { include: { kriterier: { orderBy: { order: "asc" } } } } },
   });
 
   return NextResponse.json({ tekst: serialize(updated) });
