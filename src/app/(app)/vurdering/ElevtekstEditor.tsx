@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Upload } from "lucide-react";
+import { Plus, Sparkles, Trash2, Upload } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
@@ -57,6 +57,7 @@ export function ElevtekstEditor() {
   const [scoreDraft, setScoreDraft] = useState<string>("");
   const [feedbackDraft, setFeedbackDraft] = useState("");
   const [savingVurdering, setSavingVurdering] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -175,6 +176,23 @@ export function ElevtekstEditor() {
       setError(e instanceof Error ? e.message : "Klarte ikke å lagre vurderingen");
     } finally {
       setSavingVurdering(false);
+    }
+  }
+
+  async function requestAiForslag() {
+    if (!selected) return;
+    setAiLoading(true);
+    try {
+      const data = await fetchJson<{ score: number; tilbakemelding: string }>(
+        `/api/vurdering/elevtekster/${selected.id}/ai-forslag`,
+        { method: "POST" }
+      );
+      setScoreDraft(String(data.score));
+      setFeedbackDraft(data.tilbakemelding);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Klarte ikke å hente KI-forslag");
+    } finally {
+      setAiLoading(false);
     }
   }
 
@@ -449,9 +467,24 @@ export function ElevtekstEditor() {
                     </label>
                   </div>
 
-                  <Button type="button" size="sm" onClick={saveVurdering} loading={savingVurdering} className="self-start">
-                    Lagre vurdering
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={requestAiForslag}
+                      loading={aiLoading}
+                    >
+                      <Sparkles size={14} /> Foreslå med KI
+                    </Button>
+                    <Button type="button" size="sm" onClick={saveVurdering} loading={savingVurdering}>
+                      Lagre vurdering
+                    </Button>
+                  </div>
+                  <p className="text-xs text-foreground/50">
+                    KI-forslaget fyller ut poengsum og tilbakemelding under - se gjennom og rediger før du
+                    lagrer. Elevteksten sendes til Claude (Anthropic) sin API for å lage forslaget.
+                  </p>
                 </div>
               </Card>
             ))}

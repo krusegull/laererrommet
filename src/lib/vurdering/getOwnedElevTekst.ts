@@ -9,7 +9,7 @@ import { prisma } from "@/lib/prisma";
 export async function getOwnedElevTekst(tekstId: string, userId: string) {
   const tekst = await prisma.elevTekst.findUnique({
     where: { id: tekstId },
-    include: { student: true, mal: true },
+    include: { student: true, mal: { include: { kriterier: { orderBy: { order: "asc" } } } } },
   });
 
   if (!tekst || tekst.userId !== userId) {
