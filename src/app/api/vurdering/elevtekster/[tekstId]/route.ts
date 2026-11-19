@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@/generated/prisma/client";
 import { elevTekstUpdateSchema } from "@/lib/validations";
 import { getOwnedElevTekst } from "@/lib/vurdering/getOwnedElevTekst";
 import { resolveKarakter } from "@/lib/vurdering/karakter";
@@ -19,6 +20,7 @@ function serialize(tekst: Awaited<ReturnType<typeof getOwnedElevTekst>>) {
     tekst: tekst.tekst,
     score: tekst.score,
     karakter: tekst.karakter,
+    kriterieVurdering: tekst.kriterieVurdering,
     tilbakemelding: tekst.tilbakemelding,
     skala: tekst.mal.skala,
     dato: tekst.dato.toISOString(),
@@ -73,6 +75,14 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ te
       ...(parsed.data.dato !== undefined ? { dato: new Date(parsed.data.dato) } : {}),
       ...(parsed.data.score !== undefined ? { score: parsed.data.score, karakter } : {}),
       ...(parsed.data.tilbakemelding !== undefined ? { tilbakemelding: parsed.data.tilbakemelding } : {}),
+      ...(parsed.data.kriterieVurdering !== undefined
+        ? {
+            kriterieVurdering:
+              parsed.data.kriterieVurdering === null
+                ? Prisma.JsonNull
+                : (parsed.data.kriterieVurdering as unknown as Prisma.InputJsonValue),
+          }
+        : {}),
     },
     include: { student: true, mal: { include: { kriterier: { orderBy: { order: "asc" } } } } },
   });

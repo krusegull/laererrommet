@@ -441,10 +441,20 @@ export const elevTekstCreateSchema = z.object({
   tilbakemelding: z.string().trim().max(5000).optional(),
 });
 
+export const kriterieVurderingEntrySchema = z.object({
+  kriteriumId: z.string(),
+  kriteriumName: z.string().max(100),
+  weight: z.number().int().min(0).max(100),
+  poengandel: z.number().int().min(0).max(100),
+  kommentar: z.string().max(1000),
+  ekstraBraOppfylt: z.boolean().nullable(),
+});
+
 export const elevTekstUpdateSchema = z.object({
   tittel: z.string().trim().min(1, "Tittel er påkrevd").max(150).optional(),
   tekst: z.string().trim().min(1, "Teksten kan ikke være tom").max(20000).optional(),
   dato: z.string().optional(),
   score: z.number().int().min(0).max(100).optional().nullable(),
   tilbakemelding: z.string().trim().max(5000).optional().nullable(),
+  kriterieVurdering: z.array(kriterieVurderingEntrySchema).max(30).optional().nullable(),
 });

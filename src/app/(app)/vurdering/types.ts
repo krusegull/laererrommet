@@ -1,4 +1,4 @@
-import type { Kriterium, SkalaEntry } from "@/lib/vurdering/types";
+import type { Kriterium, KriterieVurdering, SkalaEntry } from "@/lib/vurdering/types";
 
 export interface MalSummary {
   id: string;
@@ -32,5 +32,6 @@ export interface ElevTekstSummary {
 export interface ElevTekstDetail extends ElevTekstSummary {
   tekst: string;
   tilbakemelding: string | null;
+  kriterieVurdering: KriterieVurdering[] | null;
   skala: SkalaEntry[];
 }
