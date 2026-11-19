@@ -1,14 +1,22 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { getOwnedElevTekst } from "@/lib/vurdering/getOwnedElevTekst";
 import { askClaude, AIUnavailableError } from "@/lib/anthropic";
 import type { KriterieVurdering } from "@/lib/vurdering/types";
 
+const MAX_CALIBRATION_EXAMPLES = 3;
+const CALIBRATION_EXCERPT_LENGTH = 500;
+
 const SYSTEM_PROMPT =
   "Du hjelper en lærer å vurdere en elevtekst opp mot en vurderingsmal med vektede kriterier. " +
-  "Du får elevteksten og kriteriene (id, navn, eventuell beskrivelse, vekting i prosent, og hva som " +
-  "regnes som ekstra bra å få med). " +
+  "Du får elevteksten, kriteriene (id, navn, eventuell beskrivelse, vekting i prosent, og hva som " +
+  "regnes som ekstra bra å få med), og eventuelt noen kalibreringseksempler - tekster denne læreren " +
+  "allerede har vurdert ferdig for samme mal, med lærerens faktiske poengsum og tilbakemelding. Bruk " +
+  "kalibreringseksemplene til å treffe denne lærerens standard (hvor streng/snill, hva slags " +
+  "tilbakemelding læreren gir) - men vurder likevel den NYE teksten på sine egne meritter, ikke bare " +
+  "relativt til eksemplene. " +
   "Vurder teksten grundig og saklig, ETT kriterium om gangen, uavhengig av de andre kriteriene. For hvert " +
   "kriterium: gi en poengandel fra 0 til 100 for hvor godt AKKURAT DET kriteriet er oppfylt (ikke vektet - " +
   "det regner systemet ut selv etterpå), en kort kommentar som begrunner poengandelen med konkrete " +
@@ -22,11 +30,34 @@ const SYSTEM_PROMPT =
   '{"kriterier":[{"kriteriumId":"...","poengandel":0-100,"kommentar":"...","ekstraBraOppfylt":true|false|null}],"tilbakemelding":"..."}\n' +
   "«kriterier» må ha nøyaktig én oppføring per kriterium du fikk oppgitt, med samme kriteriumId.";
 
+interface CalibrationExample {
+  tekst: string;
+  score: number | null;
+  karakter: string | null;
+  tilbakemelding: string | null;
+}
+
+/**
+ * Plukker opptil `max` jevnt fordelte eksempler fra en liste sortert på
+ * poengsum - gir et spenn fra svakeste til sterkeste i stedet for bare de
+ * nyeste, som gir KI-en et bedre bilde av lærerens standard på tvers av
+ * nivå.
+ */
+function pickSpreadExamples<T>(sorted: T[], max: number): T[] {
+  if (sorted.length <= max) return sorted;
+  const indices = new Set<number>();
+  for (let i = 0; i < max; i++) {
+    indices.add(Math.round((i / (max - 1)) * (sorted.length - 1)));
+  }
+  return [...indices].sort((a, b) => a - b).map((i) => sorted[i]);
+}
+
 function buildUserMessage(
   tekst: string,
-  kriterier: { id: string; name: string; description: string | null; weight: number; ekstraBra: string | null }[]
+  kriterier: { id: string; name: string; description: string | null; weight: number; ekstraBra: string | null }[],
+  calibrationExamples: CalibrationExample[]
 ) {
-  return [
+  const parts = [
     "Elevtekst:",
     tekst,
     "",
@@ -39,7 +70,29 @@ function buildUserMessage(
           (k.ekstraBra ? ` | Ekstra bra: ${k.ekstraBra}` : "")
       )
       .join("\n") || "Ingen kriterier satt.",
-  ].join("\n");
+  ];
+
+  if (calibrationExamples.length > 0) {
+    parts.push(
+      "",
+      "Kalibreringseksempler (lærerens faktiske vurderinger av andre tekster for samme mal):",
+      calibrationExamples
+        .map((e, i) => {
+          const excerpt =
+            e.tekst.length > CALIBRATION_EXCERPT_LENGTH
+              ? e.tekst.slice(0, CALIBRATION_EXCERPT_LENGTH) + "…"
+              : e.tekst;
+          return (
+            `Eksempel ${i + 1} - lærerens poengsum: ${e.score}/100${e.karakter ? " (karakter " + e.karakter + ")" : ""}\n` +
+            `Tekst (utdrag): ${excerpt}\n` +
+            (e.tilbakemelding ? `Lærerens tilbakemelding: ${e.tilbakemelding}` : "")
+          );
+        })
+        .join("\n\n")
+    );
+  }
+
+  return parts.join("\n");
 }
 
 export async function POST(_request: Request, { params }: { params: Promise<{ tekstId: string }> }) {
@@ -61,11 +114,18 @@ export async function POST(_request: Request, { params }: { params: Promise<{ te
     );
   }
 
+  const gradedForMal = await prisma.elevTekst.findMany({
+    where: { malId: tekst.malId, userId: session.user.id, id: { not: tekst.id }, score: { not: null } },
+    select: { tekst: true, score: true, karakter: true, tilbakemelding: true },
+    orderBy: { score: "asc" },
+  });
+  const calibrationExamples = pickSpreadExamples(gradedForMal, MAX_CALIBRATION_EXAMPLES);
+
   let raw: string;
   try {
     raw = await askClaude({
       system: SYSTEM_PROMPT,
-      messages: [{ role: "user", content: buildUserMessage(tekst.tekst, tekst.mal.kriterier) }],
+      messages: [{ role: "user", content: buildUserMessage(tekst.tekst, tekst.mal.kriterier, calibrationExamples) }],
       maxTokens: 3072,
       temperature: 0.2,
     });
@@ -125,5 +185,10 @@ export async function POST(_request: Request, { params }: { params: Promise<{ te
   const weightedScore = kriterieVurdering.reduce((sum, k) => sum + (k.weight / 100) * k.poengandel, 0);
   const score = Math.max(0, Math.min(100, Math.round(weightedScore)));
 
-  return NextResponse.json({ score, tilbakemelding, kriterieVurdering });
+  return NextResponse.json({
+    score,
+    tilbakemelding,
+    kriterieVurdering,
+    calibratedWithCount: calibrationExamples.length,
+  });
 }

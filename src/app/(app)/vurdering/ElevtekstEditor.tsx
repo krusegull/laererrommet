@@ -60,6 +60,7 @@ export function ElevtekstEditor() {
   const [kriterieVurderingDraft, setKriterieVurderingDraft] = useState<KriterieVurdering[] | null>(null);
   const [savingVurdering, setSavingVurdering] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
+  const [calibratedWithCount, setCalibratedWithCount] = useState<number | null>(null);
 
   const [error, setError] = useState<string | null>(null);
 
@@ -102,6 +103,7 @@ export function ElevtekstEditor() {
         setScoreDraft(data.tekst.score != null ? String(data.tekst.score) : "");
         setFeedbackDraft(data.tekst.tilbakemelding ?? "");
         setKriterieVurderingDraft(data.tekst.kriterieVurdering);
+        setCalibratedWithCount(null);
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoadingSelected(false));
@@ -187,13 +189,16 @@ export function ElevtekstEditor() {
     if (!selected) return;
     setAiLoading(true);
     try {
-      const data = await fetchJson<{ score: number; tilbakemelding: string; kriterieVurdering: KriterieVurdering[] }>(
-        `/api/vurdering/elevtekster/${selected.id}/ai-forslag`,
-        { method: "POST" }
-      );
+      const data = await fetchJson<{
+        score: number;
+        tilbakemelding: string;
+        kriterieVurdering: KriterieVurdering[];
+        calibratedWithCount: number;
+      }>(`/api/vurdering/elevtekster/${selected.id}/ai-forslag`, { method: "POST" });
       setScoreDraft(String(data.score));
       setFeedbackDraft(data.tilbakemelding);
       setKriterieVurderingDraft(data.kriterieVurdering);
+      setCalibratedWithCount(data.calibratedWithCount);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Klarte ikke å hente KI-forslag");
     } finally {
@@ -206,6 +211,7 @@ export function ElevtekstEditor() {
     // Et manuelt tastet poeng gjør ikke lenger KI-regnestykket gyldig - det
     // ville vist en nedbryting som ikke lenger summerer til tallet som vises.
     setKriterieVurderingDraft(null);
+    setCalibratedWithCount(null);
   }
 
   async function handleDelete(id: string) {
@@ -521,6 +527,13 @@ export function ElevtekstEditor() {
                     KI-forslaget fyller ut poengsum og tilbakemelding under - se gjennom og rediger før du
                     lagrer. Elevteksten sendes til Claude (Anthropic) sin API for å lage forslaget.
                   </p>
+                  {calibratedWithCount !== null && (
+                    <p className="text-xs text-foreground/50">
+                      {calibratedWithCount > 0
+                        ? `Kalibrert mot ${calibratedWithCount} tidligere vurdering${calibratedWithCount === 1 ? "" : "er"} du har gjort for denne malen.`
+                        : "Ingen tidligere vurderinger å kalibrere mot for denne malen ennå - jo flere du vurderer, jo bedre treffer forslagene din standard."}
+                    </p>
+                  )}
                 </div>
               </Card>
             ))}
