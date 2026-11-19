@@ -56,6 +56,7 @@ model User {
   importantNotes   ImportantNote[]
   vurderingsMaler  VurderingsMal[]
   elevTekster      ElevTekst[]
+  maal             Maal[]
 }
 
 model Student {
@@ -69,6 +70,7 @@ model Student {
   /// her uansett hvilken klasse de kom fra.
   classStudents ClassStudent[]
   elevTekster   ElevTekst[]
+  maal          Maal[]
   createdAt     DateTime        @default(now())
 }
 
@@ -402,8 +404,32 @@ model VurderingsMal {
   skala       Json                  @default("[]")
   kriterier   VurderingsKriterium[]
   elevTekster ElevTekst[]
+  maal        Maal[]
   createdAt   DateTime              @default(now())
   updatedAt   DateTime              @updatedAt
+}
+
+/// Elevens eget karaktermål og lærerens realistiske vurdering av hva som er
+/// oppnåelig, for én elev og én vurderingsmal. Ett mål per (elev, mal) -
+/// settes/oppdateres av læreren.
+model Maal {
+  id         String        @id @default(cuid())
+  userId     String
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  studentId  String
+  student    Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  malId      String
+  mal        VurderingsMal @relation(fields: [malId], references: [id], onDelete: Cascade)
+  /// Karakter-label (fra malens skala) eleven selv ønsker å oppnå.
+  elevMaal   String?
+  /// Karakter-label læreren vurderer som realistisk oppnåelig.
+  laererMaal String?
+  notat      String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@unique([studentId, malId])
+  @@index([userId])
 }
 
 /// En opplastet/innlimt elevtekst, matchet til en elev og vurdert mot en

@@ -441,6 +441,14 @@ export const elevTekstCreateSchema = z.object({
   tilbakemelding: z.string().trim().max(5000).optional(),
 });
 
+export const maalUpsertSchema = z.object({
+  studentId: z.string().cuid(),
+  malId: z.string().cuid(),
+  elevMaal: z.string().trim().max(50).optional().nullable(),
+  laererMaal: z.string().trim().max(50).optional().nullable(),
+  notat: z.string().trim().max(1000).optional().nullable(),
+});
+
 export const elevTekstKommentarCreateSchema = z
   .object({
     startOffset: z.number().int().min(0),
