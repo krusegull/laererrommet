@@ -55,15 +55,21 @@ model User {
   weeklyNotes      WeeklyNote[]
   importantNotes   ImportantNote[]
   vurderingsMaler  VurderingsMal[]
+  elevTekster      ElevTekst[]
 }
 
 model Student {
-  id        String        @id @default(cuid())
-  label     String
-  userId    String
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  logs      FeedbackLog[]
-  createdAt DateTime      @default(now())
+  id            String          @id @default(cuid())
+  label         String
+  userId        String
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logs          FeedbackLog[]
+  /// Roster-oppføringer i klassekart som peker til denne delte elevprofilen -
+  /// samme elev kan stå i flere klasser, men statistikk/vurderinger samles
+  /// her uansett hvilken klasse de kom fra.
+  classStudents ClassStudent[]
+  elevTekster   ElevTekst[]
+  createdAt     DateTime        @default(now())
 }
 
 model FeedbackLog {
@@ -95,9 +101,17 @@ model ClassStudent {
   classProfile   ClassProfile @relation(fields: [classProfileId], references: [id], onDelete: Cascade)
   name           String
   gender         String
+  /// Kobling til den delte elevprofilen (Student/Tilbakemeldingslogg) denne
+  /// roster-oppføringen hører til. Settes automatisk (ved eksakt navnetreff,
+  /// ellers opprettes en ny elevprofil) første gang eleven brukes et sted som
+  /// krever den delte identiteten, f.eks. ved opplasting av en elevtekst.
+  studentId      String?
+  student        Student?     @relation(fields: [studentId], references: [id], onDelete: SetNull)
+  elevTekster    ElevTekst[]
   createdAt      DateTime     @default(now())
 
   @@index([classProfileId])
+  @@index([studentId])
 }
 
 /// Ett klassekart er ett selvstendig "øyeblikksbilde" av rom + pultoppsett +
@@ -387,8 +401,40 @@ model VurderingsMal {
   /// Karakterskala: liste av {label, minScore}, sortert stigende på minScore.
   skala       Json                  @default("[]")
   kriterier   VurderingsKriterium[]
+  elevTekster ElevTekst[]
   createdAt   DateTime              @default(now())
   updatedAt   DateTime              @updatedAt
+}
+
+/// En opplastet/innlimt elevtekst, matchet til en elev og vurdert mot en
+/// vurderingsmal. Poengsum/tilbakemelding settes manuelt av læreren i denne
+/// omgangen - ingen KI-vurdering ennå.
+model ElevTekst {
+  id             String         @id @default(cuid())
+  userId         String
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  studentId      String
+  student        Student        @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classStudentId String?
+  classStudent   ClassStudent?  @relation(fields: [classStudentId], references: [id], onDelete: SetNull)
+  malId          String
+  mal            VurderingsMal  @relation(fields: [malId], references: [id], onDelete: Restrict)
+  tittel         String
+  tekst          String
+  /// Poengsum 0-100 mot malens skala. Null = ikke vurdert ennå.
+  score          Int?
+  /// Karakter-label slått opp fra malens skala da poengsummen sist ble satt -
+  /// lagret som et øyeblikksbilde, så historiske vurderinger ikke endres om
+  /// skalaen justeres senere.
+  karakter       String?
+  tilbakemelding String?
+  dato           DateTime       @default(now())
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([userId])
+  @@index([studentId])
+  @@index([malId])
 }
 
 model VurderingsKriterium {

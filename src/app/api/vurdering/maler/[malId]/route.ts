@@ -76,6 +76,14 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     return NextResponse.json({ error: "Fant ikke vurderingsmalen" }, { status: 404 });
   }
 
+  const elevTekstCount = await prisma.elevTekst.count({ where: { malId } });
+  if (elevTekstCount > 0) {
+    return NextResponse.json(
+      { error: `Kan ikke slette malen - den er i bruk av ${elevTekstCount} elevtekst(er).` },
+      { status: 400 }
+    );
+  }
+
   await prisma.vurderingsMal.delete({ where: { id: malId } });
 
   return NextResponse.json({ ok: true });

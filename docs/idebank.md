@@ -944,3 +944,29 @@ lag (nærmere en TV-quiz), og hvordan poengskalering etter vanskelighetsgrad
 skal vurderes/settes (av læreren selv, eller automatisk av KI).
 
 Ikke bygg før det bes om.
+
+## "Topp 5" - oversikt over elever som utmerker seg positivt (nevnt 2026-11-19)
+
+Idé: en tavle der læreren kan sette opp kategorier for positiv utmerkelse -
+ikke bare faglig, men bredt (f.eks. størst faglig utvikling, beste
+holdninger, mest kreativ, best muntlig, beste lagspiller, "mest komplette
+spiller" = utmerker seg positivt i flest fag). Poenget er at mange ulike
+elever skal kunne havne på en topp 5, ikke bare de faglig sterkeste -
+"det viktige er å bygge noe som alle har muligheten til å få til".
+
+Henger sammen med Vurdering-funksjonen (`/vurdering`) og ble bevisst
+utsatt: kategorier som "størst faglig utvikling" trenger ekte data å regne
+ut fra (vurderingsresultater fra Elevtekster, tilbakemeldingslogg) for å
+bli noe mer enn en manuelt utfylt tavle. Nå som Elevtekster er bygget
+(poengsum/karakter lagret per elev og mal, se `ElevTekst`-modellen) finnes
+det et første datagrunnlag å beregne utvikling fra.
+
+To mulige veier videre: (1) en enkel MANUELL versjon - læreren velger selv
+kategorier, elever og begrunnelse, ingen automatikk, kan bygges uavhengig
+av alt annet; eller (2) en delvis automatisk versjon som foreslår
+kandidater basert på faktisk poengsum-utvikling over tid per elev (krever
+flere elevtekster per elev før det gir mening). Elevene refereres naturlig
+via den delte elevprofilen (`Student`-modellen), samme identitet som
+Elevtekster og Tilbakemeldingslogg bruker.
+
+Ikke bygg før det bes om.
