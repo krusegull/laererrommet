@@ -461,6 +461,19 @@ export const elevTekstKommentarUpdateSchema = z.object({
   kommentar: z.string().trim().min(1, "Kommentaren kan ikke være tom").max(1000),
 });
 
+export const utmerkelseCreateSchema = z.object({
+  classId: z.string().cuid(),
+  classStudentId: z.string().cuid(),
+  kategori: z.string().trim().min(1, "Kategori er påkrevd").max(100),
+  begrunnelse: z.string().trim().max(1000).optional(),
+  dato: z.string().optional(),
+});
+
+export const utmerkelseUpdateSchema = z.object({
+  kategori: z.string().trim().min(1, "Kategori er påkrevd").max(100).optional(),
+  begrunnelse: z.string().trim().max(1000).optional().nullable(),
+});
+
 export const kriterieVurderingEntrySchema = z.object({
   kriteriumId: z.string(),
   kriteriumName: z.string().max(100),

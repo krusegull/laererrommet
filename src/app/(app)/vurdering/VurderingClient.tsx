@@ -11,6 +11,7 @@ import { cn } from "@/lib/cn";
 import type { Kriterium, SkalaEntry } from "@/lib/vurdering/types";
 import type { MalDetail, MalSummary } from "./types";
 import { ElevtekstEditor } from "./ElevtekstEditor";
+import { UtmerkelserEditor } from "./UtmerkelserEditor";
 
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, {
@@ -408,6 +409,7 @@ function MalerEditor() {
 const SECTIONS = [
   { key: "maler", label: "Maler" },
   { key: "elevtekster", label: "Elevtekster" },
+  { key: "utmerkelser", label: "Topp 5" },
 ] as const;
 
 type SectionKey = (typeof SECTIONS)[number]["key"];
@@ -432,7 +434,13 @@ export function VurderingClient() {
           </button>
         ))}
       </div>
-      {section === "maler" ? <MalerEditor /> : <ElevtekstEditor />}
+      {section === "maler" ? (
+        <MalerEditor />
+      ) : section === "elevtekster" ? (
+        <ElevtekstEditor />
+      ) : (
+        <UtmerkelserEditor />
+      )}
     </div>
   );
 }

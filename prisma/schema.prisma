@@ -57,6 +57,7 @@ model User {
   vurderingsMaler  VurderingsMal[]
   elevTekster      ElevTekst[]
   maal             Maal[]
+  utmerkelser      Utmerkelse[]
 }
 
 model Student {
@@ -71,6 +72,7 @@ model Student {
   classStudents ClassStudent[]
   elevTekster   ElevTekst[]
   maal          Maal[]
+  utmerkelser   Utmerkelse[]
   createdAt     DateTime        @default(now())
 }
 
@@ -110,6 +112,7 @@ model ClassStudent {
   studentId      String?
   student        Student?     @relation(fields: [studentId], references: [id], onDelete: SetNull)
   elevTekster    ElevTekst[]
+  utmerkelser    Utmerkelse[]
   createdAt      DateTime     @default(now())
 
   @@index([classProfileId])
@@ -486,6 +489,30 @@ model ElevTekstKommentar {
   createdAt   DateTime  @default(now())
 
   @@index([elevTekstId])
+}
+
+/// En manuell notat-registrering av at en elev utmerker seg positivt i en
+/// selvvalgt kategori (f.eks. "Størst faglig utvikling", "Beste holdninger",
+/// "Mest kreativ") - grunnlag for å kåre en periodisk "Topp 5". Kategorien er
+/// fritekst, ikke en egen tabell, slik at læreren fritt kan definere og
+/// gjenbruke sine egne kategorier uten noe fast oppsett. Ingen automatikk i
+/// denne omgangen - læreren velger selv elev, kategori og begrunnelse.
+model Utmerkelse {
+  id             String        @id @default(cuid())
+  userId         String
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  studentId      String
+  student        Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classStudentId String?
+  classStudent   ClassStudent? @relation(fields: [classStudentId], references: [id], onDelete: SetNull)
+  kategori       String
+  begrunnelse    String?
+  dato           DateTime      @default(now())
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([studentId])
 }
 
 model VurderingsKriterium {

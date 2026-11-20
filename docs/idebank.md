@@ -954,20 +954,20 @@ spiller" = utmerker seg positivt i flest fag). Poenget er at mange ulike
 elever skal kunne havne på en topp 5, ikke bare de faglig sterkeste -
 "det viktige er å bygge noe som alle har muligheten til å få til".
 
-Henger sammen med Vurdering-funksjonen (`/vurdering`) og ble bevisst
-utsatt: kategorier som "størst faglig utvikling" trenger ekte data å regne
-ut fra (vurderingsresultater fra Elevtekster, tilbakemeldingslogg) for å
-bli noe mer enn en manuelt utfylt tavle. Nå som Elevtekster er bygget
-(poengsum/karakter lagret per elev og mal, se `ElevTekst`-modellen) finnes
-det et første datagrunnlag å beregne utvikling fra.
+**Status (2026-11-20): den enkle MANUELLE versjonen er bygget**, som en
+tredje fane ("Topp 5") i Vurdering-funksjonen
+(`src/app/(app)/vurdering/UtmerkelserEditor.tsx`, modell `Utmerkelse`).
+Læreren velger elev (på tvers av klasser, via samme delte elevprofil/
+`Student`-modell som Elevtekster og Tilbakemeldingslogg bruker), skriver
+inn en fritekst-kategori (med forslag/autocomplete fra tidligere brukte
+kategorier) og en valgfri begrunnelse. Noteringene vises gruppert per
+kategori, som et grunnlag læreren selv går gjennom når kåringen skal
+gjøres - ingen automatikk, ingen beregning.
 
-To mulige veier videre: (1) en enkel MANUELL versjon - læreren velger selv
-kategorier, elever og begrunnelse, ingen automatikk, kan bygges uavhengig
-av alt annet; eller (2) en delvis automatisk versjon som foreslår
-kandidater basert på faktisk poengsum-utvikling over tid per elev (krever
-flere elevtekster per elev før det gir mening). Elevene refereres naturlig
-via den delte elevprofilen (`Student`-modellen), samme identitet som
-Elevtekster og Tilbakemeldingslogg bruker.
+Det som IKKE er bygget, og fortsatt er en ren idé: en delvis automatisk
+versjon som foreslår kandidater basert på faktisk poengsum-utvikling over
+tid per elev (krever flere elevtekster per elev før det gir mening, og
+bruker datagrunnlaget fra `ElevTekst`-modellen).
 
 **Mekanisme-idé (nevnt 2026-11-20): "golf-handicap" for kategorien størst
 faglig utvikling.** I golf justeres poengsum mot spillerens eget

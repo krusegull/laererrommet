@@ -3,6 +3,17 @@ export interface SkalaEntry {
   minScore: number;
 }
 
+/** En manuell notering av at en elev utmerker seg positivt i en selvvalgt kategori. */
+export interface Utmerkelse {
+  id: string;
+  studentId: string;
+  studentName: string;
+  kategori: string;
+  begrunnelse: string | null;
+  dato: string;
+  createdAt: string;
+}
+
 export interface Kriterium {
   id: string;
   name: string;
