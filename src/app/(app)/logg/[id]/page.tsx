@@ -12,6 +12,8 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { AIActionCard } from "@/components/AIActionCard";
 import { NewFeedbackButton } from "./NewFeedbackButton";
 import { VurderingsUtviklingClient } from "./VurderingsUtviklingClient";
+import { PoengOversiktClient } from "./PoengOversiktClient";
+import { getPoengOversikt } from "@/lib/poeng/getPoengOversikt";
 
 const STATUS_BADGE = { positive: "success", neutral: "neutral", negative: "error" } as const;
 
@@ -26,7 +28,10 @@ export default async function StudentDetailPage({
   if (!student) notFound();
 
   const status = computeStudentStatus(student.logs);
-  const vurderingsOversikt = await getStudentOversikt(student.id, session!.user.id);
+  const [vurderingsOversikt, poengOversikt] = await Promise.all([
+    getStudentOversikt(student.id, session!.user.id),
+    getPoengOversikt(student.id, session!.user.id),
+  ]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -39,6 +44,8 @@ export default async function StudentDetailPage({
           <Badge variant={STATUS_BADGE[status]}>{STATUS_LABEL[status]}</Badge>
         </div>
       </div>
+
+      <PoengOversiktClient oversikt={poengOversikt} />
 
       <VurderingsUtviklingClient studentId={student.id} oversikt={vurderingsOversikt} />
 

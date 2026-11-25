@@ -57,6 +57,7 @@ model User {
   vurderingsMaler  VurderingsMal[]
   elevTekster      ElevTekst[]
   maal             Maal[]
+  elevPoeng        ElevPoeng[]
 }
 
 model Student {
@@ -71,6 +72,7 @@ model Student {
   classStudents ClassStudent[]
   elevTekster   ElevTekst[]
   maal          Maal[]
+  poeng         ElevPoeng[]
   createdAt     DateTime        @default(now())
 }
 
@@ -94,6 +96,7 @@ model ClassProfile {
   logs          ClassLog[]
   students      ClassStudent[]
   seatingCharts SeatingChart[]
+  elevPoeng     ElevPoeng[]
   createdAt     DateTime       @default(now())
 }
 
@@ -508,4 +511,35 @@ model VurderingsKriterium {
 enum Role {
   USER
   ADMIN
+}
+
+/// Plusspoeng til en elev - gitt til eleven alene eller til en hel gruppe
+/// (da får hvert gruppemedlem en egen rad med samme batchId, slik at hele
+/// tildelingen kan angres samlet). Poengene samles på den delte elevprofilen
+/// (Student), så statistikken følger eleven på tvers av klasser.
+model ElevPoeng {
+  id             String        @id @default(cuid())
+  userId         String
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  studentId      String
+  student        Student       @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  classProfileId String?
+  classProfile   ClassProfile? @relation(fields: [classProfileId], references: [id], onDelete: SetNull)
+  /// Fag, f.eks. "Samfunnsfag" (se FAG i src/lib/poeng/fag.ts)
+  fag            String
+  poeng          Int
+  /// Periode/tema, f.eks. "Første verdenskrig"
+  tema           String
+  /// Hva poengene var for, f.eks. "Konkurranse: SKYTTERGRAVEN"
+  kilde          String        @default("")
+  /// Gruppenavn ved gruppetildeling, f.eks. "Gruppe 3"
+  gruppe         String?
+  batchId        String
+  dato           DateTime      @default(now())
+  createdAt      DateTime      @default(now())
+
+  @@index([studentId])
+  @@index([userId, fag])
+  @@index([classProfileId])
+  @@index([batchId])
 }
