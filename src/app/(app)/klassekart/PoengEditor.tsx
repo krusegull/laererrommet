@@ -7,7 +7,8 @@ import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { cn } from "@/lib/cn";
 import { ANDRE_FAG, MINE_FAG } from "@/lib/poeng/fag";
-import { KONKURRANSE_URL, portalFagId } from "@/lib/poeng/konkurranse";
+import { portalFagId } from "@/lib/poeng/konkurranse";
+import { konkurranseUrl, konkurranserFor } from "@/lib/portal/katalog";
 import type { Grupper, StudentLite } from "@/lib/klassekart/types";
 
 interface Batch {
@@ -101,14 +102,20 @@ export function PoengEditor({
 
   // Åpner konkurransemalen i Læringsportalen med disse gruppene som lag.
   // Lagene sendes i #-delen av adressen, som aldri går til noen server.
+  const ferdige = konkurranserFor(fag);
+  const [sett, setSett] = useState<string>("");
+  const valgtSett = ferdige.find((k) => k.id === sett) ?? ferdige[0];
+
   function startKonkurranse() {
     const id = portalFagId(fag);
+    const settId = valgtSett?.id ?? id;
+    const temaForLr = tema || valgtSett?.tema || "";
     const lr = {
       v: 1,
       classId,
       klasse: className,
       fag: id,
-      tema,
+      tema: temaForLr,
       // Hele klassen, så konkurransen kan blande nye lag selv.
       alle: students.map((st) => ({ id: st.id, navn: st.name })),
       lag: validGroups.slice(0, 8).map((g) => ({
@@ -116,7 +123,7 @@ export function PoengEditor({
         elever: g.ids.map((sid) => ({ id: sid, navn: nameOf.get(sid) ?? "" })),
       })),
     };
-    const url = `${KONKURRANSE_URL}?sett=${id}&fag=${id}#lr=${encodeURIComponent(JSON.stringify(lr))}`;
+    const url = konkurranseUrl(settId, id, lr);
     window.open(url, "_blank", "noopener");
   }
 
@@ -276,11 +283,28 @@ export function PoengEditor({
 
       <Card
         header={
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <h3 className="font-semibold text-foreground">Grupper</h3>
               <span className="text-xs text-foreground/50">Fra «Lag grupper» i dette kartet</span>
             </div>
+            <div className="flex flex-wrap items-center gap-2">
+            {ferdige.length > 0 ? (
+              <select
+                value={valgtSett?.id ?? ""}
+                onChange={(e) => setSett(e.target.value)}
+                aria-label="Velg konkurranse"
+                className="rounded-button border border-line bg-background px-2 py-1.5 text-sm text-foreground"
+              >
+                {ferdige.map((k) => (
+                  <option key={k.id} value={k.id}>
+                    {k.navn} – {k.tema} ({k.antall} spm.)
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span className="text-xs text-foreground/50">Ingen ferdige konkurranser i {fag} – du lager spørsmålene selv</span>
+            )}
             <Button
               size="sm"
               variant="secondary"
@@ -290,6 +314,7 @@ export function PoengEditor({
             >
               <Trophy size={14} /> Start konkurranse <ExternalLink size={12} />
             </Button>
+            </div>
           </div>
         }
       >
