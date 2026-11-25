@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { FAG } from "@/lib/poeng/fag";
+import { FAG, POENG_KATEGORIER } from "@/lib/poeng/fag";
 
 export const registerSchema = z
   .object({
@@ -492,6 +492,7 @@ export const elevPoengSchema = z.object({
   tema: z.string().trim().min(1, "Skriv periode/tema").max(120),
   kilde: z.string().trim().max(200).optional().default(""),
   gruppe: z.string().trim().max(60).optional(),
+  kategori: z.enum(POENG_KATEGORIER).optional().default("faglig"),
   /** ISO-dato (YYYY-MM-DD). Udefinert = i dag. */
   dato: z
     .string()
@@ -499,11 +500,11 @@ export const elevPoengSchema = z.object({
     .optional(),
 });
 
-/** Import av poeng fra konkurransemalen - ulikt antall poeng per elev, én batch. */
+/** Import av poeng fra konkurransemalen - ulike poeng per elev, én tildeling. */
 export const elevPoengImportSchema = z.object({
   fag: z.enum(FAG, { message: "Velg et fag" }),
   tema: z.string().trim().min(1, "Skriv periode/tema").max(120),
-  kilde: z.string().trim().max(200).optional().default(""),
+  konkurranse: z.string().trim().max(80).optional(),
   dato: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Ugyldig dato")
@@ -513,9 +514,12 @@ export const elevPoengImportSchema = z.object({
       z.object({
         classStudentId: z.string().min(1),
         poeng: z.number().int().min(-10000).max(10000),
+        kategori: z.enum(POENG_KATEGORIER),
+        kilde: z.string().trim().max(200).optional().default(""),
         gruppe: z.string().trim().max(60).optional(),
+        plassering: z.number().int().min(1).max(20).optional(),
       })
     )
-    .min(1, "Ingen elever å lagre poeng for")
-    .max(60),
+    .min(1, "Ingen poeng å lagre")
+    .max(300),
 });

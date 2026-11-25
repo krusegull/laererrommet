@@ -29,3 +29,11 @@ export function compareFag(a: string, b: string): number {
   if (ib === -1) return -1;
   return ia - ib;
 }
+
+/** Faglige poeng og atferdspoeng holdes atskilt i all statistikk. */
+export const POENG_KATEGORIER = ["faglig", "atferd"] as const;
+export type PoengKategori = (typeof POENG_KATEGORIER)[number];
+
+/** Forslag til poeng etter plassering i en konkurranse (per elev). */
+export const PLASSERINGSPOENG = [10, 7, 5] as const;
+export const DELTAKERPOENG = 3;

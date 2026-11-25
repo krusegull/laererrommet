@@ -26,5 +26,23 @@ export interface KonkurranseResultat {
   tema?: string;
   classId?: string;
   dato?: string;
-  lag: { navn: string; poeng: number; elever: { navn: string; id?: string; egne?: number }[] }[];
+  lag: {
+    navn: string;
+    poeng: number;
+    elever: {
+      navn: string;
+      id?: string;
+      /** Poeng eleven vant selv når skjebnen trakk akkurat henne/ham. */
+      egne?: number;
+      /** Antall ⭐ ekstrapoeng læreren ga under konkurransen. */
+      ekstra?: number;
+      /** Sum atferdspoeng (±) gitt under konkurransen. */
+      atferd?: number;
+    }[];
+  }[];
+}
+
+/** Plassering per lag ut fra poengsum (likt antall poeng = delt plass: 1, 1, 3 …). */
+export function plasseringer(poeng: number[]): number[] {
+  return poeng.map((p) => 1 + poeng.filter((q) => q > p).length);
 }
