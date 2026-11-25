@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { FAG } from "@/lib/poeng/fag";
 
 export const registerSchema = z
   .object({
@@ -477,4 +478,23 @@ export const elevTekstUpdateSchema = z.object({
   score: z.number().int().min(0).max(100).optional().nullable(),
   tilbakemelding: z.string().trim().max(5000).optional().nullable(),
   kriterieVurdering: z.array(kriterieVurderingEntrySchema).max(30).optional().nullable(),
+});
+
+export const elevPoengSchema = z.object({
+  classStudentIds: z.array(z.string().min(1)).min(1, "Velg minst én elev").max(60),
+  fag: z.enum(FAG, { message: "Velg et fag" }),
+  poeng: z
+    .number({ message: "Skriv inn antall poeng" })
+    .int("Poeng må være et helt tall")
+    .min(-1000, "For mange minuspoeng")
+    .max(1000, "Maks 1000 poeng om gangen")
+    .refine((n) => n !== 0, "Poeng kan ikke være 0"),
+  tema: z.string().trim().min(1, "Skriv periode/tema").max(120),
+  kilde: z.string().trim().max(200).optional().default(""),
+  gruppe: z.string().trim().max(60).optional(),
+  /** ISO-dato (YYYY-MM-DD). Udefinert = i dag. */
+  dato: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Ugyldig dato")
+    .optional(),
 });

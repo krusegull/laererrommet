@@ -35,4 +35,4 @@ export interface ChartDetail {
   updatedAt: string;
 }
 
-export type TabKey = "rom" | "pulter" | "elever" | "kart" | "grupper";
+export type TabKey = "rom" | "pulter" | "elever" | "kart" | "grupper" | "poeng";
