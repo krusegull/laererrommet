@@ -1,12 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Plus, Trophy, Undo2, Users } from "lucide-react";
+import { ExternalLink, Plus, Trophy, Undo2, Users } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { cn } from "@/lib/cn";
 import { ANDRE_FAG, MINE_FAG } from "@/lib/poeng/fag";
+import { KONKURRANSE_URL, portalFagId } from "@/lib/poeng/konkurranse";
 import type { Grupper, StudentLite } from "@/lib/klassekart/types";
 
 interface Batch {
@@ -40,10 +41,12 @@ const fmtDate = new Intl.DateTimeFormat("nb-NO", { day: "numeric", month: "short
 
 export function PoengEditor({
   classId,
+  className,
   students,
   grupper,
 }: {
   classId: string;
+  className: string;
   students: StudentLite[];
   grupper: Grupper;
 }) {
@@ -91,6 +94,25 @@ export function PoengEditor({
   const validGroups = grupper
     .map((g, i) => ({ label: "Gruppe " + (i + 1), ids: g.filter((id) => nameOf.has(id)) }))
     .filter((g) => g.ids.length > 0);
+
+  // Åpner konkurransemalen i Læringsportalen med disse gruppene som lag.
+  // Lagene sendes i #-delen av adressen, som aldri går til noen server.
+  function startKonkurranse() {
+    const id = portalFagId(fag);
+    const lr = {
+      v: 1,
+      classId,
+      klasse: className,
+      fag: id,
+      tema,
+      lag: validGroups.slice(0, 8).map((g) => ({
+        navn: g.label,
+        elever: g.ids.map((sid) => ({ id: sid, navn: nameOf.get(sid) ?? "" })),
+      })),
+    };
+    const url = `${KONKURRANSE_URL}?sett=${id}&fag=${id}#lr=${encodeURIComponent(JSON.stringify(lr))}`;
+    window.open(url, "_blank", "noopener");
+  }
 
   async function give(ids: string[], key: string, gruppe?: string) {
     setError(null);
@@ -215,8 +237,19 @@ export function PoengEditor({
       <Card
         header={
           <div className="flex items-center justify-between gap-2">
-            <h3 className="font-semibold text-foreground">Grupper</h3>
-            <span className="text-xs text-foreground/50">Fra «Lag grupper» i dette kartet</span>
+            <div>
+              <h3 className="font-semibold text-foreground">Grupper</h3>
+              <span className="text-xs text-foreground/50">Fra «Lag grupper» i dette kartet</span>
+            </div>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={startKonkurranse}
+              disabled={validGroups.length < 2}
+              title={validGroups.length > 8 ? "Konkurransen har plass til 8 lag – bare de 8 første blir med" : undefined}
+            >
+              <Trophy size={14} /> Start konkurranse med gruppene <ExternalLink size={12} />
+            </Button>
           </div>
         }
       >
