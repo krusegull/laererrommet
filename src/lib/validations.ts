@@ -498,3 +498,24 @@ export const elevPoengSchema = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/, "Ugyldig dato")
     .optional(),
 });
+
+/** Import av poeng fra konkurransemalen - ulikt antall poeng per elev, én batch. */
+export const elevPoengImportSchema = z.object({
+  fag: z.enum(FAG, { message: "Velg et fag" }),
+  tema: z.string().trim().min(1, "Skriv periode/tema").max(120),
+  kilde: z.string().trim().max(200).optional().default(""),
+  dato: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Ugyldig dato")
+    .optional(),
+  rader: z
+    .array(
+      z.object({
+        classStudentId: z.string().min(1),
+        poeng: z.number().int().min(-10000).max(10000),
+        gruppe: z.string().trim().max(60).optional(),
+      })
+    )
+    .min(1, "Ingen elever å lagre poeng for")
+    .max(60),
+});

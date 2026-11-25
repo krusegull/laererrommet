@@ -613,7 +613,7 @@ export function KlassekartClient() {
                 />
               )}
               {tab === "poeng" && (
-                <PoengEditor classId={detail.id} students={detail.students} grupper={chart.grupper} />
+                <PoengEditor classId={detail.id} className={detail.name} students={detail.students} grupper={chart.grupper} />
               )}
             </>
           )}
