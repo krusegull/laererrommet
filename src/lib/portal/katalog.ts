@@ -78,6 +78,15 @@ export const PORTAL: PortalFag[] = [
           { id: "samfunnsfag-kalde-krigen", navn: "JERNTEPPET", beskrivelse: "Én kategori per læringsmål + fagbegreper", antall: 66 },
         ],
       },
+      {
+        navn: "Nyheter i verden",
+        ikon: "📰",
+        sti: "samfunnsfag/nyheter/index.html",
+        verktoy: [],
+        konkurranser: [
+          { id: "samfunnsfag-nyheter-host-2026", navn: "NYHETSKAMPEN", beskrivelse: "Nyheter høsten 2026: konflikt, valg, klima, Norge, sport og kultur", antall: 45 },
+        ],
+      },
     ],
   },
   {
