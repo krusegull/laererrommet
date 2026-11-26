@@ -73,20 +73,25 @@ function toRows(d: KonkurranseResultat | null): Row[] {
 
 const norm = (s: string) => s.trim().toLowerCase().replace(/\s+/g, " ");
 
-/** Finn klassekart-eleven en deltaker hører til: id, så fullt navn, så unikt fornavn. */
-function match(row: { id: string; navn: string }, students: ClassLite["students"]): string {
-  if (row.id && students.some((s) => s.id === row.id)) return row.id;
+/**
+ * Finn klassekart-eleven en deltaker hører til - på tvers av ALLE klassene
+ * læreren har, ikke bare én valgt klasse. En konkurranse kan ha deltakere fra
+ * flere klasser samtidig (f.eks. en felles konkurranse for 10A og 10B).
+ * Rekkefølge: id, så fullt navn, så unikt fornavn.
+ */
+function match(row: { id: string; navn: string }, classes: ClassLite[]): string {
+  const alle = classes.flatMap((c) => c.students);
+  if (row.id && alle.some((s) => s.id === row.id)) return row.id;
   const n = norm(row.navn);
-  const exact = students.find((s) => norm(s.name) === n);
+  const exact = alle.find((s) => norm(s.name) === n);
   if (exact) return exact.id;
-  const first = students.filter((s) => norm(s.name).split(" ")[0] === n.split(" ")[0]);
+  const first = alle.filter((s) => norm(s.name).split(" ")[0] === n.split(" ")[0]);
   return first.length === 1 ? first[0].id : "";
 }
 
 export function ImporterClient({ classes }: { classes: ClassLite[] }) {
   const [data, setData] = useState<KonkurranseResultat | null>(null);
   const [loaded, setLoaded] = useState(false);
-  const [classId, setClassId] = useState("");
   const [fag, setFag] = useState("Samfunnsfag");
   const [tema, setTema] = useState("");
   const [tittel, setTittel] = useState("");
@@ -104,10 +109,9 @@ export function ImporterClient({ classes }: { classes: ClassLite[] }) {
 
   const rows = useMemo(() => toRows(data), [data]);
 
-  function applyClass(id: string, r: Row[]) {
-    setClassId(id);
-    const students = classes.find((c) => c.id === id)?.students ?? [];
-    setLinks(Object.fromEntries(r.map((row) => [row.key, match(row, students)])));
+  /** Hvilken klasse en koblet classStudentId faktisk tilhører. */
+  function classOf(studentId: string): string | undefined {
+    return classes.find((c) => c.students.some((s) => s.id === studentId))?.id;
   }
 
   useEffect(() => {
@@ -120,8 +124,8 @@ export function ImporterClient({ classes }: { classes: ClassLite[] }) {
     setTema(String(d.tema ?? ""));
     setTittel(String(d.tittel ?? "Konkurranse"));
     if (d.dato && /^\d{4}-\d{2}-\d{2}$/.test(d.dato)) setDato(d.dato);
-    const start = classes.find((c) => c.id === d.classId) ?? classes[0];
-    if (start) applyClass(start.id, toRows(d));
+    const r = toRows(d);
+    setLinks(Object.fromEntries(r.map((row) => [row.key, match(row, classes)])));
     // eslint-disable-next-line react-hooks/exhaustive-deps -- kjøres bare én gang ved lasting
   }, []);
 
@@ -135,7 +139,6 @@ export function ImporterClient({ classes }: { classes: ClassLite[] }) {
   const setVerdi = (r: Row, kol: Kolonne, v: number) => setEdits((p) => ({ ...p, [r.key + ":" + kol]: v }));
   const resetEdits = () => setEdits({});
 
-  const students = classes.find((c) => c.id === classId)?.students ?? [];
   const used = Object.values(links).filter(Boolean);
   const dupes = new Set(used.filter((id, i) => used.indexOf(id) !== i));
   const unlinked = rows.filter((r) => !links[r.key]).length;
@@ -161,16 +164,35 @@ export function ImporterClient({ classes }: { classes: ClassLite[] }) {
         ].filter((x) => x.poeng !== 0);
       });
     if (!rader.length) return setError("Ingen poeng å lagre.");
+
+    // Deltakerne kan høre til flere ulike klasser (f.eks. en felles
+    // konkurranse for 10A og 10B) - lagre-endepunktet er scoped per klasse,
+    // så vi grupperer radene per elevens faktiske klasse og lagrer én gang
+    // per klasse.
+    const perKlasse = new Map<string, typeof rader>();
+    for (const r of rader) {
+      const cid = classOf(r.classStudentId);
+      if (!cid) continue;
+      const liste = perKlasse.get(cid) ?? [];
+      liste.push(r);
+      perKlasse.set(cid, liste);
+    }
+    if (perKlasse.size === 0) return setError("Fant ikke klassen til noen av elevene.");
+
     setSaving(true);
     try {
-      const res = await fetch(`/api/klassekart/${classId}/poeng/import`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fag, tema, konkurranse: navn, dato, rader }),
-      });
-      const out = await res.json();
-      if (!res.ok) throw new Error(out.error ?? "Klarte ikke å lagre");
-      setDone(out.count);
+      let total = 0;
+      for (const [cid, gruppeRader] of perKlasse) {
+        const res = await fetch(`/api/klassekart/${cid}/poeng/import`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fag, tema, konkurranse: navn, dato, rader: gruppeRader }),
+        });
+        const out = await res.json();
+        if (!res.ok) throw new Error(out.error ?? "Klarte ikke å lagre");
+        total += out.count;
+      }
+      setDone(total);
       // Fjern resultatet fra adressen så det ikke lagres to ganger ved oppdatering.
       window.history.replaceState(null, "", window.location.pathname);
     } catch (e) {
@@ -232,16 +254,6 @@ export function ImporterClient({ classes }: { classes: ClassLite[] }) {
       <Card header={<h2 className="font-semibold text-foreground">Konkurranse</h2>}>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <Input label="Konkurranse" value={tittel} onChange={(e) => setTittel(e.target.value)} />
-          <label className="flex flex-col gap-1.5 text-sm">
-            <span className="font-medium text-foreground">Klasse</span>
-            <select value={classId} onChange={(e) => applyClass(e.target.value, rows)} className={selectCls}>
-              {classes.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </label>
           <label className="flex flex-col gap-1.5 text-sm">
             <span className="font-medium text-foreground">Fag</span>
             <select value={fag} onChange={(e) => setFag(e.target.value)} className={selectCls}>
@@ -404,10 +416,14 @@ export function ImporterClient({ classes }: { classes: ClassLite[] }) {
                       className={cn(selectCls, "py-1", (!links[r.key] || dupes.has(links[r.key])) && "border-error")}
                     >
                       <option value="">– ikke koblet –</option>
-                      {students.map((s) => (
-                        <option key={s.id} value={s.id}>
-                          {s.name}
-                        </option>
+                      {classes.map((c) => (
+                        <optgroup key={c.id} label={c.name}>
+                          {c.students.map((s) => (
+                            <option key={s.id} value={s.id}>
+                              {s.name}
+                            </option>
+                          ))}
+                        </optgroup>
                       ))}
                     </select>
                   </td>

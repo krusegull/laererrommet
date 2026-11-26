@@ -17,28 +17,39 @@ export interface PortalKlasse {
 
 export function PortalClient({ klasser }: { klasser: PortalKlasse[] }) {
   const [fagId, setFagId] = useState<PortalFag["id"]>("samfunnsfag");
-  const [klasseId, setKlasseId] = useState(klasser[0]?.id ?? "");
+  const [klasseIds, setKlasseIds] = useState<string[]>(klasser[0] ? [klasser[0].id] : []);
   const [kopiert, setKopiert] = useState<string | null>(null);
   const fag = PORTAL.find((f) => f.id === fagId)!;
-  const klasse = klasser.find((k) => k.id === klasseId);
+  const valgteKlasser = klasser.filter((k) => klasseIds.includes(k.id));
+
+  function toggleKlasse(id: string) {
+    setKlasseIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  }
 
   function start(k: PortalKonkurranse, tema: string) {
-    if (!klasse) {
+    if (valgteKlasser.length === 0) {
       window.open(konkurranseUrl(k.id, fag.id), "_blank", "noopener");
       return;
     }
-    const navn = new Map(klasse.students.map((s) => [s.id, s.name]));
+    const alle = valgteKlasser.flatMap((kl) => kl.students.map((s) => ({ id: s.id, navn: s.name })));
+    const navn = new Map(alle.map((s) => [s.id, s.navn]));
+    // Grupper fra klassekartet gir bare mening når det er én klasse - med
+    // flere klasser samtidig blandes lagene i stedet i selve konkurransen.
+    const lag =
+      valgteKlasser.length === 1
+        ? valgteKlasser[0].grupper.slice(0, 8).map((g, i) => ({
+            navn: "Gruppe " + (i + 1),
+            elever: g.map((id) => ({ id, navn: navn.get(id) ?? "" })),
+          }))
+        : [];
     const lr = {
       v: 1,
-      classId: klasse.id,
-      klasse: klasse.name,
+      classId: valgteKlasser[0].id,
+      klasse: valgteKlasser.map((kl) => kl.name).join(" + "),
       fag: fag.id,
       tema: tema.replace(/^.*– /, "").replace(/[«»]/g, ""),
-      alle: klasse.students.map((s) => ({ id: s.id, navn: s.name })),
-      lag: klasse.grupper.slice(0, 8).map((g, i) => ({
-        navn: "Gruppe " + (i + 1),
-        elever: g.map((id) => ({ id, navn: navn.get(id) ?? "" })),
-      })),
+      alle,
+      lag,
     };
     window.open(konkurranseUrl(k.id, fag.id, lr), "_blank", "noopener");
   }
@@ -70,26 +81,35 @@ export function PortalClient({ klasser }: { klasser: PortalKlasse[] }) {
               </button>
             ))}
           </div>
-          <label className="flex flex-col gap-1 text-sm">
-            <span className="font-medium text-foreground">Klasse til konkurransene</span>
-            <select
-              value={klasseId}
-              onChange={(e) => setKlasseId(e.target.value)}
-              className="rounded-button border border-line bg-background px-3 py-2 text-sm text-foreground"
-            >
-              {klasser.length === 0 && <option value="">Ingen klasser – opprett under Klassekart</option>}
-              {klasser.map((k) => (
-                <option key={k.id} value={k.id}>
-                  {k.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          {klasse && (
+          <div className="flex flex-col gap-1 text-sm">
+            <span className="font-medium text-foreground">Klasse(r) til konkurransene</span>
+            {klasser.length === 0 ? (
+              <p className="text-xs text-foreground/60">Ingen klasser – opprett under Klassekart</p>
+            ) : (
+              <div className="flex flex-wrap gap-1.5">
+                {klasser.map((k) => (
+                  <button
+                    key={k.id}
+                    type="button"
+                    onClick={() => toggleKlasse(k.id)}
+                    className={cn(
+                      "rounded-full border px-3 py-1 text-sm",
+                      klasseIds.includes(k.id) ? "border-primary bg-primary/10 text-primary" : "border-line text-foreground/70"
+                    )}
+                  >
+                    {k.name}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+          {valgteKlasser.length > 0 && (
             <p className="text-xs text-foreground/60">
-              {klasse.grupper.length
-                ? `Bruker ${klasse.grupper.length} grupper fra «${klasse.kart}». Du kan blande nye lag i konkurransen.`
-                : "Ingen grupper i klassekartet – lagene blandes tilfeldig i konkurransen."}
+              {valgteKlasser.length > 1
+                ? `${valgteKlasser.length} klasser valgt - lagene blandes sammen på tvers av klassene i konkurransen.`
+                : valgteKlasser[0].grupper.length
+                  ? `Bruker ${valgteKlasser[0].grupper.length} grupper fra «${valgteKlasser[0].kart}». Du kan blande nye lag i konkurransen.`
+                  : "Ingen grupper i klassekartet – lagene blandes tilfeldig i konkurransen."}
             </p>
           )}
           <a
@@ -134,7 +154,8 @@ export function PortalClient({ klasser }: { klasser: PortalKlasse[] }) {
                     </div>
                     <p className="text-sm text-foreground/70">{k.beskrivelse}</p>
                     <Button size="sm" onClick={() => start(k, t.navn)} className="self-start">
-                      Start{klasse ? " med " + klasse.name : ""} <ExternalLink size={12} />
+                      Start{valgteKlasser.length ? " med " + valgteKlasser.map((kl) => kl.name).join(" + ") : ""}{" "}
+                      <ExternalLink size={12} />
                     </Button>
                   </div>
                 ))}
