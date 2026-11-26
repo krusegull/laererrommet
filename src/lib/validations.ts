@@ -476,6 +476,15 @@ export const utmerkelseUpdateSchema = z.object({
   poeng: z.number().int().min(0).max(1000).optional().nullable(),
 });
 
+export const fagPoengCreateSchema = z.object({
+  classId: z.string().cuid(),
+  classStudentId: z.string().cuid(),
+  fag: z.string().trim().min(1, "Fag er påkrevd").max(60),
+  poeng: z.number().int().min(-1000).max(1000),
+  kilde: z.string().trim().max(200).optional(),
+  dato: z.string().optional(),
+});
+
 export const kriterieVurderingEntrySchema = z.object({
   kriteriumId: z.string(),
   kriteriumName: z.string().max(100),

@@ -58,6 +58,7 @@ model User {
   elevTekster      ElevTekst[]
   maal             Maal[]
   utmerkelser      Utmerkelse[]
+  fagPoeng         FagPoeng[]
 }
 
 model Student {
@@ -73,6 +74,7 @@ model Student {
   elevTekster   ElevTekst[]
   maal          Maal[]
   utmerkelser   Utmerkelse[]
+  fagPoeng      FagPoeng[]
   createdAt     DateTime        @default(now())
 }
 
@@ -514,6 +516,29 @@ model Utmerkelse {
   dato           DateTime      @default(now())
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
+
+  @@index([userId])
+  @@index([studentId])
+}
+
+/// Poeng per fag på elevens profil (Tilbakemeldingslogg) - separat fra Topp
+/// 5/Utmerkelse. Hovedkilden er konkurranser fra Læringsportalen
+/// (raw.githack.com/krusegull/forste-verdenskrig), importert via
+/// /poeng/importer, men kan også legges inn direkte fra Klassekart.
+/// Atferdspoeng (kan være negative) lagres med fag="atferd".
+model FagPoeng {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  /// Fagslug, f.eks. "samfunnsfag" - eller "atferd" for atferdspoeng.
+  fag       String
+  poeng     Int
+  /// Hvor poengene kom fra, f.eks. "SKYTTERGRAVEN – Første verdenskrig".
+  kilde     String?
+  dato      DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([userId])
   @@index([studentId])

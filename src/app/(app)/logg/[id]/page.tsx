@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { ArrowLeft, Lightbulb, Dumbbell, FileText, CalendarClock, CheckCircle2 } from "lucide-react";
 import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 import { getOwnedStudent } from "@/lib/getOwnedStudent";
 import { computeStudentStatus, STATUS_LABEL } from "@/lib/studentStatus";
 import { getStudentOversikt } from "@/lib/vurdering/getStudentOversikt";
@@ -12,6 +13,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { AIActionCard } from "@/components/AIActionCard";
 import { NewFeedbackButton } from "./NewFeedbackButton";
 import { VurderingsUtviklingClient } from "./VurderingsUtviklingClient";
+import { PoengPerFagClient } from "./PoengPerFagClient";
 
 const STATUS_BADGE = { positive: "success", neutral: "neutral", negative: "error" } as const;
 
@@ -27,6 +29,10 @@ export default async function StudentDetailPage({
 
   const status = computeStudentStatus(student.logs);
   const vurderingsOversikt = await getStudentOversikt(student.id, session!.user.id);
+  const fagPoeng = await prisma.fagPoeng.findMany({
+    where: { userId: session!.user.id, studentId: student.id },
+    orderBy: { dato: "desc" },
+  });
 
   return (
     <div className="flex flex-col gap-6">
@@ -41,6 +47,16 @@ export default async function StudentDetailPage({
       </div>
 
       <VurderingsUtviklingClient studentId={student.id} oversikt={vurderingsOversikt} />
+
+      <PoengPerFagClient
+        initialEntries={fagPoeng.map((p) => ({
+          id: p.id,
+          fag: p.fag,
+          poeng: p.poeng,
+          kilde: p.kilde,
+          dato: p.dato.toISOString(),
+        }))}
+      />
 
       <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
         <div className="flex flex-col gap-4">

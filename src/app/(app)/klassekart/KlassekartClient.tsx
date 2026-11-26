@@ -12,6 +12,7 @@ import { PodEditor } from "./PodEditor";
 import { RosterEditor } from "./RosterEditor";
 import { SeatingView } from "./SeatingView";
 import { GrupperEditor } from "./GrupperEditor";
+import { PoengStart } from "./PoengStart";
 import { PresentationOverlay } from "./PresentationOverlay";
 import { ShareOverlay } from "./ShareOverlay";
 
@@ -21,6 +22,7 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: "elever", label: "Elever" },
   { key: "kart", label: "Klassekart" },
   { key: "grupper", label: "Lag grupper" },
+  { key: "poeng", label: "Poeng" },
 ];
 
 function currentIsoWeek(): number {
@@ -609,6 +611,14 @@ export function KlassekartClient() {
                   students={detail.students}
                   grupper={chart.grupper}
                   onRun={handleRunGrupper}
+                />
+              )}
+              {tab === "poeng" && selectedId && (
+                <PoengStart
+                  classId={selectedId}
+                  className={detail.name}
+                  students={detail.students}
+                  grupper={chart.grupper}
                 />
               )}
             </>
