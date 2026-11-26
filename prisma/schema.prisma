@@ -507,6 +507,10 @@ model Utmerkelse {
   classStudent   ClassStudent? @relation(fields: [classStudentId], references: [id], onDelete: SetNull)
   kategori       String
   begrunnelse    String?
+  /// Valgfrie poeng knyttet til noteringen - f.eks. gitt til en hel gruppe
+  /// samtidig fra Klassekart ("Lag grupper"), med mulighet for læreren til å
+  /// justere opp/ned per elev før lagring.
+  poeng          Int?
   dato           DateTime      @default(now())
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt

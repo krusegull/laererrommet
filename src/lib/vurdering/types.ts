@@ -10,9 +10,19 @@ export interface Utmerkelse {
   studentName: string;
   kategori: string;
   begrunnelse: string | null;
+  poeng: number | null;
   dato: string;
   createdAt: string;
 }
+
+/** Forslag til kategorier for Topp 5-noteringer - lærerens egne tidligere brukte kategorier kommer i tillegg. */
+export const FORSLAG_KATEGORIER = [
+  "Størst faglig utvikling",
+  "Beste holdninger",
+  "Mest kreativ",
+  "Best muntlig",
+  "Beste lagspiller",
+];
 
 export interface Kriterium {
   id: string;

@@ -602,8 +602,9 @@ export function KlassekartClient() {
                   onOpenShare={() => setShareOpen(true)}
                 />
               )}
-              {tab === "grupper" && (
+              {tab === "grupper" && selectedId && (
                 <GrupperEditor
+                  classId={selectedId}
                   className={detail.name}
                   students={detail.students}
                   grupper={chart.grupper}

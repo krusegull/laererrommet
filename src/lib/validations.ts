@@ -466,12 +466,14 @@ export const utmerkelseCreateSchema = z.object({
   classStudentId: z.string().cuid(),
   kategori: z.string().trim().min(1, "Kategori er påkrevd").max(100),
   begrunnelse: z.string().trim().max(1000).optional(),
+  poeng: z.number().int().min(0).max(1000).optional().nullable(),
   dato: z.string().optional(),
 });
 
 export const utmerkelseUpdateSchema = z.object({
   kategori: z.string().trim().min(1, "Kategori er påkrevd").max(100).optional(),
   begrunnelse: z.string().trim().max(1000).optional().nullable(),
+  poeng: z.number().int().min(0).max(1000).optional().nullable(),
 });
 
 export const kriterieVurderingEntrySchema = z.object({

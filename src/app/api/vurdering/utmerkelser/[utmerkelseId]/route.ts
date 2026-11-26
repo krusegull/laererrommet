@@ -33,6 +33,7 @@ export async function PATCH(
     data: {
       ...(parsed.data.kategori !== undefined ? { kategori: parsed.data.kategori } : {}),
       ...(parsed.data.begrunnelse !== undefined ? { begrunnelse: parsed.data.begrunnelse } : {}),
+      ...(parsed.data.poeng !== undefined ? { poeng: parsed.data.poeng } : {}),
     },
     include: { student: true },
   });
@@ -44,6 +45,7 @@ export async function PATCH(
       studentName: updated.student.label,
       kategori: updated.kategori,
       begrunnelse: updated.begrunnelse,
+      poeng: updated.poeng,
       dato: updated.dato.toISOString(),
       createdAt: updated.createdAt.toISOString(),
     },

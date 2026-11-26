@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { EmptyState } from "@/components/ui/EmptyState";
-import type { Utmerkelse } from "@/lib/vurdering/types";
+import { FORSLAG_KATEGORIER, type Utmerkelse } from "@/lib/vurdering/types";
 
 interface ClassSummaryLite {
   id: string;
@@ -17,14 +17,6 @@ interface ClassStudentLite {
   id: string;
   name: string;
 }
-
-const FORSLAG_KATEGORIER = [
-  "Størst faglig utvikling",
-  "Beste holdninger",
-  "Mest kreativ",
-  "Best muntlig",
-  "Beste lagspiller",
-];
 
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, {
@@ -51,6 +43,7 @@ export function UtmerkelserEditor() {
   const [formClassStudentId, setFormClassStudentId] = useState("");
   const [formKategori, setFormKategori] = useState("");
   const [formBegrunnelse, setFormBegrunnelse] = useState("");
+  const [formPoeng, setFormPoeng] = useState("");
   const [formDato, setFormDato] = useState(todayIso());
   const [creating, setCreating] = useState(false);
 
@@ -106,6 +99,7 @@ export function UtmerkelserEditor() {
           classStudentId: formClassStudentId,
           kategori: formKategori.trim(),
           begrunnelse: formBegrunnelse.trim() || undefined,
+          poeng: formPoeng.trim() === "" ? undefined : Number(formPoeng),
           dato: formDato,
         }),
       });
@@ -115,6 +109,7 @@ export function UtmerkelserEditor() {
       setFormClassStudentId("");
       setFormKategori("");
       setFormBegrunnelse("");
+      setFormPoeng("");
       setFormDato(todayIso());
     } catch (e) {
       setError(e instanceof Error ? e.message : "Klarte ikke å lagre utmerkelsen");
@@ -220,13 +215,24 @@ export function UtmerkelserEditor() {
               />
             </label>
 
-            <Input
-              label="Dato"
-              type="date"
-              value={formDato}
-              onChange={(e) => setFormDato(e.target.value)}
-              className="sm:w-48"
-            />
+            <div className="flex flex-wrap gap-3">
+              <Input
+                label="Poeng (valgfritt)"
+                type="number"
+                min={0}
+                max={1000}
+                value={formPoeng}
+                onChange={(e) => setFormPoeng(e.target.value)}
+                className="w-32"
+              />
+              <Input
+                label="Dato"
+                type="date"
+                value={formDato}
+                onChange={(e) => setFormDato(e.target.value)}
+                className="w-48"
+              />
+            </div>
 
             <div className="flex gap-2">
               <Button
@@ -253,41 +259,52 @@ export function UtmerkelserEditor() {
         />
       ) : (
         <div className="flex flex-col gap-4">
-          {grupperByKategori.map(([kategori, liste]) => (
-            <Card key={kategori}>
-              <div className="flex flex-col gap-2">
-                <h3 className="font-semibold text-foreground">
-                  {kategori} <span className="text-sm font-normal text-foreground/50">({liste.length})</span>
-                </h3>
-                <ul className="flex flex-col gap-2">
-                  {liste.map((u) => (
-                    <li
-                      key={u.id}
-                      className="flex items-start justify-between gap-3 rounded-button bg-background-subtle p-3"
-                    >
-                      <div>
-                        <p className="text-sm font-medium text-foreground">{u.studentName}</p>
-                        {u.begrunnelse && <p className="mt-0.5 text-sm text-foreground/70">{u.begrunnelse}</p>}
-                        <p className="mt-1 text-xs text-foreground/50">
-                          {new Intl.DateTimeFormat("nb-NO", { day: "numeric", month: "long" }).format(
-                            new Date(u.dato)
-                          )}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(u.id)}
-                        className="text-foreground/40 hover:text-error"
-                        aria-label="Slett notering"
+          {grupperByKategori.map(([kategori, liste]) => {
+            const poengSum = liste.reduce((sum, u) => sum + (u.poeng ?? 0), 0);
+            return (
+              <Card key={kategori}>
+                <div className="flex flex-col gap-2">
+                  <h3 className="font-semibold text-foreground">
+                    {kategori} <span className="text-sm font-normal text-foreground/50">({liste.length})</span>
+                  </h3>
+                  <ul className="flex flex-col gap-2">
+                    {liste.map((u) => (
+                      <li
+                        key={u.id}
+                        className="flex items-start justify-between gap-3 rounded-button bg-background-subtle p-3"
                       >
-                        <Trash2 size={16} />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </Card>
-          ))}
+                        <div>
+                          <p className="text-sm font-medium text-foreground">
+                            {u.studentName}
+                            {u.poeng != null && (
+                              <span className="ml-2 text-xs font-semibold text-primary">+{u.poeng} p</span>
+                            )}
+                          </p>
+                          {u.begrunnelse && <p className="mt-0.5 text-sm text-foreground/70">{u.begrunnelse}</p>}
+                          <p className="mt-1 text-xs text-foreground/50">
+                            {new Intl.DateTimeFormat("nb-NO", { day: "numeric", month: "long" }).format(
+                              new Date(u.dato)
+                            )}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(u.id)}
+                          className="text-foreground/40 hover:text-error"
+                          aria-label="Slett notering"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                  {poengSum > 0 && (
+                    <p className="text-xs font-medium text-foreground/50">Totalt {poengSum} p i denne kategorien</p>
+                  )}
+                </div>
+              </Card>
+            );
+          })}
         </div>
       )}
     </div>

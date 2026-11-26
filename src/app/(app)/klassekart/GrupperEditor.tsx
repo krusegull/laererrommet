@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { Eye, Plus, Sparkles } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Award, Eye, Plus, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { cn } from "@/lib/cn";
 import type { Grupper, Pod, PodSeats, StudentLite } from "@/lib/klassekart/types";
+import { FORSLAG_KATEGORIER } from "@/lib/vurdering/types";
 import { PresentationOverlay } from "./PresentationOverlay";
 
 type Mode = "random" | "manuell" | "instruks";
@@ -17,12 +18,26 @@ interface RunResult {
   aiFallback?: boolean;
 }
 
+async function postJson(url: string, body: unknown) {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.error ?? "Noe gikk feil");
+  }
+}
+
 export function GrupperEditor({
+  classId,
   className,
   students,
   grupper,
   onRun,
 }: {
+  classId: string;
   className: string;
   students: StudentLite[];
   grupper: Grupper;
@@ -36,11 +51,18 @@ export function GrupperEditor({
   const [mode, setMode] = useState<Mode>("random");
   const [size, setSize] = useState(4);
   const [instruks, setInstruks] = useState("");
-  const [manualGroups, setManualGroups] = useState<string[][]>([[], []]);
-  const [selectedStudent, setSelectedStudent] = useState<string | null>(null);
+  const [manualGroupTexts, setManualGroupTexts] = useState<string[]>(["", ""]);
   const [result, setResult] = useState<RunResult>({ grupper, warnings: [] });
   const [running, setRunning] = useState(false);
   const [presentOpen, setPresentOpen] = useState(false);
+
+  const [poengGroupIndex, setPoengGroupIndex] = useState<number | null>(null);
+  const [poengKategori, setPoengKategori] = useState("Gruppearbeid");
+  const [poengBase, setPoengBase] = useState("10");
+  const [poengPerStudent, setPoengPerStudent] = useState<Record<string, string>>({});
+  const [poengBegrunnelse, setPoengBegrunnelse] = useState("");
+  const [poengSaving, setPoengSaving] = useState(false);
+  const [poengMessage, setPoengMessage] = useState<string | null>(null);
 
   // Grupper har ingen fysisk plassering i rommet - til presentasjonen bygger
   // vi derfor en "pod" per gruppe på sparket, kun for å gjenbruke samme
@@ -51,8 +73,42 @@ export function GrupperEditor({
   const groupLabels = result.grupper.map((_, i) => "Gruppe " + (i + 1));
 
   const nameOf = new Map(students.map((s) => [s.id, s.name]));
-  const assignedIds = new Set(manualGroups.flat());
-  const pool = students.filter((s) => !assignedIds.has(s.id));
+
+  const nameToId = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const s of students) {
+      const key = s.name.trim().toLowerCase();
+      if (!map.has(key)) map.set(key, s.id);
+    }
+    return map;
+  }, [students]);
+
+  const manualResolved = useMemo(() => {
+    const seen = new Set<string>();
+    const unmatchedNames: string[] = [];
+    const duplicateNames: string[] = [];
+    const groups: string[][] = manualGroupTexts.map((text) => {
+      const ids: string[] = [];
+      for (const raw of text.split("\n")) {
+        const name = raw.trim();
+        if (!name) continue;
+        const id = nameToId.get(name.toLowerCase());
+        if (!id) {
+          unmatchedNames.push(name);
+          continue;
+        }
+        if (seen.has(id)) {
+          duplicateNames.push(name);
+          continue;
+        }
+        seen.add(id);
+        ids.push(id);
+      }
+      return ids;
+    });
+    const unplaced = students.filter((s) => !seen.has(s.id));
+    return { groups, unmatchedNames, duplicateNames, unplaced };
+  }, [manualGroupTexts, nameToId, students]);
 
   async function runRandom() {
     setRunning(true);
@@ -74,7 +130,7 @@ export function GrupperEditor({
   }
 
   async function saveManual() {
-    const nonEmpty = manualGroups.filter((g) => g.length > 0);
+    const nonEmpty = manualResolved.groups.filter((g) => g.length > 0);
     setRunning(true);
     try {
       setResult(await onRun({ mode: "manuell", manualGroups: nonEmpty }));
@@ -83,14 +139,47 @@ export function GrupperEditor({
     }
   }
 
-  function assignToGroup(groupIndex: number) {
-    if (!selectedStudent) return;
-    setManualGroups((prev) => prev.map((g, i) => (i === groupIndex ? [...g, selectedStudent] : g)));
-    setSelectedStudent(null);
+  function openPoengPanel(groupIndex: number) {
+    const members = result.grupper[groupIndex] ?? [];
+    setPoengGroupIndex(groupIndex);
+    setPoengKategori("Gruppearbeid");
+    setPoengBase("10");
+    setPoengPerStudent(Object.fromEntries(members.map((id) => [id, "10"])));
+    setPoengBegrunnelse("");
+    setPoengMessage(null);
   }
 
-  function removeFromGroup(groupIndex: number, studentId: string) {
-    setManualGroups((prev) => prev.map((g, i) => (i === groupIndex ? g.filter((id) => id !== studentId) : g)));
+  function fillAllPoeng(value: string) {
+    setPoengBase(value);
+    setPoengPerStudent((prev) => Object.fromEntries(Object.keys(prev).map((id) => [id, value])));
+  }
+
+  async function savePoeng() {
+    if (poengGroupIndex == null) return;
+    const members = result.grupper[poengGroupIndex] ?? [];
+    if (!poengKategori.trim() || members.length === 0) return;
+    setPoengSaving(true);
+    try {
+      await Promise.all(
+        members.map((id) => {
+          const raw = poengPerStudent[id];
+          const poeng = raw === undefined || raw.trim() === "" ? undefined : Number(raw);
+          return postJson("/api/vurdering/utmerkelser", {
+            classId,
+            classStudentId: id,
+            kategori: poengKategori.trim(),
+            begrunnelse: poengBegrunnelse.trim() || undefined,
+            poeng,
+          });
+        })
+      );
+      setPoengMessage(`Lagt til i Topp 5-oversikten for ${members.length} elever.`);
+      setPoengGroupIndex(null);
+    } catch (e) {
+      setPoengMessage(e instanceof Error ? e.message : "Klarte ikke å lagre poeng for gruppa");
+    } finally {
+      setPoengSaving(false);
+    }
   }
 
   return (
@@ -153,58 +242,52 @@ export function GrupperEditor({
 
       {mode === "manuell" && (
         <div className="flex flex-col gap-3">
-          <div className="flex flex-wrap gap-2">
-            {pool.map((s) => (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => setSelectedStudent(s.id === selectedStudent ? null : s.id)}
-                className={cn(
-                  "rounded-full border px-3 py-1 text-sm",
-                  selectedStudent === s.id
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-line text-foreground/70"
-                )}
-              >
-                {s.name}
-              </button>
-            ))}
-            {pool.length === 0 && <p className="text-sm text-foreground/50">Alle elever er plassert i en gruppe.</p>}
-          </div>
+          <p className="text-sm text-foreground/60">
+            Skriv eller lim inn ett elevnavn per linje i hver gruppe - navnet må skrives akkurat som i
+            elevlisten.
+          </p>
           <div className="flex flex-wrap gap-3">
-            {manualGroups.map((group, i) => (
-              <div
-                key={i}
-                onClick={() => assignToGroup(i)}
-                className="min-w-[140px] cursor-pointer rounded-card border border-dashed border-line p-3"
-              >
-                <p className="mb-1 text-xs font-medium text-foreground/50">Gruppe {i + 1}</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {group.map((id) => (
-                    <button
-                      key={id}
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeFromGroup(i, id);
-                      }}
-                      className="rounded-full bg-background-subtle px-2 py-0.5 text-xs text-foreground/80"
-                    >
-                      {nameOf.get(id)} ×
-                    </button>
-                  ))}
-                  {group.length === 0 && <p className="text-xs text-foreground/40">Klikk her for å legge til</p>}
-                </div>
+            {manualGroupTexts.map((text, i) => (
+              <div key={i} className="flex w-44 flex-col gap-1">
+                <p className="text-xs font-medium text-foreground/50">Gruppe {i + 1}</p>
+                <textarea
+                  value={text}
+                  onChange={(e) =>
+                    setManualGroupTexts((prev) => prev.map((t, idx) => (idx === i ? e.target.value : t)))
+                  }
+                  rows={5}
+                  placeholder="Ett navn per linje"
+                  className="rounded-button border border-line bg-background px-2 py-1.5 text-sm text-foreground placeholder:text-foreground/40 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                />
               </div>
             ))}
             <button
               type="button"
-              onClick={() => setManualGroups((prev) => [...prev, []])}
-              className="flex min-w-[100px] items-center justify-center gap-1 rounded-card border border-line text-sm text-foreground/60 hover:border-primary hover:text-primary"
+              onClick={() => setManualGroupTexts((prev) => [...prev, ""])}
+              className="flex w-28 items-center justify-center gap-1 self-stretch rounded-card border border-line text-sm text-foreground/60 hover:border-primary hover:text-primary"
             >
               <Plus size={14} /> Ny gruppe
             </button>
           </div>
+
+          {manualResolved.unplaced.length > 0 && (
+            <p className="text-sm text-foreground/60">
+              Ikke plassert ({manualResolved.unplaced.length}):{" "}
+              {manualResolved.unplaced.map((s) => s.name).join(", ")}
+            </p>
+          )}
+          {manualResolved.unmatchedNames.length > 0 && (
+            <p className="text-sm text-error">
+              Fant ikke igjen disse navnene i elevlisten: {manualResolved.unmatchedNames.join(", ")}
+            </p>
+          )}
+          {manualResolved.duplicateNames.length > 0 && (
+            <p className="text-sm text-error">
+              Disse står i flere grupper og ble bare lagt til i den første:{" "}
+              {manualResolved.duplicateNames.join(", ")}
+            </p>
+          )}
+
           <Button type="button" onClick={saveManual} loading={running} className="self-start">
             Lagre grupper
           </Button>
@@ -230,7 +313,17 @@ export function GrupperEditor({
           <div className="flex flex-wrap gap-3">
             {result.grupper.map((group, i) => (
               <Card key={i} className="min-w-[140px]">
-                <p className="mb-1 text-xs font-medium text-foreground/50">Gruppe {i + 1}</p>
+                <div className="flex items-center justify-between gap-2">
+                  <p className="mb-1 text-xs font-medium text-foreground/50">Gruppe {i + 1}</p>
+                  <button
+                    type="button"
+                    onClick={() => openPoengPanel(i)}
+                    className="mb-1 text-foreground/40 hover:text-primary"
+                    aria-label={`Gi poeng til gruppe ${i + 1}`}
+                  >
+                    <Award size={14} />
+                  </button>
+                </div>
                 <ul className="text-sm text-foreground">
                   {group.map((id) => (
                     <li key={id}>{nameOf.get(id) ?? "?"}</li>
@@ -247,6 +340,81 @@ export function GrupperEditor({
             ))}
           </ul>
         )}
+
+        {poengGroupIndex != null && (
+          <Card className="mt-3">
+            <div className="flex flex-col gap-3">
+              <p className="font-medium text-foreground">
+                Gi poeng til Gruppe {poengGroupIndex + 1} (går inn i Topp 5-oversikten per elev)
+              </p>
+
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="font-medium text-foreground">Kategori</span>
+                <input
+                  list="poeng-kategorier"
+                  value={poengKategori}
+                  onChange={(e) => setPoengKategori(e.target.value)}
+                  className="rounded-button border border-line bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                />
+                <datalist id="poeng-kategorier">
+                  {FORSLAG_KATEGORIER.map((k) => (
+                    <option key={k} value={k} />
+                  ))}
+                </datalist>
+              </label>
+
+              <div className="flex items-end gap-2">
+                <Input
+                  label="Poeng til alle"
+                  type="number"
+                  min={0}
+                  max={1000}
+                  value={poengBase}
+                  onChange={(e) => fillAllPoeng(e.target.value)}
+                  className="w-32"
+                />
+                <Button type="button" variant="secondary" size="sm" onClick={() => fillAllPoeng(poengBase)}>
+                  Fyll alle
+                </Button>
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                {(result.grupper[poengGroupIndex] ?? []).map((id) => (
+                  <Input
+                    key={id}
+                    label={nameOf.get(id) ?? "?"}
+                    type="number"
+                    min={0}
+                    max={1000}
+                    value={poengPerStudent[id] ?? ""}
+                    onChange={(e) => setPoengPerStudent((prev) => ({ ...prev, [id]: e.target.value }))}
+                    className="w-28"
+                  />
+                ))}
+              </div>
+
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="font-medium text-foreground">Begrunnelse (valgfritt, gjelder alle i gruppa)</span>
+                <textarea
+                  value={poengBegrunnelse}
+                  onChange={(e) => setPoengBegrunnelse(e.target.value)}
+                  rows={2}
+                  className="rounded-button border border-line bg-background px-3 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                />
+              </label>
+
+              <div className="flex gap-2">
+                <Button type="button" onClick={savePoeng} loading={poengSaving} disabled={!poengKategori.trim()}>
+                  Lagre poeng
+                </Button>
+                <Button type="button" variant="secondary" onClick={() => setPoengGroupIndex(null)}>
+                  Avbryt
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
+        {poengMessage && <p className="mt-2 text-sm text-foreground/70">{poengMessage}</p>}
       </div>
 
       <PresentationOverlay
