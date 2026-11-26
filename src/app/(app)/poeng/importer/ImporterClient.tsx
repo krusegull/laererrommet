@@ -382,7 +382,7 @@ export function ImporterClient({ classes }: { classes: ClassLite[] }) {
                 <th className="py-1.5 pr-3 font-semibold">Lag</th>
                 <th className="py-1.5 pr-3 font-semibold">I spillet</th>
                 <th className="py-1.5 pr-3 font-semibold">Elev i klassen</th>
-                <th className="py-1.5 pr-3 font-semibold">{modell === "plassering" ? "Plassering" : "Spillpoeng"}</th>
+                <th className="py-1.5 pr-3 font-semibold">{modell === "plassering" ? "Poeng (etter plassering)" : "Spillpoeng"}</th>
                 <th className="py-1.5 pr-3 font-semibold">⭐ Ekstra</th>
                 <th className="py-1.5 font-semibold">Atferd ±</th>
               </tr>
