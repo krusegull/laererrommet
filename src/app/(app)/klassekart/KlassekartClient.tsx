@@ -92,7 +92,9 @@ export function KlassekartClient() {
   }, [selectedId]);
 
   useEffect(() => {
-    if (!selectedId || !selectedChartId) {
+    // Når man bytter klasse, kan selectedChartId et øyeblikk fortsatt peke på
+    // forrige klasses kart. Hent bare kart som hører til den valgte klassen.
+    if (!selectedId || !selectedChartId || detail?.id !== selectedId || !detail.charts.some((c) => c.id === selectedChartId)) {
       // eslint-disable-next-line react-hooks/set-state-in-effect -- tilsiktet nullstilling når det ikke finnes et valgt kart
       setChart(null);
       return;
@@ -102,7 +104,8 @@ export function KlassekartClient() {
       .then((data) => setChart(data.chart))
       .catch((e) => setError(e.message))
       .finally(() => setLoadingChart(false));
-  }, [selectedId, selectedChartId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- detail brukes bare som vakt; kartet hentes når klasse eller kart byttes
+  }, [selectedId, selectedChartId, detail?.id]);
 
   async function handleAddClass() {
     try {

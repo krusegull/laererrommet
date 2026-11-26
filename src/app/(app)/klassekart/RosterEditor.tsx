@@ -8,12 +8,22 @@ import { Input } from "@/components/ui/Input";
 import { cn } from "@/lib/cn";
 import type { Gender, StudentLite } from "@/lib/klassekart/types";
 
+/** Ett navn per linje. Fjerner nummerering («1. », «2) ») og linjer som «Totalt: 28 elever». */
 function parseNameLines(text: string): string[] {
   return text
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean);
+    .split(/\r?\n/)
+    .map((line) => line.replace(/^\s*\d+\s*[.)]\s*/, "").trim())
+    // Hopp over overskrifter («10A:») og oppsummeringer («Totalt: 28 elever»).
+    .filter((line) => line && !line.endsWith(":") && !/^totalt\b/i.test(line));
 }
+
+const GENDER_NEXT: Record<Gender, Gender> = { gutt: "jente", jente: "ukjent", ukjent: "gutt" };
+const GENDER_LABEL: Record<Gender, string> = { gutt: "Gutt", jente: "Jente", ukjent: "–" };
+const GENDER_CLASS: Record<Gender, string> = {
+  gutt: "bg-[#eaf2fa] text-[#2f6fb3]",
+  jente: "bg-[#fbebf2] text-[#c23e78]",
+  ukjent: "bg-background-subtle text-foreground/50",
+};
 
 export function RosterEditor({
   students,
@@ -29,8 +39,10 @@ export function RosterEditor({
   onBulkAdd: (students: { name: string; gender: Gender }[]) => Promise<void>;
 }) {
   const [name, setName] = useState("");
-  const [gender, setGender] = useState<Gender>("gutt");
+  const [gender, setGender] = useState<Gender>("ukjent");
   const [pasteOpen, setPasteOpen] = useState(false);
+  const [allNames, setAllNames] = useState("");
+  const [splitGender, setSplitGender] = useState(false);
   const [boyNames, setBoyNames] = useState("");
   const [girlNames, setGirlNames] = useState("");
   const [bulkAdding, setBulkAdding] = useState(false);
@@ -44,14 +56,17 @@ export function RosterEditor({
   }
 
   async function handleBulkSubmit() {
-    const entries = [
-      ...parseNameLines(boyNames).map((n) => ({ name: n, gender: "gutt" as Gender })),
-      ...parseNameLines(girlNames).map((n) => ({ name: n, gender: "jente" as Gender })),
-    ];
+    const entries = splitGender
+      ? [
+          ...parseNameLines(boyNames).map((n) => ({ name: n, gender: "gutt" as Gender })),
+          ...parseNameLines(girlNames).map((n) => ({ name: n, gender: "jente" as Gender })),
+        ]
+      : parseNameLines(allNames).map((n) => ({ name: n, gender: "ukjent" as Gender }));
     if (entries.length === 0) return;
     setBulkAdding(true);
     try {
       await onBulkAdd(entries);
+      setAllNames("");
       setBoyNames("");
       setGirlNames("");
       setPasteOpen(false);
@@ -87,13 +102,11 @@ export function RosterEditor({
             </span>
             <button
               type="button"
-              onClick={() => onUpdate(s.id, { gender: s.gender === "gutt" ? "jente" : "gutt" })}
-              className={cn(
-                "rounded-full px-2.5 py-1 text-xs font-medium",
-                s.gender === "gutt" ? "bg-[#eaf2fa] text-[#2f6fb3]" : "bg-[#fbebf2] text-[#c23e78]"
-              )}
+              onClick={() => onUpdate(s.id, { gender: GENDER_NEXT[s.gender] ?? "gutt" })}
+              title="Trykk for å endre kjønn (gutt, jente eller ikke satt)"
+              className={cn("rounded-full px-2.5 py-1 text-xs font-medium", GENDER_CLASS[s.gender] ?? GENDER_CLASS.ukjent)}
             >
-              {s.gender === "gutt" ? "Gutt" : "Jente"}
+              {GENDER_LABEL[s.gender] ?? "–"}
             </button>
             <button
               type="button"
@@ -116,13 +129,14 @@ export function RosterEditor({
           />
           <button
             type="button"
-            onClick={() => setGender(gender === "gutt" ? "jente" : "gutt")}
+            onClick={() => setGender(GENDER_NEXT[gender])}
             className={cn(
               "rounded-full px-2.5 py-1.5 text-xs font-medium",
-              gender === "gutt" ? "bg-[#eaf2fa] text-[#2f6fb3]" : "bg-[#fbebf2] text-[#c23e78]"
+              GENDER_CLASS[gender]
             )}
+            title="Kjønn: trykk for å endre (gutt, jente eller ikke satt)"
           >
-            {gender === "gutt" ? "Gutt" : "Jente"}
+            {gender === "ukjent" ? "Kjønn –" : GENDER_LABEL[gender]}
           </button>
           <Button type="submit" size="sm">
             <Plus size={14} /> Legg til
@@ -140,6 +154,25 @@ export function RosterEditor({
 
         {pasteOpen && (
           <div className="mt-1 flex flex-col gap-2 rounded-button border border-line p-3">
+            {!splitGender ? (
+              <label className="flex flex-col gap-1 text-sm">
+                <span className="font-medium text-foreground">Hele elevlista</span>
+                <span className="text-xs text-foreground/60">
+                  Ett navn per linje. Nummerering (1., 2., …), overskrifter og en «Totalt»-linje fjernes automatisk.
+                </span>
+                <textarea
+                  value={allNames}
+                  onChange={(e) => setAllNames(e.target.value)}
+                  rows={10}
+                  placeholder={"1. Aisha\n2. Jonas\n3. Emma"}
+                  className="rounded-button border border-line bg-background px-3 py-2 text-sm text-foreground placeholder:text-foreground/40 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                />
+                {allNames.trim() && (
+                  <span className="text-xs text-foreground/60">{parseNameLines(allNames).length} elever</span>
+                )}
+              </label>
+            ) : (
+            <>
             <p className="text-xs text-foreground/60">
               Lim inn guttenavn og jentenavn hver for seg, ett navn per linje.
             </p>
@@ -165,6 +198,15 @@ export function RosterEditor({
                 />
               </label>
             </div>
+            </>
+            )}
+            <button
+              type="button"
+              onClick={() => setSplitGender((v) => !v)}
+              className="self-start text-xs text-primary hover:underline"
+            >
+              {splitGender ? "Lim inn hele lista uten kjønn" : "Vil du registrere kjønn? Lim inn gutter og jenter hver for seg"}
+            </button>
             <Button type="button" size="sm" onClick={handleBulkSubmit} loading={bulkAdding} className="self-start">
               <Plus size={14} /> Legg til alle
             </Button>

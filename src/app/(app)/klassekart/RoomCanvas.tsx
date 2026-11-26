@@ -471,7 +471,7 @@ function PodItem({
             key={seatIndex}
             className={cn(
               styles.desk,
-              student && (student.gender === "gutt" ? styles.deskBoy : styles.deskGirl),
+              student && (student.gender === "gutt" ? styles.deskBoy : student.gender === "jente" ? styles.deskGirl : undefined),
               clickable && styles.deskSeat,
               isSelected && styles.deskSelected,
               locked && styles.deskLocked

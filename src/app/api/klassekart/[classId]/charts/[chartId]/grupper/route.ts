@@ -90,7 +90,7 @@ export async function POST(
   const students: StudentLite[] = chart.classProfile.students.map((s) => ({
     id: s.id,
     name: s.name,
-    gender: s.gender as "gutt" | "jente",
+    gender: s.gender as "gutt" | "jente" | "ukjent",
   }));
   const validIds = new Set(students.map((s) => s.id));
 

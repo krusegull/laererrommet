@@ -1,4 +1,5 @@
-export type Gender = "gutt" | "jente";
+/** «ukjent» brukes når læreren ikke vil registrere kjønn (f.eks. når hele lista limes inn). */
+export type Gender = "gutt" | "jente" | "ukjent";
 
 export interface StudentLite {
   id: string;
