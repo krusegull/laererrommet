@@ -46,7 +46,7 @@ export async function PUT(
 
   // Antall/størrelse på pultgrupper er endret - genererer kartet på nytt for
   // det nye oppsettet, akkurat som når læreren klikker "Generer nytt kart".
-  const students = chart.classProfile.students.map((s) => ({ id: s.id, name: s.name, gender: s.gender as "gutt" | "jente" }));
+  const students = chart.classProfile.students.map((s) => ({ id: s.id, name: s.name, gender: s.gender as "gutt" | "jente" | "ukjent" }));
   const existingLocks = (chart.locks as unknown as LockEntry[] | null) ?? [];
   const { pods, locks } = generateSeating(students, parsed.data.podLayout, existingLocks);
 

@@ -306,7 +306,7 @@ export const classProfileUpdateSchema = z.object({
 
 export const classStudentSchema = z.object({
   name: z.string().trim().min(1, "Navn er påkrevd").max(100),
-  gender: z.enum(["gutt", "jente"]),
+  gender: z.enum(["gutt", "jente", "ukjent"]),
 });
 
 export const classStudentsBulkSchema = z.object({

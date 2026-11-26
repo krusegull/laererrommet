@@ -33,12 +33,16 @@ export function generateSeating(
 
   const boys = shuffle(remaining.filter((s) => s.gender === "gutt"));
   const girls = shuffle(remaining.filter((s) => s.gender === "jente"));
+  // Elever uten registrert kjønn blandes inn tilfeldig.
+  const others = shuffle(remaining.filter((s) => s.gender !== "gutt" && s.gender !== "jente"));
   const seq: StudentLite[] = [];
   let bi = 0;
   let gi = 0;
-  while (bi < boys.length || gi < girls.length) {
+  let oi = 0;
+  while (bi < boys.length || gi < girls.length || oi < others.length) {
     if (bi < boys.length) seq.push(boys[bi++]);
     if (gi < girls.length) seq.push(girls[gi++]);
+    if (oi < others.length) seq.push(others[oi++]);
   }
 
   const pods: PodSeats = podLayout.map((pod) => new Array(pod.size).fill(null));
