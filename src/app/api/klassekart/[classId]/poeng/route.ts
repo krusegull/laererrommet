@@ -25,6 +25,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   const fag = request.nextUrl.searchParams.get("fag") ?? undefined;
   const tema = request.nextUrl.searchParams.get("tema") ?? undefined;
+  const kategori = request.nextUrl.searchParams.get("kategori") === "atferd" ? "atferd" : "faglig";
 
   // Poengene ligger på den delte elevprofilen. Summen for en klassekart-elev
   // er derfor alle elevens poeng i faget (også fra andre klasser), ikke bare
@@ -35,7 +36,13 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const sums = studentIds.length
     ? await prisma.elevPoeng.groupBy({
         by: ["studentId"],
-        where: { userId: session.user.id, studentId: { in: studentIds }, ...(fag ? { fag } : {}), ...(tema ? { tema } : {}) },
+        where: {
+          userId: session.user.id,
+          studentId: { in: studentIds },
+          kategori,
+          ...(fag ? { fag } : {}),
+          ...(tema ? { tema } : {}),
+        },
         _sum: { poeng: true },
       })
     : [];
@@ -52,13 +59,23 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   const batches = new Map<
     string,
-    { batchId: string; fag: string; poeng: number; tema: string; kilde: string; gruppe: string | null; dato: string; elever: string[] }
+    {
+      batchId: string;
+      fag: string;
+      kategori: string;
+      poeng: number;
+      tema: string;
+      kilde: string;
+      gruppe: string | null;
+      dato: string;
+      elever: string[];
+    }
   >();
   for (const r of recentRows) {
     let b = batches.get(r.batchId);
     if (!b) {
       if (batches.size >= 15) continue;
-      b = { batchId: r.batchId, fag: r.fag, poeng: r.poeng, tema: r.tema, kilde: r.kilde, gruppe: r.gruppe, dato: r.dato.toISOString(), elever: [] };
+      b = { batchId: r.batchId, fag: r.fag, kategori: r.kategori, poeng: r.poeng, tema: r.tema, kilde: r.kilde, gruppe: r.gruppe, dato: r.dato.toISOString(), elever: [] };
       batches.set(r.batchId, b);
     }
     b.elever.push(r.student.label);
@@ -93,7 +110,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ cla
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Ugyldige opplysninger" }, { status: 400 });
   }
-  const { classStudentIds, fag, poeng, tema, kilde, gruppe, dato } = parsed.data;
+  const { classStudentIds, fag, poeng, tema, kilde, gruppe, kategori, dato } = parsed.data;
 
   const byId = new Map(classProfile.students.map((s) => [s.id, s]));
   const unique = [...new Set(classStudentIds)];
@@ -123,6 +140,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ cla
       tema,
       kilde,
       gruppe: gruppe || null,
+      kategori,
       batchId,
       dato: when,
     })),

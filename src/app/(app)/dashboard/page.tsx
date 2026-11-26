@@ -10,6 +10,7 @@ import {
   Rss,
   FlaskConical,
   ArrowRight,
+  Trophy,
 } from "lucide-react";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -96,6 +97,22 @@ export default async function DashboardPage() {
                   <p className="font-semibold text-foreground">Tilbakemeldingslogg</p>
                   <p className="mt-1 text-sm text-foreground/60">
                     Hold styr på styrker og utviklingsområder for elevene dine over tid.
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </Link>
+
+          <Link href="/laeringsportalen">
+            <Card className="h-full transition-shadow hover:shadow-md">
+              <div className="flex items-start gap-4">
+                <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-button bg-amber-500/10 text-amber-600">
+                  <Trophy size={20} />
+                </span>
+                <div>
+                  <p className="font-semibold text-foreground">Læringsportalen og konkurranser</p>
+                  <p className="mt-1 text-sm text-foreground/60">
+                    Elevenes reiser og spill i samfunnsfag, KRLE og norsk. Start konkurranser med klassen og samle poeng.
                   </p>
                 </div>
               </div>

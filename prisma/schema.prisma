@@ -534,6 +534,13 @@ model ElevPoeng {
   kilde          String        @default("")
   /// Gruppenavn ved gruppetildeling, f.eks. "Gruppe 3"
   gruppe         String?
+  /// "faglig" (plusspoeng/konkurranse) eller "atferd" (± for oppførsel) -
+  /// atferd vises atskilt og skal ikke blandes inn i faglig statistikk.
+  kategori       String        @default("faglig")
+  /// Tittel på konkurransen når poengene kommer fra konkurransemalen.
+  konkurranse    String?
+  /// Lagets plassering i konkurransen (1 = vinner).
+  plassering     Int?
   batchId        String
   dato           DateTime      @default(now())
   createdAt      DateTime      @default(now())
@@ -542,4 +549,5 @@ model ElevPoeng {
   @@index([userId, fag])
   @@index([classProfileId])
   @@index([batchId])
+  @@index([studentId, kategori])
 }

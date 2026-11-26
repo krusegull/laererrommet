@@ -7,12 +7,14 @@ import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { cn } from "@/lib/cn";
 import { ANDRE_FAG, MINE_FAG } from "@/lib/poeng/fag";
-import { KONKURRANSE_URL, portalFagId } from "@/lib/poeng/konkurranse";
+import { portalFagId } from "@/lib/poeng/konkurranse";
+import { konkurranseUrl, konkurranserFor } from "@/lib/portal/katalog";
 import type { Grupper, StudentLite } from "@/lib/klassekart/types";
 
 interface Batch {
   batchId: string;
   fag: string;
+  kategori: string;
   poeng: number;
   tema: string;
   kilde: string;
@@ -21,7 +23,9 @@ interface Batch {
   elever: string[];
 }
 
-const QUICK = [10, 25, 50, 100];
+type Kategori = "faglig" | "atferd";
+// Skala: en konkurranseseier gir 10 poeng per elev, så vanlige plusspoeng er små.
+const QUICK: Record<Kategori, number[]> = { faglig: [1, 2, 5, 10], atferd: [-5, -2, -1, 1, 2, 5] };
 const LS_KEY = "laererrommet-poeng-skjema";
 
 function today(): string {
@@ -57,7 +61,8 @@ export function PoengEditor({
   const [fag, setFag] = useState<string>(saved.fag ?? "Samfunnsfag");
   const [tema, setTema] = useState(saved.tema ?? "");
   const [kilde, setKilde] = useState(saved.kilde ?? "");
-  const [poeng, setPoeng] = useState(25);
+  const [kategori, setKategori] = useState<Kategori>("faglig");
+  const [poeng, setPoeng] = useState(2);
   const [dato, setDato] = useState(today());
   const [totals, setTotals] = useState<Record<string, number>>({});
   const [recent, setRecent] = useState<Batch[]>([]);
@@ -74,7 +79,7 @@ export function PoengEditor({
 
   const load = useCallback(async () => {
     try {
-      const res = await fetch(`/api/klassekart/${classId}/poeng?fag=${encodeURIComponent(fag)}`);
+      const res = await fetch(`/api/klassekart/${classId}/poeng?fag=${encodeURIComponent(fag)}&kategori=${kategori}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Klarte ikke å hente poeng");
       setTotals(data.totals);
@@ -83,7 +88,7 @@ export function PoengEditor({
     } catch (e) {
       setError(e instanceof Error ? e.message : "Klarte ikke å hente poeng");
     }
-  }, [classId, fag]);
+  }, [classId, fag, kategori]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- tilsiktet henting når fag/klasse endres
@@ -97,20 +102,28 @@ export function PoengEditor({
 
   // Åpner konkurransemalen i Læringsportalen med disse gruppene som lag.
   // Lagene sendes i #-delen av adressen, som aldri går til noen server.
+  const ferdige = konkurranserFor(fag);
+  const [sett, setSett] = useState<string>("");
+  const valgtSett = ferdige.find((k) => k.id === sett) ?? ferdige[0];
+
   function startKonkurranse() {
     const id = portalFagId(fag);
+    const settId = valgtSett?.id ?? id;
+    const temaForLr = tema || valgtSett?.tema || "";
     const lr = {
       v: 1,
       classId,
       klasse: className,
       fag: id,
-      tema,
+      tema: temaForLr,
+      // Hele klassen, så konkurransen kan blande nye lag selv.
+      alle: students.map((st) => ({ id: st.id, navn: st.name })),
       lag: validGroups.slice(0, 8).map((g) => ({
         navn: g.label,
         elever: g.ids.map((sid) => ({ id: sid, navn: nameOf.get(sid) ?? "" })),
       })),
     };
-    const url = `${KONKURRANSE_URL}?sett=${id}&fag=${id}#lr=${encodeURIComponent(JSON.stringify(lr))}`;
+    const url = konkurranseUrl(settId, id, lr);
     window.open(url, "_blank", "noopener");
   }
 
@@ -125,12 +138,12 @@ export function PoengEditor({
       const res = await fetch(`/api/klassekart/${classId}/poeng`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ classStudentIds: ids, fag, poeng, tema, kilde, gruppe, dato }),
+        body: JSON.stringify({ classStudentIds: ids, fag, poeng, tema, kilde, gruppe, dato, kategori }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Klarte ikke å gi poeng");
       const who = gruppe ?? (ids.length === 1 ? nameOf.get(ids[0]) : ids.length + " elever");
-      setFlash((poeng > 0 ? "+" : "") + poeng + " til " + who);
+      setFlash((poeng > 0 ? "+" : "") + poeng + (kategori === "atferd" ? " atferd" : "") + " til " + who);
       setTimeout(() => setFlash(null), 2500);
       await load();
     } catch (e) {
@@ -163,7 +176,36 @@ export function PoengEditor({
 
   return (
     <div className="flex flex-col gap-4">
-      <Card header={<h3 className="font-semibold text-foreground">Gi plusspoeng</h3>}>
+      <Card
+        header={
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="font-semibold text-foreground">Gi poeng</h3>
+            <div className="inline-flex rounded-button border border-line p-0.5">
+              {(["faglig", "atferd"] as const).map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => {
+                    setKategori(k);
+                    setPoeng(k === "faglig" ? 2 : 1);
+                  }}
+                  className={cn(
+                    "rounded-button px-3 py-1 text-sm font-medium",
+                    kategori === k ? "bg-primary text-white" : "text-foreground/70 hover:bg-background-subtle"
+                  )}
+                >
+                  {k === "faglig" ? "Faglige plusspoeng" : "Atferd (±)"}
+                </button>
+              ))}
+            </div>
+          </div>
+        }
+      >
+        {kategori === "atferd" && (
+          <p className="mb-3 rounded-button bg-amber-500/10 px-3 py-2 text-sm text-foreground/80">
+            Atferdspoeng vises atskilt på eleven og blandes ikke med de faglige poengene. Bruk minus for negativ atferd.
+          </p>
+        )}
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <label className="flex flex-col gap-1.5 text-sm">
             <span className="font-medium text-foreground">Fag</span>
@@ -209,17 +251,22 @@ export function PoengEditor({
 
         <div className="mt-3 flex flex-wrap items-end gap-2">
           <span className="mr-1 text-sm font-medium text-foreground">Poeng:</span>
-          {QUICK.map((q) => (
+          {QUICK[kategori].map((q) => (
             <button
               key={q}
               type="button"
               onClick={() => setPoeng(q)}
               className={cn(
                 "rounded-button border px-3 py-1.5 text-sm font-semibold transition-colors",
-                poeng === q ? "border-primary bg-primary text-white" : "border-line text-foreground hover:bg-background-subtle"
+                poeng === q
+                  ? q < 0
+                    ? "border-error bg-error text-white"
+                    : "border-primary bg-primary text-white"
+                  : "border-line text-foreground hover:bg-background-subtle"
               )}
             >
-              +{q}
+              {q > 0 ? "+" : ""}
+              {q}
             </button>
           ))}
           <input
@@ -236,26 +283,44 @@ export function PoengEditor({
 
       <Card
         header={
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <h3 className="font-semibold text-foreground">Grupper</h3>
               <span className="text-xs text-foreground/50">Fra «Lag grupper» i dette kartet</span>
             </div>
+            <div className="flex flex-wrap items-center gap-2">
+            {ferdige.length > 0 ? (
+              <select
+                value={valgtSett?.id ?? ""}
+                onChange={(e) => setSett(e.target.value)}
+                aria-label="Velg konkurranse"
+                className="rounded-button border border-line bg-background px-2 py-1.5 text-sm text-foreground"
+              >
+                {ferdige.map((k) => (
+                  <option key={k.id} value={k.id}>
+                    {k.navn} – {k.tema} ({k.antall} spm.)
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <span className="text-xs text-foreground/50">Ingen ferdige konkurranser i {fag} – du lager spørsmålene selv</span>
+            )}
             <Button
               size="sm"
               variant="secondary"
               onClick={startKonkurranse}
-              disabled={validGroups.length < 2}
-              title={validGroups.length > 8 ? "Konkurransen har plass til 8 lag – bare de 8 første blir med" : undefined}
+              disabled={students.length < 2}
+              title="Åpner konkurransen med disse gruppene (maks 8). Du kan også blande nye lag der."
             >
-              <Trophy size={14} /> Start konkurranse med gruppene <ExternalLink size={12} />
+              <Trophy size={14} /> Start konkurranse <ExternalLink size={12} />
             </Button>
+            </div>
           </div>
         }
       >
         {validGroups.length === 0 ? (
           <p className="text-sm text-foreground/60">
-            Ingen grupper i dette kartet ennå. Lag grupper under «Lag grupper», eller gi poeng til enkeltelever nedenfor.
+            Ingen grupper i dette kartet ennå. Lag grupper under «Lag grupper», gi poeng til enkeltelever nedenfor, eller trykk «Start konkurranse» og bland lagene der.
           </p>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -316,7 +381,7 @@ export function PoengEditor({
         <Card
           header={
             <h3 className="flex items-center gap-2 font-semibold text-foreground">
-              <Trophy size={16} /> Poengtavle – {fag}
+              <Trophy size={16} /> {kategori === "atferd" ? "Atferd" : "Poengtavle"} – {fag}
             </h3>
           }
         >
@@ -347,7 +412,8 @@ export function PoengEditor({
             ))}
           </ol>
           <p className="mt-3 text-xs text-foreground/50">
-            Summen er alle elevens poeng i faget. Detaljer per elev finner du i Tilbakemeldingslogg → eleven.
+            Summen er alle elevens {kategori === "atferd" ? "atferdspoeng" : "faglige poeng"} i faget. Detaljer per elev finner
+            du i Tilbakemeldingslogg → eleven.
           </p>
         </Card>
 
@@ -361,7 +427,8 @@ export function PoengEditor({
                   <div>
                     <p className="font-medium text-foreground">
                       {b.poeng > 0 ? "+" : ""}
-                      {b.poeng} · {b.gruppe ?? b.elever.join(", ")}
+                      {b.poeng}
+                      {b.kategori === "atferd" ? " atferd" : ""} · {b.gruppe ?? b.elever.join(", ")}
                     </p>
                     <p className="text-xs text-foreground/60">
                       {fmtDate.format(new Date(b.dato))} · {b.fag} · {b.tema}

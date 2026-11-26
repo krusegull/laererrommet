@@ -28,22 +28,23 @@ export async function POST(request: Request, { params }: { params: Promise<{ cla
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Ugyldige opplysninger" }, { status: 400 });
   }
-  const { fag, tema, kilde, dato, rader } = parsed.data;
+  const { fag, tema, konkurranse, dato, rader } = parsed.data;
 
   const byId = new Map(classProfile.students.map((s) => [s.id, s]));
   if (rader.some((r) => !byId.has(r.classStudentId))) {
     return NextResponse.json({ error: "Fant ikke eleven" }, { status: 404 });
   }
-  if (new Set(rader.map((r) => r.classStudentId)).size !== rader.length) {
-    return NextResponse.json({ error: "Samme elev står flere ganger" }, { status: 400 });
-  }
-
   const batchId = randomUUID();
   const when = dato ? new Date(dato + "T12:00:00Z") : new Date();
   const data = [];
+  const linkCache = new Map<string, string>();
   for (const r of rader) {
     if (r.poeng === 0) continue;
-    const studentId = await resolveStudentLink(byId.get(r.classStudentId)!, session.user.id);
+    let studentId = linkCache.get(r.classStudentId);
+    if (!studentId) {
+      studentId = await resolveStudentLink(byId.get(r.classStudentId)!, session.user.id);
+      linkCache.set(r.classStudentId, studentId);
+    }
     data.push({
       userId: session.user.id,
       studentId,
@@ -51,16 +52,19 @@ export async function POST(request: Request, { params }: { params: Promise<{ cla
       fag,
       poeng: r.poeng,
       tema,
-      kilde,
+      kilde: r.kilde,
       gruppe: r.gruppe || null,
+      kategori: r.kategori,
+      konkurranse: konkurranse || null,
+      plassering: r.plassering ?? null,
       batchId,
       dato: when,
     });
   }
   if (data.length === 0) {
-    return NextResponse.json({ error: "Alle elevene har 0 poeng" }, { status: 400 });
+    return NextResponse.json({ error: "Ingen poeng å lagre (alle er 0)" }, { status: 400 });
   }
 
   await prisma.elevPoeng.createMany({ data });
-  return NextResponse.json({ batchId, count: data.length }, { status: 201 });
+  return NextResponse.json({ batchId, count: linkCache.size, rader: data.length }, { status: 201 });
 }
