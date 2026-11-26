@@ -994,19 +994,20 @@ servert via `https://raw.githack.com/krusegull/forste-verdenskrig/main/index.htm
 (forside → fag → tema → verktøy, generert fra `katalog.js`). Eirik ønsker at
 "hele denne" portalen til slutt skal speiles i Lærerrommet.
 
-**Status (2026-11-26): kun konkurranse-delen er bygget**, siden den var det
-konkrete, umiddelbart nyttige behovet (poeng fra en gjennomført konkurranse
-inn i Lærerrommet) og portalens eget `CLAUDE.md` allerede hadde spesifisert
-kontrakten ned til datamodell:
+**Status (2026-11-26): bygget.** Portalens `CLAUDE.md` spesifiserte kontrakten
+ned til datamodell, og `katalog.js` viste seg å bare gå ned til fag→tema-nivå
+(3 fag, 5 temaer totalt - hvert temas egen `index.html` lenker videre til sine
+undersider/verktøy selv, de er ikke egne oppføringer i katalogen):
 
-- `src/lib/portal/katalog.ts` - foreløpig bare de 6 standard-konkurransesettene
-  (SKYTTERGRAVEN, FRONTLINJEN, JERNTEPPET, YUGA, SI FRA, TROSS), ikke resten
-  av `katalog.js` (alle fag/temaer/verktøy - "Reisen", "Begrepsjakten",
-  "Begrepsreisen", "Presentasjon", "Krigsarkivet", "Krigsdagbokene",
-  "Togreisen", "Årsakskjeden" osv., på tvers av samfunnsfag/KRLE/norsk).
-- Klassekart → "Poeng"-fane (`PoengStart.tsx`): velger en av de 6
-  konkurransene, sender klasse + evt. grupper fra "Lag grupper" via
-  `#lr=`-payload, åpner konkurransen i ny fane.
+- `src/lib/portal/katalog.ts` - speiler hele `katalog.js` (alle fag/temaer med
+  ikon/farge/beskrivelse/lenke) + de 6 standard-konkurransesettene
+  (SKYTTERGRAVEN, FRONTLINJEN, JERNTEPPET, YUGA, SI FRA, TROSS).
+- `/laeringsportalen` (ny side, lenket fra sidemenyen): velg klasse, bla
+  gjennom fag → temaer (åpner portalens sider direkte i ny fane) og start
+  konkurransene for faget med klassens elever.
+- Klassekart → "Poeng"-fane (`PoengStart.tsx`): samme konkurranse-start, men
+  fra en spesifikk klasse+klassekart, med evt. grupper fra "Lag grupper" via
+  `#lr=`-payload.
 - `/poeng/importer`: mottar `#d=`-payload tilbake fra konkurransen, kobler
   deltakere til elever (auto via id, så navnematch, ellers manuelt), foreslår
   poeng (plasseringsmodell 10/7/5/3 + 2 per ⭐, eller lag+egne/bare lag/bare
@@ -1015,19 +1016,13 @@ kontrakten ned til datamodell:
   (Tilbakemeldingslogg → elev), separat fra Topp 5/`Utmerkelse`. Atferdspoeng
   (kan være negative) lagres med `fag: "atferd"`.
 
-**Ikke bygget - resten av "hele denne"-visjonen:**
-1. En `/laeringsportalen`-side i Lærerrommet som speiler HELE
-   `index.html`/`fag.html`-strukturen (alle fag, alle temaer, alle
-   enkeltverktøy - ikke bare konkurransene), med lenker inn i de respektive
-   verktøyene. Portalens `CLAUDE.md` sier eksplisitt: "Lærerrommet speiler
-   portalen på siden /laeringsportalen ... Nye temaer, verktøy eller
-   standardsett må også legges inn i katalog.ts der."
-2. `katalog.ts` må da utvides til å speile hele `katalog.js` sin
-   fag→tema→verktøy-struktur (ikke bare konkurransesettene), og holdes synket
-   når Eirik legger til nye fag/temaer/verktøy i portal-repoet.
-3. Eventuell dypere integrasjon per verktøytype utover konkurranser (f.eks.
-   om "Reisen"/"Begrepsreisen" sin egen localStorage-fremgang også skal kunne
-   sendes til Lærerrommet) er ikke avklart i det hele tatt - portalens eget
-   `CLAUDE.md` nevner bare konkurransemalen som koblet til Lærerrommet.
+**Vedlikehold:** nye fag/temaer i portalens `katalog.js`, eller nye
+standardsett i `verktoy/sett/liste.json`, må legges inn i `katalog.ts` her
+manuelt - det er ingen automatisk synk mellom de to repoene.
 
-Ikke bygg før det bes om.
+**Ikke avklart/bygget:** dypere integrasjon per verktøytype utover
+konkurranser (f.eks. om "Reisen"/"Begrepsreisen" sin egen
+localStorage-fremgang også skal kunne sendes til Lærerrommet) - portalens eget
+`CLAUDE.md` nevner bare konkurransemalen som koblet til Lærerrommet.
+
+Ikke bygg mer før det bes om.

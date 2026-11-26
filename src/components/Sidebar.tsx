@@ -17,6 +17,7 @@ import {
   ListChecks,
   LayoutGrid,
   ClipboardCheck,
+  Globe,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 
@@ -31,6 +32,7 @@ const PRIMARY_LINKS = [
 ];
 
 const SECONDARY_LINKS = [
+  { href: "/laeringsportalen", label: "Læringsportalen", icon: Globe },
   { href: "/kalender", label: "Kalender", icon: CalendarDays },
   { href: "/timeplan", label: "Timeplan", icon: CalendarClock },
   { href: "/notater", label: "Egne notater", icon: ListChecks },
