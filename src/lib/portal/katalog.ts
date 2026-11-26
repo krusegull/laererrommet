@@ -84,7 +84,7 @@ export const PORTAL: PortalFag[] = [
         sti: "samfunnsfag/nyheter/index.html",
         verktoy: [],
         konkurranser: [
-          { id: "samfunnsfag-nyheter-host-2026", navn: "NYHETSKAMPEN", beskrivelse: "Nyheter høsten 2026: konflikt, valg, klima, Norge, sport og kultur", antall: 45 },
+          { id: "samfunnsfag-nyheter-host-2026", navn: "NYHETSKAMPEN", beskrivelse: "Nyheter høsten 2026 + pensum 8.–10. i samfunnsfag, KRLE, matte, norsk og kroppsøving", antall: 50 },
         ],
       },
     ],
