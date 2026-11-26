@@ -3,9 +3,13 @@
  * https://raw.githack.com/krusegull/forste-verdenskrig/main/index.html) - se
  * portal-repoets katalog.js og README.md. Nye fag/temaer der (katalog.js) og
  * nye standardsett (verktoy/sett/liste.json) må legges inn her også.
+ *
+ * Bruker rawcdn.githack.com (githacks "production"-CDN), ikke raw.githack.com
+ * (githacks "development"-CDN) - sistnevnte viser en "one more step"-
+ * advarselsside for nye/sjeldent besøkte filer, som rawcdn ikke gjør.
  */
 
-export const PORTAL_BASE_URL = "https://raw.githack.com/krusegull/forste-verdenskrig/main/";
+export const PORTAL_BASE_URL = "https://rawcdn.githack.com/krusegull/forste-verdenskrig/main/";
 
 /** Ett tema innenfor et fag - matcher ett objekt i katalog.js sin temaer-liste. */
 export interface Tema {
