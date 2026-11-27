@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { lesData, lesState, tikkLag, LAGNAVN, LAGFARGER, TOM_LAG, type SpillData } from "@/lib/live/kruttonna";
+import { lesData, lesState, tikkLag, robotTrekk, lagToken, erRobot, ROBOT_PREFIKS, LAGNAVN, LAGFARGER, TOM_LAG, type SpillData } from "@/lib/live/kruttonna";
 import type { Prisma } from "@/generated/prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -26,13 +26,16 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     status = "slutt";
   }
 
-  const spillere = await prisma.liveSpiller.findMany({ where: { spillId: id }, orderBy: { createdAt: "asc" }, select: { id: true, navn: true, lag: true, riktige: true, sistSett: true } });
+  const spillere = await prisma.liveSpiller.findMany({ where: { spillId: id }, orderBy: { createdAt: "asc" }, select: { id: true, navn: true, lag: true, riktige: true, sistSett: true, token: true } });
   const lagRader = await prisma.liveLag.findMany({ where: { spillId: id }, orderBy: { nr: "asc" } });
 
   const lag = [];
   for (let nr = 0; nr < spill.antallLag; nr++) {
     let state = lagRader.find((l) => l.nr === nr) ? lesState(lagRader.find((l) => l.nr === nr)!.state) : { ...TOM_LAG };
-    if (status !== "lobby" && lagRader.some((l) => l.nr === nr)) state = (await tikkLag(id, nr, data, status === "slutt")).state;
+    if (status !== "lobby" && lagRader.some((l) => l.nr === nr)) {
+      if (status === "spill") await robotTrekk(id, nr);
+      state = (await tikkLag(id, nr, data, status === "slutt")).state;
+    }
     const b = state.bombe;
     lag.push({
       nr,
@@ -56,7 +59,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
     antallLag: spill.antallLag,
     data,
     naa: Date.now(),
-    spillere: spillere.map((s) => ({ id: s.id, navn: s.navn, lag: s.lag, aktiv: Date.now() - s.sistSett.getTime() < 15000 })),
+    spillere: spillere.map((s) => ({ id: s.id, navn: s.navn, lag: s.lag, robot: erRobot(s.token), aktiv: erRobot(s.token) || Date.now() - s.sistSett.getTime() < 15000 })),
     lag,
   });
 }
@@ -114,6 +117,25 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
     case "stopp": {
       await prisma.liveSpill.update({ where: { id }, data: { status: "slutt", data: { ...data, slutt: Math.min(data.slutt ?? Date.now(), Date.now()) } as Prisma.InputJsonValue } });
+      break;
+    }
+    case "roboter": {
+      // Testelever som spiller selv – for å prøve spillet uten flere PC-er.
+      const antall = Math.min(40, Math.max(1, Math.round(Number(body.antallLag) || 8)));
+      const andre = await prisma.liveSpiller.findMany({ where: { spillId: id }, select: { navn: true, lag: true } });
+      const fordelt = andre.some((a) => a.lag !== null) || spill.status !== "lobby";
+      const telling = Array.from({ length: spill.antallLag }, (_, i) => andre.filter((a) => a.lag === i).length);
+      const forste = andre.filter((a) => a.navn.startsWith("🤖")).length;
+      const rader = Array.from({ length: antall }, (_, i) => {
+        let lag: number | null = null;
+        if (fordelt) {
+          lag = telling.indexOf(Math.min(...telling));
+          telling[lag]++;
+        }
+        return { spillId: id, token: ROBOT_PREFIKS + lagToken(), navn: `🤖 Robot ${forste + i + 1}`, lag };
+      });
+      await prisma.liveSpiller.createMany({ data: rader });
+      if (spill.status === "spill") for (const r of rader) if (r.lag !== null) await sikreLag(id, r.lag);
       break;
     }
     case "slett": {

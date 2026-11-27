@@ -13,7 +13,7 @@ type Lag = {
 type Data = {
   id: string; kode: string; tittel: string; status: "lobby" | "spill" | "slutt"; antallLag: number; naa: number;
   data: { start?: number; slutt?: number; varighetMin?: number; maal?: number };
-  spillere: { id: string; navn: string; lag: number | null; aktiv: boolean }[];
+  spillere: { id: string; navn: string; lag: number | null; aktiv: boolean; robot?: boolean }[];
   lag: Lag[];
 };
 
@@ -105,6 +105,7 @@ function Lobby({ d, host, handling, opptatt, feil }: { d: Data; host: string; ha
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
         <span className="text-2xl font-black">{d.spillere.length} elever er med</span>
+        {d.spillere.some((s) => s.robot) && <span className="text-sm opacity-70">(🤖 {d.spillere.filter((s) => s.robot).length} testelever)</span>}
         <select value={d.antallLag} onChange={(e) => handling({ handling: "antallLag", antallLag: Number(e.target.value) })} className="kt-btn kt-mork py-2">
           {[2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => <option key={n} value={n} className="text-black">{n} lag</option>)}
         </select>
@@ -112,10 +113,14 @@ function Lobby({ d, host, handling, opptatt, feil }: { d: Data; host: string; ha
           {[5, 10, 15, 20, 25, 30].map((n) => <option key={n} value={n} className="text-black">{n} min</option>)}
         </select>
         <button disabled={opptatt || d.spillere.length === 0} onClick={() => handling({ handling: "fordel" })} className="kt-btn kt-mork">🎲 Fordel på lag</button>
+        <button disabled={opptatt} onClick={() => { const n = prompt("Hvor mange testelever (roboter)? De spiller selv, slik at du kan prøve spillet alene.", "20"); if (n) handling({ handling: "roboter", antallLag: Number(n) }); }} className="kt-btn kt-mork" title="For å teste uten flere PC-er">🤖 Testelever</button>
         <button disabled={opptatt || !kanStarte} onClick={() => handling({ handling: "start" })} className="kt-btn kt-gull text-xl">▶ Start spillet</button>
         <button onClick={() => { if (confirm("Avslutte og slette spillet?")) handling({ handling: "slett" }); }} className="kt-btn kt-mork ml-auto text-sm">Avbryt</button>
       </div>
       {feil && <p className="mt-2 font-bold text-red-400">{feil}</p>}
+      <p className="mt-2 text-sm opacity-60">
+        Teste alene? Trykk 🤖 Testelever, og åpne <a className="underline" href={`/delta?fane&kode=${d.kode}`} target="_blank" rel="noreferrer">/delta?fane&amp;kode={d.kode}</a> i én eller flere nye faner – hver fane blir en egen elev.
+      </p>
 
       {uten.length > 0 && (
         <div className="mt-6">
