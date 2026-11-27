@@ -196,7 +196,7 @@ export function lesState(json: Prisma.JsonValue): LagState {
 
 /** Henter lagets medlemmer i fast rekkefølge (for rotasjon av teknikker). */
 export async function hentMedlemmer(spillId: string, nr: number) {
-  return prisma.liveSpiller.findMany({ where: { spillId, lag: nr }, orderBy: { createdAt: "asc" }, select: { id: true, navn: true, riktige: true } });
+  return prisma.liveSpiller.findMany({ where: { spillId, lag: nr }, orderBy: { createdAt: "asc" }, select: { id: true, navn: true, riktige: true, token: true } });
 }
 
 /**
@@ -238,4 +238,37 @@ export async function ryddGamleSpill() {
 
 export function lesData(json: Prisma.JsonValue): SpillData {
   return (json ?? {}) as SpillData;
+}
+
+/** Testelever: tokenet starter med «bot_». De spiller selv når storskjermen henter status. */
+export const ROBOT_PREFIKS = "bot_";
+export const erRobot = (token: string) => token.startsWith(ROBOT_PREFIKS);
+
+/**
+ * Lar robotene på et lag gjøre et trekk. Robotene klipper bare sine egne
+ * ledninger, og bare når riktig svar ligger hos en robot (ellers venter de på
+ * de ekte elevene). 80 % sjanse for riktig klipp.
+ */
+export async function robotTrekk(spillId: string, nr: number) {
+  const medlemmer = await hentMedlemmer(spillId, nr);
+  const roboter = new Map(medlemmer.filter((m) => erRobot(m.token)).map((m) => [m.id, m.navn]));
+  if (!roboter.size) return;
+  const naa = Date.now();
+  if (Math.random() > 0.4) return;
+  await oppdaterLag(spillId, nr, (s) => {
+    const b = s.bombe;
+    if (!b || naa >= b.frist) return { state: s };
+    const sist = s.siste && s.siste.t > b.start ? s.siste.t : b.start;
+    if (naa - sist < 4000) return { state: s };
+    const sp = b.sporsmal[b.idx];
+    const riktigEier = sp.eier[sp.riktig];
+    if (!riktigEier || !roboter.has(riktigEier)) return { state: s };
+    let valg = sp.riktig;
+    if (Math.random() < 0.2) {
+      const feil = sp.eier.map((e, i) => i).filter((i) => i !== sp.riktig && !sp.kuttet.includes(i) && sp.eier[i] && roboter.has(sp.eier[i] as string));
+      if (feil.length) valg = feil[Math.floor(Math.random() * feil.length)];
+    }
+    const eier = sp.eier[valg] as string;
+    return { state: klipp(s, eier, roboter.get(eier) ?? "Robot", b.idx, valg, naa).state };
+  });
 }

@@ -30,8 +30,15 @@ type Visning = {
 
 const NOKKEL = "kruttonna_token";
 
+/** Med ?fane i adressen blir hver fane en egen elev (for å teste på én PC). */
+function egenFane() {
+  try { return new URLSearchParams(window.location.search).has("fane"); } catch { return false; }
+}
+function lager(): Storage | null {
+  try { return egenFane() ? sessionStorage : localStorage; } catch { return null; }
+}
 function lesToken() {
-  try { return localStorage.getItem(NOKKEL); } catch { return null; }
+  try { return lager()?.getItem(NOKKEL) ?? null; } catch { return null; }
 }
 
 export default function DeltaSide() {
@@ -43,7 +50,7 @@ export default function DeltaSide() {
   return (
     <div className="kt-root">
       <KruttonnaStil />
-      {token ? <Spill token={token} ut={() => { try { localStorage.removeItem(NOKKEL); } catch {} setToken(null); }} /> : <BliMed ferdig={(t) => setToken(t)} />}
+      {token ? <Spill token={token} ut={() => { try { lager()?.removeItem(NOKKEL); } catch {} setToken(null); }} /> : <BliMed ferdig={(t) => setToken(t)} />}
     </div>
   );
 }
@@ -67,7 +74,7 @@ function BliMed({ ferdig }: { ferdig: (t: string) => void }) {
     const d = await r.json().catch(() => ({}));
     setLaster(false);
     if (!r.ok) return setFeil(d.error ?? "Noe gikk galt");
-    try { localStorage.setItem(NOKKEL, d.token); } catch {}
+    try { lager()?.setItem(NOKKEL, d.token); } catch {}
     ferdig(d.token);
   }
 
