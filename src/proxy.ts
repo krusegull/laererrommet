@@ -27,8 +27,9 @@ export const config = {
      * - / (offentlig forside)
      * - /login, /register (auth-sider)
      * - /api/auth/*, /api/register (auth-endepunkter)
+     * - /delta, /api/live/bli-med, /api/live/spiller (elevene i live-spill – ingen konto)
      * - Next.js interne ruter og statiske filer
      */
-    "/((?!$|login|register|api/auth|api/register|_next/static|_next/image|favicon.ico).*)",
+    "/((?!$|login|register|api/auth|api/register|delta|api/live/bli-med|api/live/spiller|_next/static|_next/image|favicon.ico).*)",
   ],
 };

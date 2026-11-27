@@ -58,6 +58,7 @@ model User {
   elevTekster      ElevTekst[]
   maal             Maal[]
   elevPoeng        ElevPoeng[]
+  liveSpill        LiveSpill[]
 }
 
 model Student {
@@ -550,4 +551,54 @@ model ElevPoeng {
   @@index([classProfileId])
   @@index([batchId])
   @@index([studentId, kategori])
+}
+
+/// KRUTTØNNA og andre live-spill: elevene blir med på egne PC-er med en kode
+/// og fornavn (ingen konto). Spillene og navnene slettes automatisk etter ett døgn.
+model LiveSpill {
+  id        String       @id @default(cuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kode      String       @unique
+  tittel    String
+  /// "lobby" | "spill" | "slutt"
+  status    String       @default("lobby")
+  antallLag Int          @default(8)
+  /// Felles tilstand: start/slutt-tid, varighet, klassens mål m.m.
+  data      Json         @default("{}")
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  spillere  LiveSpiller[]
+  lag       LiveLag[]
+
+  @@index([userId])
+}
+
+model LiveSpiller {
+  id        String    @id @default(cuid())
+  spillId   String
+  spill     LiveSpill @relation(fields: [spillId], references: [id], onDelete: Cascade)
+  /// Hemmelig nøkkel som ligger i elevens nettleser
+  token     String    @unique
+  navn      String
+  /// Lagnummer (0-basert), null før fordeling
+  lag       Int?
+  /// Antall riktige klipp eleven har gjort selv
+  riktige   Int       @default(0)
+  sistSett  DateTime  @default(now())
+  createdAt DateTime  @default(now())
+
+  @@index([spillId])
+}
+
+model LiveLag {
+  id        String    @id @default(cuid())
+  spillId   String
+  spill     LiveSpill @relation(fields: [spillId], references: [id], onDelete: Cascade)
+  nr        Int
+  /// Bombe-tilstanden til laget (se src/lib/live/kruttonna.ts)
+  state     Json      @default("{}")
+  versjon   Int       @default(0)
+
+  @@unique([spillId, nr])
 }

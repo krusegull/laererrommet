@@ -18,6 +18,7 @@ import {
   LayoutGrid,
   ClipboardCheck,
   Trophy,
+  Bomb,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
 
@@ -27,6 +28,7 @@ const PRIMARY_LINKS = [
   { href: "/logg", label: "Tilbakemeldingslogg", icon: NotebookPen },
   { href: "/klassekart", label: "Klassekart", icon: LayoutGrid },
   { href: "/laeringsportalen", label: "Læringsportalen", icon: Trophy },
+  { href: "/kruttonna", label: "KRUTTØNNA (live)", icon: Bomb },
   { href: "/vurdering", label: "Vurdering", icon: ClipboardCheck },
   { href: "/undervisningsbanken", label: "Undervisningsbanken", icon: BookOpen },
   { href: "/meg", label: "Meg", icon: UserRound },
